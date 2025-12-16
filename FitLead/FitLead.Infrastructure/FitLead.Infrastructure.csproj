@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FitLead.Application\FitLead.Application.csproj" />
+    <ProjectReference Include="..\FitLead.Domain\FitLead.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
