@@ -7,12 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.1.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\FitLead.Application\FitLead.Application.csproj" />
+    <ProjectReference Include="..\FitLead.Infrastructure\FitLead.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

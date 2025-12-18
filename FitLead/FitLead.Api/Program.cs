@@ -1,4 +1,5 @@
 using FitLead.Application.Trainings.CreateTrainingProgram;
+using FitLead.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,8 @@ builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(CreateTrainingProgramCommand).Assembly);
 });
+
+builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 

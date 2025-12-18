@@ -1,3 +1,6 @@
 <Solution>
   <Project Path="FitLead.Api/FitLead.Api.csproj" />
+  <Project Path="FitLead.Application/FitLead.Application.csproj" />
+  <Project Path="FitLead.Domain/FitLead.Domain.csproj" />
+  <Project Path="FitLead.Infrastructure/FitLead.Infrastructure.csproj" />
 </Solution>
