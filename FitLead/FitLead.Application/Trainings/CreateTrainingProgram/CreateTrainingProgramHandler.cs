@@ -14,13 +14,17 @@ namespace FitLead.Application.Trainings.CreateTrainingProgram
     public class CreateTrainingProgramHandler
     : IRequestHandler<CreateTrainingProgramCommand, Result<Guid>>
     {
-        private readonly ITrainingProgramRepository _repository;
+        private readonly ITrainingProgramRepository _programRepository;
+        private readonly ITrainerRepository _trainerRepository;
         private readonly IUnitOfWork _unitOfWork;
 
-        public CreateTrainingProgramHandler(ITrainingProgramRepository repository, 
+        public CreateTrainingProgramHandler(
+            ITrainingProgramRepository programRepository,
+            ITrainerRepository trainerRepository,
             IUnitOfWork unitOfWork)
         {
-            _repository = repository;
+            _programRepository = programRepository;
+            _trainerRepository = trainerRepository;
             _unitOfWork = unitOfWork;
         }
 
@@ -28,17 +32,21 @@ namespace FitLead.Application.Trainings.CreateTrainingProgram
             CreateTrainingProgramCommand request,
             CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(request.Title))
-                return Result<Guid>.Failure("Training program title is required");
+            var trainer = await _trainerRepository.GetByIdAsync(
+                request.TrainerId,
+                cancellationToken);
+
+            if (trainer is null)
+                return Result<Guid>.Failure("Trainer not found");
 
             var program = TrainingProgram.Create(
-            request.Title,
-            request.TrainerId);
+                request.Title,
+                trainer);
 
-            await _repository.AddAsync(program, cancellationToken);
+            await _programRepository.AddAsync(program, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return Result.Success(program.Id);
+            return Result<Guid>.Success(program.Id);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using FitLead.Domain.Trainings;
+using FitLead.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 
 namespace FitLead.Infrastructure.Persistence
@@ -11,6 +12,8 @@ namespace FitLead.Infrastructure.Persistence
         }
 
         public DbSet<TrainingProgram> TrainingPrograms => Set<TrainingProgram>();
+        public DbSet<Trainer> Trainers => Set<Trainer>();
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
