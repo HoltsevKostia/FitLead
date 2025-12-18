@@ -19,6 +19,7 @@ namespace FitLead.Infrastructure
                     configuration.GetConnectionString("DefaultConnection")));
 
             services.AddScoped<ITrainingProgramRepository, TrainingProgramRepository>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             return services;
         }

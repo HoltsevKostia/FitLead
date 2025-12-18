@@ -15,34 +15,30 @@ namespace FitLead.Application.Trainings.CreateTrainingProgram
     : IRequestHandler<CreateTrainingProgramCommand, Result<Guid>>
     {
         private readonly ITrainingProgramRepository _repository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public CreateTrainingProgramHandler(ITrainingProgramRepository repository)
+        public CreateTrainingProgramHandler(ITrainingProgramRepository repository, 
+            IUnitOfWork unitOfWork)
         {
             _repository = repository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Result<Guid>> Handle(
-            CreateTrainingProgramCommand command,
+            CreateTrainingProgramCommand request,
             CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(command.Title))
+            if (string.IsNullOrWhiteSpace(request.Title))
                 return Result<Guid>.Failure("Training program title is required");
 
-            var trainer = new Trainer(
-                command.TrainerId,
-                "trainer@mail.com",
-                "Trainer Name"
-            );
-
-            var program = new TrainingProgram(
-                Guid.NewGuid(),
-                command.Title,
-                trainer
-            );
+            var program = TrainingProgram.Create(
+            request.Title,
+            request.TrainerId);
 
             await _repository.AddAsync(program, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return Result<Guid>.Success(program.Id);
+            return Result.Success(program.Id);
         }
     }
 }

@@ -23,7 +23,6 @@ namespace FitLead.Infrastructure.Repositories
             CancellationToken cancellationToken)
         {
             await _context.TrainingPrograms.AddAsync(program, cancellationToken);
-            await _context.SaveChangesAsync(cancellationToken);
         }
     }
 }
