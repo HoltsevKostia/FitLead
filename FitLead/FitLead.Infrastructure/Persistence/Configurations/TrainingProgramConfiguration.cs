@@ -5,8 +5,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace FitLead.Infrastructure.Persistence.Configurations
 {
 
-    public class TrainingProgramConfiguration
-        : IEntityTypeConfiguration<TrainingProgram>
+    public sealed class TrainingProgramConfiguration
+    : IEntityTypeConfiguration<TrainingProgram>
     {
         public void Configure(EntityTypeBuilder<TrainingProgram> builder)
         {
@@ -21,10 +21,10 @@ namespace FitLead.Infrastructure.Persistence.Configurations
                 .IsRequired()
                 .HasMaxLength(200);
 
-            builder.HasOne(x => x.Trainer)
-                .WithMany()
-                .HasForeignKey("trainer_id")
+            builder.Property(x => x.TrainerId)
                 .IsRequired();
+
+            builder.HasIndex(x => x.TrainerId);
         }
     }
 }
