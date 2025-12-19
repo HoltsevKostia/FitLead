@@ -1,5 +1,6 @@
 ﻿using FitLead.Api.Contracts.Trainings;
 using FitLead.Application.Trainings.CreateTrainingProgram;
+using FitLead.Application.Trainings.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,24 +19,26 @@ namespace FitLead.Api.Controllers
 
         [HttpPost]
         public async Task<IActionResult> Create(
-            CreateTrainingProgramRequest request,
-            CancellationToken cancellationToken)
+        CreateTrainingProgramCommand command)
         {
-            var command = new CreateTrainingProgramCommand(
-                request.TrainerId,
-                request.Title
-            );
-
-            var result = await _mediator.Send(command, cancellationToken);
+            var result = await _mediator.Send(command);
 
             if (!result.IsSuccess)
                 return BadRequest(result.Error);
 
             return CreatedAtAction(
-                nameof(Create),
-                new { id = result.Value },
-                result.Value
-            );
+                nameof(GetByTrainer),
+                new { trainerId = command.TrainerId },
+                result.Value);
+        }
+
+        [HttpGet("trainer/{trainerId:guid}")]
+        public async Task<IActionResult> GetByTrainer(Guid trainerId)
+        {
+            var programs = await _mediator.Send(
+                new GetTrainingProgramsByTrainerIdQuery(trainerId));
+
+            return Ok(programs);
         }
     }
 }
