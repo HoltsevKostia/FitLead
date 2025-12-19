@@ -13,33 +13,31 @@ namespace FitLead.Domain.Trainings
         private readonly List<Workout> _workouts = new();
 
         public string Title { get; private set; } = null!;
-        public Trainer Trainer { get; private set; } = null!;
+        public Guid TrainerId { get; private set; }
 
         public IReadOnlyCollection<Workout> Workouts => _workouts.AsReadOnly();
 
-        private TrainingProgram() { } // для EF
+        private TrainingProgram() { } // EF
 
-        private TrainingProgram(Guid id, string title, Trainer trainer)
+        private TrainingProgram(Guid id, string title, Guid trainerId)
         {
             Id = id;
             Title = title;
-            Trainer = trainer;
+            TrainerId = trainerId;
         }
 
-        public static TrainingProgram Create(
-            string title,
-            Trainer trainer)
+        public static TrainingProgram Create(string title, Guid trainerId)
         {
             if (string.IsNullOrWhiteSpace(title))
-                throw new ArgumentException("Title is required", nameof(title));
+                throw new ArgumentException("Title is required");
 
-            if (trainer is null)
-                throw new ArgumentNullException(nameof(trainer));
+            if (trainerId == Guid.Empty)
+                throw new ArgumentException("TrainerId is required");
 
             return new TrainingProgram(
                 Guid.NewGuid(),
                 title.Trim(),
-                trainer);
+                trainerId);
         }
 
         public void AddWorkout(Workout workout)

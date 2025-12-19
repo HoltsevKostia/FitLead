@@ -7,10 +7,8 @@ using System.Threading.Tasks;
 
 namespace FitLead.Application.Abstractions.Persistence
 {
-    public interface ITrainerRepository
+    public interface IUserRepository
     {
-        Task<Trainer?> GetByIdAsync(
-            Guid id,
-            CancellationToken cancellationToken);
+        Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
     }
 }

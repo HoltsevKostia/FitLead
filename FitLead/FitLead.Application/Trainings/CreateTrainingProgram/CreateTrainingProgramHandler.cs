@@ -15,16 +15,16 @@ namespace FitLead.Application.Trainings.CreateTrainingProgram
     : IRequestHandler<CreateTrainingProgramCommand, Result<Guid>>
     {
         private readonly ITrainingProgramRepository _programRepository;
-        private readonly ITrainerRepository _trainerRepository;
+        private readonly IUserRepository _userRepository;
         private readonly IUnitOfWork _unitOfWork;
 
         public CreateTrainingProgramHandler(
             ITrainingProgramRepository programRepository,
-            ITrainerRepository trainerRepository,
+            IUserRepository userRepository,
             IUnitOfWork unitOfWork)
         {
             _programRepository = programRepository;
-            _trainerRepository = trainerRepository;
+            _userRepository = userRepository;
             _unitOfWork = unitOfWork;
         }
 
@@ -32,16 +32,19 @@ namespace FitLead.Application.Trainings.CreateTrainingProgram
             CreateTrainingProgramCommand request,
             CancellationToken cancellationToken)
         {
-            var trainer = await _trainerRepository.GetByIdAsync(
+            var trainer = await _userRepository.GetByIdAsync(
                 request.TrainerId,
                 cancellationToken);
 
             if (trainer is null)
                 return Result<Guid>.Failure("Trainer not found");
 
+            if (trainer.Role != UserRole.Trainer)
+                return Result<Guid>.Failure("User is not a trainer");
+
             var program = TrainingProgram.Create(
                 request.Title,
-                trainer);
+                trainer.Id);
 
             await _programRepository.AddAsync(program, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
