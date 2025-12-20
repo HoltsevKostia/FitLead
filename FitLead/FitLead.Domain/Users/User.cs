@@ -9,13 +9,9 @@ namespace FitLead.Domain.Users
 {
     public sealed class User : AggregateRoot<Guid>
     {
-        private readonly List<Guid> _clientIds = new();
-
         public string Email { get; private set; } = null!;
         public string FullName { get; private set; } = null!;
         public UserRole Role { get; private set; }
-
-        public IReadOnlyCollection<Guid> ClientIds => _clientIds.AsReadOnly();
 
         private User() { } // EF
 
@@ -48,15 +44,7 @@ namespace FitLead.Domain.Users
                 role);
         }
 
-        public void AssignClient(Guid clientId)
-        {
-            if (Role != UserRole.Trainer)
-                throw new InvalidOperationException("Only trainer can have clients");
-
-            if (_clientIds.Contains(clientId))
-                throw new InvalidOperationException("Client already assigned");
-
-            _clientIds.Add(clientId);
-        }
+        public bool IsTrainer => Role == UserRole.Trainer;
+        public bool IsClient => Role == UserRole.Client;
     }
 }
