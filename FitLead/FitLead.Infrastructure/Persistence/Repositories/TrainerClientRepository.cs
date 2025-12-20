@@ -3,7 +3,7 @@ using FitLead.Infrastructure.Persistence;
 using FitLead.Infrastructure.Persistence.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace FitLead.Infrastructure.Repositories
+namespace FitLead.Infrastructure.Persistence.Repositories
 {
     public sealed class TrainerClientRepository : ITrainerClientRepository
     {

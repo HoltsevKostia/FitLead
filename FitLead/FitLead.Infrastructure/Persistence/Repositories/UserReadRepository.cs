@@ -1,11 +1,9 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Users.Queries;
 using FitLead.Domain.Users;
-using FitLead.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-
-namespace FitLead.Infrastructure.Repositories
+namespace FitLead.Infrastructure.Persistence.Repositories
 {
     public sealed class UserReadRepository : IUserReadRepository
     {

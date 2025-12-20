@@ -3,7 +3,7 @@ using FitLead.Application.Trainings.Queries;
 using FitLead.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace FitLead.Infrastructure.Repositories
+namespace FitLead.Infrastructure.Persistence.Repositories
 {
     public sealed class TrainingProgramReadRepository
     : ITrainingProgramReadRepository

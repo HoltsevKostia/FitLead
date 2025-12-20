@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FitLead.Infrastructure.Repositories
+namespace FitLead.Infrastructure.Persistence.Repositories
 {
     public class TrainingProgramRepository : ITrainingProgramRepository
     {

@@ -1,5 +1,7 @@
 ﻿using FitLead.Application.Users.AssignClientToTrainer;
 using FitLead.Application.Users.CreateUser;
+using FitLead.Application.Users.Queries;
+using FitLead.Domain.Users;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -39,6 +41,42 @@ namespace FitLead.Api.Controllers
                 return BadRequest(result.Error);
 
             return NoContent();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var users = await _mediator.Send(
+                new GetAllUsersQuery());
+
+            return Ok(users);
+        }
+
+        [HttpGet("trainers")]
+        public async Task<IActionResult> GetTrainers()
+        {
+            var trainers = await _mediator.Send(
+                new GetUsersByRoleQuery(UserRole.Trainer));
+
+            return Ok(trainers);
+        }
+
+        [HttpGet("clients")]
+        public async Task<IActionResult> GetClients()
+        {
+            var clients = await _mediator.Send(
+                new GetUsersByRoleQuery(UserRole.Client));
+
+            return Ok(clients);
+        }
+
+        [HttpGet("{trainerId:guid}/clients")]
+        public async Task<IActionResult> GetClientsByTrainer(Guid trainerId)
+        {
+            var clients = await _mediator.Send(
+                new GetClientsByTrainerIdQuery(trainerId));
+
+            return Ok(clients);
         }
     }
 }
