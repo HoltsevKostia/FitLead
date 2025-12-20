@@ -1,4 +1,5 @@
-﻿using FitLead.Application.Users.CreateUser;
+﻿using FitLead.Application.Users.AssignClientToTrainer;
+using FitLead.Application.Users.CreateUser;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,6 +25,20 @@ namespace FitLead.Api.Controllers
                 return BadRequest(result.Error);
 
             return Ok(new { userId = result.Value });
+        }
+
+        [HttpPost("{trainerId:guid}/clients/{clientId:guid}")]
+        public async Task<IActionResult> AssignClient(
+            Guid trainerId,
+            Guid clientId)
+        {
+            var result = await _mediator.Send(
+                new AssignClientToTrainerCommand(trainerId, clientId));
+
+            if (!result.IsSuccess)
+                return BadRequest(result.Error);
+
+            return NoContent();
         }
     }
 }
