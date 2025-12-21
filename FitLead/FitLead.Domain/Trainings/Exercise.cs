@@ -7,23 +7,48 @@ using System.Threading.Tasks;
 
 namespace FitLead.Domain.Trainings
 {
-    public sealed class Exercise : Entity<Guid>
+    public sealed class Exercise : AggregateRoot<Guid>
     {
         public string Name { get; private set; } = null!;
-        public int Repetitions { get; private set; }
-        public int Sets { get; private set; }
+        public string Description { get; private set; } = null!;
+        public string? MediaUrl { get; private set; }
 
-        private Exercise() { }
+        private Exercise() { } // EF
 
-        public Exercise(Guid id, string name, int repetitions, int sets)
+        private Exercise(Guid id, string name, string description, string? mediaUrl)
         {
-            if (repetitions <= 0 || sets <= 0)
-                throw new ArgumentException("Repetitions and sets must be positive");
-
             Id = id;
             Name = name;
-            Repetitions = repetitions;
-            Sets = sets;
+            Description = description;
+            MediaUrl = mediaUrl;
+        }
+
+        public static Exercise Create(
+            string name,
+            string description,
+            string? mediaUrl = null)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Exercise name is required");
+
+            return new Exercise(
+                Guid.NewGuid(),
+                name.Trim(),
+                description?.Trim() ?? string.Empty,
+                mediaUrl);
+        }
+
+        public void Rename(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Exercise name is required");
+
+            Name = name.Trim();
+        }
+
+        public void UpdateDescription(string description)
+        {
+            Description = description?.Trim() ?? string.Empty;
         }
     }
 }

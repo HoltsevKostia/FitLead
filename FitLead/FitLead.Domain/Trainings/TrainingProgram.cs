@@ -10,12 +10,12 @@ namespace FitLead.Domain.Trainings
 {
     public sealed class TrainingProgram : AggregateRoot<Guid>
     {
-        private readonly List<Workout> _workouts = new();
+        private readonly List<TrainingProgramWorkout> _workouts = new();
 
         public string Title { get; private set; } = null!;
         public Guid TrainerId { get; private set; }
 
-        public IReadOnlyCollection<Workout> Workouts => _workouts.AsReadOnly();
+        public IReadOnlyCollection<TrainingProgramWorkout> Workouts => _workouts.AsReadOnly();
 
         private TrainingProgram() { } // EF
 
@@ -40,12 +40,19 @@ namespace FitLead.Domain.Trainings
                 trainerId);
         }
 
-        public void AddWorkout(Workout workout)
+        public void AddWorkout(Guid workoutId)
         {
-            if (workout is null)
-                throw new ArgumentNullException(nameof(workout));
+            if (workoutId == Guid.Empty)
+                throw new ArgumentException("WorkoutId is required");
 
-            _workouts.Add(workout);
+            var order = _workouts.Count;
+
+            var entry = new TrainingProgramWorkout(
+                Guid.NewGuid(),
+                workoutId,
+                order);
+
+            _workouts.Add(entry);
         }
     }
 }
