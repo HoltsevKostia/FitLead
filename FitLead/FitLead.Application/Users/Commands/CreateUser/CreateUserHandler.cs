@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FitLead.Application.Users.CreateUser
+namespace FitLead.Application.Users.Commands.CreateUser
 {
     public sealed class CreateUserHandler
     : IRequestHandler<CreateUserCommand, Result<Guid>>

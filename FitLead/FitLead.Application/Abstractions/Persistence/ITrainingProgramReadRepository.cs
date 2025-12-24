@@ -1,4 +1,4 @@
-﻿using FitLead.Application.Trainings.Queries;
+﻿using FitLead.Application.Trainings.Queries.TrainingProgram;
 
 namespace FitLead.Application.Abstractions.Persistence
 {

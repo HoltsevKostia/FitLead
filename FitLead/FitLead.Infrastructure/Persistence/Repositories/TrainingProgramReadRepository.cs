@@ -1,6 +1,5 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
-using FitLead.Application.Trainings.Queries;
-using FitLead.Infrastructure.Persistence;
+using FitLead.Application.Trainings.Queries.TrainingProgram;
 using Microsoft.EntityFrameworkCore;
 
 namespace FitLead.Infrastructure.Persistence.Repositories

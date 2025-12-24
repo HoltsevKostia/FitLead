@@ -1,5 +1,5 @@
-﻿using FitLead.Application.Users.AssignClientToTrainer;
-using FitLead.Application.Users.CreateUser;
+﻿using FitLead.Application.Users.Commands.AssignClientToTrainer;
+using FitLead.Application.Users.Commands.CreateUser;
 using FitLead.Application.Users.Queries;
 using FitLead.Domain.Users;
 using MediatR;

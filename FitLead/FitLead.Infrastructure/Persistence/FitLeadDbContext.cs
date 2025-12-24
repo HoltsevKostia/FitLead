@@ -15,6 +15,7 @@ namespace FitLead.Infrastructure.Persistence
         public DbSet<TrainingProgram> TrainingPrograms => Set<TrainingProgram>();
         public DbSet<User> Users => Set<User>();
         public DbSet<TrainerClient> TrainerClients => Set<TrainerClient>();
+        public DbSet<Exercise> Exercises => Set<Exercise>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

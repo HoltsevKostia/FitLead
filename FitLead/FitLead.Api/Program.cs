@@ -1,4 +1,4 @@
-using FitLead.Application.Trainings.CreateTrainingProgram;
+using FitLead.Application.Trainings.Commands.CreateTrainingProgram;
 using FitLead.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);

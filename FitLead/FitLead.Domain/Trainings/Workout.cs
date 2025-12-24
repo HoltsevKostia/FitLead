@@ -12,7 +12,7 @@ namespace FitLead.Domain.Trainings
         private readonly List<WorkoutExercise> _exercises = new();
 
         public string Name { get; private set; } = null!;
-        public Guid CreatedByTrainerId { get; private set; }
+        public Guid TrainerId { get; private set; }
 
         public IReadOnlyCollection<WorkoutExercise> Exercises => _exercises.AsReadOnly();
 
@@ -22,7 +22,7 @@ namespace FitLead.Domain.Trainings
         {
             Id = id;
             Name = name;
-            CreatedByTrainerId = trainerId;
+            TrainerId = trainerId;
         }
 
         public static Workout Create(string name, Guid trainerId)

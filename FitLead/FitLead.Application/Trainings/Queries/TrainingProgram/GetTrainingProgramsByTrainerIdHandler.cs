@@ -1,7 +1,7 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
 using MediatR;
 
-namespace FitLead.Application.Trainings.Queries
+namespace FitLead.Application.Trainings.Queries.TrainingProgram
 {
     public sealed class GetTrainingProgramsByTrainerIdHandler
     : IRequestHandler<
