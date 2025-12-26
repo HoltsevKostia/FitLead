@@ -33,5 +33,13 @@ namespace FitLead.Infrastructure.Persistence.Repositories
         {
             await _context.Workouts.AddAsync(workout, cancellationToken);
         }
+
+        public async Task<bool> ExistsAsync(
+        Guid id,
+        CancellationToken cancellationToken)
+        {
+            return await _context.Workouts
+                .AnyAsync(x => x.Id == id, cancellationToken);
+        }
     }
 }

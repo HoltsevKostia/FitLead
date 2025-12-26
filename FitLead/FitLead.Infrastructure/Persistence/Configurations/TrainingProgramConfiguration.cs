@@ -10,6 +10,10 @@ namespace FitLead.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<TrainingProgram> builder)
         {
+            builder.HasMany(x => x.Workouts)
+                .WithOne()
+                .HasForeignKey("training_program_id")
+                .OnDelete(DeleteBehavior.Cascade);
             builder.ToTable("training_programs");
 
             builder.HasKey(x => x.Id);

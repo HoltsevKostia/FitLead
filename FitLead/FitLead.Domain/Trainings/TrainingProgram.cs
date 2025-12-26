@@ -42,10 +42,10 @@ namespace FitLead.Domain.Trainings
 
         public void AddWorkout(Guid workoutId)
         {
-            if (workoutId == Guid.Empty)
-                throw new ArgumentException("WorkoutId is required");
+            if (_workouts.Any(x => x.WorkoutId == workoutId))
+                throw new InvalidOperationException("Workout already added to program");
 
-            var order = _workouts.Count;
+            var order = _workouts.Count + 1;
 
             var entry = new TrainingProgramWorkout(
                 Guid.NewGuid(),
@@ -53,6 +53,19 @@ namespace FitLead.Domain.Trainings
                 order);
 
             _workouts.Add(entry);
+        }
+
+        public void RemoveWorkout(Guid workoutId)
+        {
+            var entry = _workouts.FirstOrDefault(x => x.WorkoutId == workoutId);
+            if (entry is null)
+                throw new InvalidOperationException("Workout not found");
+
+            _workouts.Remove(entry);
+
+            var order = 1;
+            foreach (var w in _workouts.OrderBy(x => x.Order))
+                w.ChangeOrder(order++);
         }
     }
 }
