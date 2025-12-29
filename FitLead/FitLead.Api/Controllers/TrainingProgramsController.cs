@@ -1,4 +1,7 @@
-﻿using FitLead.Application.Trainings.Commands.CreateTrainingProgram;
+﻿using FitLead.Api.Contracts.Trainings;
+using FitLead.Application.Trainings.Commands.AddWorkoutToProgram;
+using FitLead.Application.Trainings.Commands.CreateTrainingProgram;
+using FitLead.Application.Trainings.Commands.RemoveWorkoutFromProgram;
 using FitLead.Application.Trainings.Queries.TrainingProgram;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -38,6 +41,42 @@ namespace FitLead.Api.Controllers
                 new GetTrainingProgramsByTrainerIdQuery(trainerId));
 
             return Ok(programs);
+        }
+
+        [HttpPost("{programId:guid}/workouts")]
+        public async Task<IActionResult> AddWorkout(
+            Guid programId,
+            [FromBody] AddWorkoutToProgramRequest request,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new AddWorkoutToProgramCommand(
+                    programId,
+                    request.WorkoutId),
+                cancellationToken);
+
+            if (!result.IsSuccess)
+                return BadRequest(result.Error);
+
+            return Ok();
+        }
+
+        [HttpDelete("{programId:guid}/workouts/{workoutId:guid}")]
+        public async Task<IActionResult> RemoveWorkout(
+            Guid programId,
+            Guid workoutId,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new RemoveWorkoutFromProgramCommand(
+                    programId,
+                    workoutId),
+                cancellationToken);
+
+            if (!result.IsSuccess)
+                return BadRequest(result.Error);
+
+            return Ok();
         }
     }
 }

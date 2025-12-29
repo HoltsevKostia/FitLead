@@ -14,11 +14,19 @@ namespace FitLead.Infrastructure.Persistence.Configurations
 
             builder.HasKey(x => x.Id);
 
+            builder.Property(x => x.Id)
+                .ValueGeneratedNever();
+
             builder.Property(x => x.WorkoutId)
                 .IsRequired();
 
             builder.Property(x => x.Order)
                 .IsRequired();
+
+            builder.Property<Guid>("training_program_id")
+                .IsRequired();
+
+            builder.HasIndex("training_program_id");
         }
     }
 }
