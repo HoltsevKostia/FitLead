@@ -16,5 +16,10 @@ namespace FitLead.Application.Abstractions.Persistence
             Guid trainerId,
             Guid clientId,
             CancellationToken cancellationToken);
+
+        Task<int> CountSentByTrainerForDateAsync(
+            Guid trainerId,
+            DateTime dateUtc,
+            CancellationToken cancellationToken);
     }
 }

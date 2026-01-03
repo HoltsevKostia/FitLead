@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FitLead.Application.Trainings.Commands.RenameWorkout
+namespace FitLead.Application.Trainings.Commands.Workouts
 {
     public sealed record RenameWorkoutCommand(
         Guid WorkoutId,

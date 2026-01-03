@@ -2,7 +2,7 @@
 using MediatR;
 
 
-namespace FitLead.Application.Trainings.Commands.RemoveWorkoutFromProgram
+namespace FitLead.Application.Trainings.Commands.TrainingPrograms
 {
     public sealed record RemoveWorkoutFromProgramCommand(
         Guid ProgramId,

@@ -1,7 +1,5 @@
 ﻿using FitLead.Api.Contracts.Trainings;
-using FitLead.Application.Trainings.Commands.AddExerciseToWorkout;
-using FitLead.Application.Trainings.Commands.CreateWorkout;
-using FitLead.Application.Trainings.Commands.RemoveExerciseFromWorkout;
+using FitLead.Application.Trainings.Commands.Workouts;
 using FitLead.Application.Trainings.Queries.Workout;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;

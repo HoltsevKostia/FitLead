@@ -2,7 +2,7 @@
 using MediatR;
 
 
-namespace FitLead.Application.Trainings.Commands.AddWorkoutToProgram
+namespace FitLead.Application.Trainings.Commands.TrainingPrograms
 {
     public sealed record AddWorkoutToProgramCommand(
         Guid ProgramId,

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FitLead.Application.Trainings.Commands.AcceptInvitation
+namespace FitLead.Application.Users.Commands.Invitations
 {
     public sealed record AcceptInvitationCommand(
         Guid ClientId,

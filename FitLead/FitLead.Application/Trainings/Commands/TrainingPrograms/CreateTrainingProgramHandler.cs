@@ -3,29 +3,33 @@ using FitLead.Application.Common;
 using FitLead.Domain.Trainings;
 using FitLead.Domain.Users;
 using MediatR;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-
-namespace FitLead.Application.Trainings.Commands.CreateWorkout
+namespace FitLead.Application.Trainings.Commands.TrainingPrograms
 {
-    public sealed class CreateWorkoutHandler
-    : IRequestHandler<CreateWorkoutCommand, Result<Guid>>
+    public class CreateTrainingProgramHandler
+    : IRequestHandler<CreateTrainingProgramCommand, Result<Guid>>
     {
-        private readonly IWorkoutRepository _repository;
+        private readonly ITrainingProgramRepository _programRepository;
         private readonly IUserRepository _userRepository;
         private readonly IUnitOfWork _unitOfWork;
 
-        public CreateWorkoutHandler(
-            IWorkoutRepository repository,
+        public CreateTrainingProgramHandler(
+            ITrainingProgramRepository programRepository,
             IUserRepository userRepository,
             IUnitOfWork unitOfWork)
         {
-            _repository = repository;
+            _programRepository = programRepository;
             _userRepository = userRepository;
             _unitOfWork = unitOfWork;
         }
 
         public async Task<Result<Guid>> Handle(
-            CreateWorkoutCommand request,
+            CreateTrainingProgramCommand request,
             CancellationToken cancellationToken)
         {
             var trainer = await _userRepository.GetByIdAsync(
@@ -38,14 +42,14 @@ namespace FitLead.Application.Trainings.Commands.CreateWorkout
             if (trainer.Role != UserRole.Trainer)
                 return Result<Guid>.Failure("User is not a trainer");
 
-            var workout = Workout.Create(
-                request.Name,
-                request.TrainerId);
+            var program = TrainingProgram.Create(
+                request.Title,
+                trainer.Id);
 
-            await _repository.AddAsync(workout, cancellationToken);
+            await _programRepository.AddAsync(program, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return Result<Guid>.Success(workout.Id);
+            return Result<Guid>.Success(program.Id);
         }
     }
 }

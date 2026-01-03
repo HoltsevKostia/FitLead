@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FitLead.Application.Trainings.Commands.CreateExercise
+namespace FitLead.Application.Trainings.Commands.Exercises
 {
     public sealed class CreateExerciseHandler
     : IRequestHandler<CreateExerciseCommand, Result<Guid>>

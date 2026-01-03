@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FitLead.Application.Trainings.Commands.RemoveWorkoutFromProgram
+namespace FitLead.Application.Trainings.Commands.TrainingPrograms
 {
     public sealed class RemoveWorkoutFromProgramHandler
     : IRequestHandler<RemoveWorkoutFromProgramCommand, Result>

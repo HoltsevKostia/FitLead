@@ -3,7 +3,7 @@ using MediatR;
 
 
 
-namespace FitLead.Application.Trainings.Commands.CreateWorkout
+namespace FitLead.Application.Trainings.Commands.Workouts
 {
     public sealed record CreateWorkoutCommand(
         Guid TrainerId,

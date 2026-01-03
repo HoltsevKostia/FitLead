@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FitLead.Application.Trainings.Commands.AddWorkoutToProgram
+namespace FitLead.Application.Trainings.Commands.TrainingPrograms
 {
     public sealed class AddWorkoutToProgramHandler
     : IRequestHandler<AddWorkoutToProgramCommand, Result>

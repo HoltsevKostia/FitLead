@@ -3,15 +3,15 @@ using FitLead.Application.Common;
 using MediatR;
 
 
-namespace FitLead.Application.Trainings.Commands.RemoveExerciseFromWorkout
+namespace FitLead.Application.Trainings.Commands.Workouts
 {
-    public sealed class RemoveExerciseFromWorkoutHandler
-    : IRequestHandler<RemoveExerciseFromWorkoutCommand, Result>
+    public sealed class RenameWorkoutHandler
+    : IRequestHandler<RenameWorkoutCommand, Result>
     {
         private readonly IWorkoutRepository _repository;
         private readonly IUnitOfWork _unitOfWork;
 
-        public RemoveExerciseFromWorkoutHandler(
+        public RenameWorkoutHandler(
             IWorkoutRepository repository,
             IUnitOfWork unitOfWork)
         {
@@ -20,7 +20,7 @@ namespace FitLead.Application.Trainings.Commands.RemoveExerciseFromWorkout
         }
 
         public async Task<Result> Handle(
-            RemoveExerciseFromWorkoutCommand request,
+            RenameWorkoutCommand request,
             CancellationToken cancellationToken)
         {
             var workout = await _repository.GetByIdAsync(
@@ -30,7 +30,7 @@ namespace FitLead.Application.Trainings.Commands.RemoveExerciseFromWorkout
             if (workout is null)
                 return Result.Failure("Workout not found");
 
-            workout.RemoveExercise(request.WorkoutExerciseId);
+            workout.Rename(request.Name);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

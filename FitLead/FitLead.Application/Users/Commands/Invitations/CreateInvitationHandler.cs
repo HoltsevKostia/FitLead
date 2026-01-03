@@ -5,7 +5,7 @@ using FitLead.Domain.Users;
 using MediatR;
 
 
-namespace FitLead.Application.Trainings.Commands.CreateInvitation
+namespace FitLead.Application.Users.Commands.Invitations
 {
     public sealed class CreateInvitationHandler 
         : IRequestHandler<CreateInvitationCommand, Result<Guid>>
@@ -21,7 +21,9 @@ namespace FitLead.Application.Trainings.Commands.CreateInvitation
             _invitationRepository = invitationRepository;
         }
 
-        public async Task<Result<Guid>> Handle(CreateInvitationCommand request, CancellationToken cancellationToken)
+        public async Task<Result<Guid>> Handle(
+            CreateInvitationCommand request,
+            CancellationToken cancellationToken)
         {
             var trainer = await _userRepository.GetByIdAsync(request.TrainerId, cancellationToken);
 
@@ -40,15 +42,27 @@ namespace FitLead.Application.Trainings.Commands.CreateInvitation
                 return Result<Guid>.Failure("User is not a Client");
 
             var alreadyPending = await _invitationRepository
-            .ExistsPendingAsync(
-                request.TrainerId,
-                request.ClientId,
-                cancellationToken);
+                .ExistsPendingAsync(
+                    request.TrainerId,
+                    request.ClientId,
+                    cancellationToken);
 
             if (alreadyPending)
                 return Result<Guid>.Failure("Invitation already pending");
 
-            var invitation = Invitation.Create(request.TrainerId, request.ClientId, request.Now);
+            var sentToday = await _invitationRepository
+                .CountSentByTrainerForDateAsync(
+                    request.TrainerId,
+                    request.Now,
+                    cancellationToken);
+
+            if (sentToday >= 2)
+                return Result<Guid>.Failure("Daily invitation limit reached");
+
+            var invitation = Invitation.Create(
+                request.TrainerId,
+                request.ClientId,
+                request.Now);
 
             await _invitationRepository.AddAsync(invitation, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
