@@ -30,6 +30,7 @@ namespace FitLead.Infrastructure
             services.AddScoped<IWorkoutRepository, WorkoutRepository>();
             services.AddScoped<IWorkoutReadRepository, WorkoutReadRepository>();
             services.AddScoped<IInvitationRepository, InvitationRepository>();
+            services.AddScoped<IInvitationReadRepository, InvitationReadRepository>();
 
             return services;
         }
