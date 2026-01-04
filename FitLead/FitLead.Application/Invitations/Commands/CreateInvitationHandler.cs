@@ -5,7 +5,7 @@ using FitLead.Domain.Users;
 using MediatR;
 
 
-namespace FitLead.Application.Users.Commands.Invitations
+namespace FitLead.Application.Invitations.Commands
 {
     public sealed class CreateInvitationHandler 
         : IRequestHandler<CreateInvitationCommand, Result<Guid>>

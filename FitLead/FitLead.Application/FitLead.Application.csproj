@@ -14,4 +14,8 @@
     <ProjectReference Include="..\FitLead.Domain\FitLead.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Invitations\Queries\" />
+  </ItemGroup>
+
 </Project>

@@ -2,7 +2,7 @@
 using MediatR;
 
 
-namespace FitLead.Application.Users.Commands.Invitations
+namespace FitLead.Application.Invitations.Commands
 {
     public sealed record CreateInvitationCommand(
         Guid TrainerId,

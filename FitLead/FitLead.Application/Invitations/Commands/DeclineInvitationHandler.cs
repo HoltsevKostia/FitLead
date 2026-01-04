@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FitLead.Application.Users.Commands.Invitations
+namespace FitLead.Application.Invitations.Commands
 {
     public sealed class DeclineInvitationHandler
     : IRequestHandler<DeclineInvitationCommand, Result>
