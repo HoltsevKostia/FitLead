@@ -33,7 +33,8 @@ namespace FitLead.Infrastructure.Persistence.Configurations
                 .HasMaxLength(200);
 
             builder.Property(x => x.Role)
-                .IsRequired();
+                .IsRequired()
+                .HasConversion<int>();
 
             builder.Property<List<Guid>>("_clientIds")
                 .HasColumnName("client_ids");
