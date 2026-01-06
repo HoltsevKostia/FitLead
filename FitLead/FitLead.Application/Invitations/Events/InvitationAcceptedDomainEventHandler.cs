@@ -1,27 +1,21 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
-using FitLead.Domain.Invitations.Events;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FitLead.Application.Invitations.EventHandlers
 {
-    public sealed class InvitationAcceptedDomainEventHandler
-    : INotificationHandler<InvitationAcceptedDomainEvent>
+    public sealed class InvitationAcceptedNotificationHandler
+    : INotificationHandler<InvitationAcceptedNotification>
     {
         private readonly ITrainerClientRepository _trainerClientRepository;
 
-        public InvitationAcceptedDomainEventHandler(
+        public InvitationAcceptedNotificationHandler(
             ITrainerClientRepository trainerClientRepository)
         {
             _trainerClientRepository = trainerClientRepository;
         }
 
         public async Task Handle(
-            InvitationAcceptedDomainEvent notification,
+            InvitationAcceptedNotification notification,
             CancellationToken cancellationToken)
         {
             var exists = await _trainerClientRepository.ExistsAsync(
@@ -38,4 +32,5 @@ namespace FitLead.Application.Invitations.EventHandlers
                 cancellationToken);
         }
     }
+
 }

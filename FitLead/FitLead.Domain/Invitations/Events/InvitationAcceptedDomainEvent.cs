@@ -1,5 +1,4 @@
-﻿using MediatR;
-
+﻿using FitLead.Domain.Common;
 
 namespace FitLead.Domain.Invitations.Events
 {
@@ -7,5 +6,8 @@ namespace FitLead.Domain.Invitations.Events
         Guid InvitationId,
         Guid TrainerId,
         Guid ClientId
-    ) : INotification;
+    ) : IDomainEvent
+    {
+        public DateTime OccurredOn { get; } = DateTime.UtcNow;
+    }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+﻿    using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,18 +8,14 @@ namespace FitLead.Domain.Common
 {
     public abstract class AggregateRoot<TId> : Entity<TId>
     {
-        private readonly List<object> _domainEvents = new();
+        private readonly List<IDomainEvent> _domainEvents = new();
 
-        public IReadOnlyCollection<object> DomainEvents => _domainEvents.AsReadOnly();
+        public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents;
 
-        protected void AddDomainEvent(object domainEvent)
-        {
-            _domainEvents.Add(domainEvent);
-        }
+        protected void RaiseDomainEvent(IDomainEvent domainEvent)
+            => _domainEvents.Add(domainEvent);
 
         public void ClearDomainEvents()
-        {
-            _domainEvents.Clear();
-        }
+            => _domainEvents.Clear();
     }
 }

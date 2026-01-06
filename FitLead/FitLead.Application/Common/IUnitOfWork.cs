@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FitLead.Application.Abstractions.Persistence
+namespace FitLead.Application.Common
 {
     public interface IUnitOfWork
     {

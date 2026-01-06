@@ -1,4 +1,5 @@
 ﻿using FitLead.Domain.Common;
+using FitLead.Domain.Invitations.Events;
 
 namespace FitLead.Domain.Invitations
 {
@@ -54,6 +55,11 @@ namespace FitLead.Domain.Invitations
                 throw new InvalidOperationException("Invitation has expired");
 
             Status = InvitationStatus.Accepted;
+
+            RaiseDomainEvent(new InvitationAcceptedDomainEvent(
+            Id,
+            TrainerId,
+            ClientId));
         }
 
         public void Decline(DateTime now)

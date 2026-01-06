@@ -1,4 +1,5 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
+using FitLead.Application.Common;
 using FitLead.Infrastructure.Persistence;
 using FitLead.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +32,7 @@ namespace FitLead.Infrastructure
             services.AddScoped<IWorkoutReadRepository, WorkoutReadRepository>();
             services.AddScoped<IInvitationRepository, InvitationRepository>();
             services.AddScoped<IInvitationReadRepository, InvitationReadRepository>();
+            services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 
             return services;
         }
