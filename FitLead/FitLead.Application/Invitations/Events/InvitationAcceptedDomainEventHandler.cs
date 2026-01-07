@@ -1,4 +1,5 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
+using FitLead.Application.Common;
 using MediatR;
 
 namespace FitLead.Application.Invitations.EventHandlers
@@ -7,11 +8,14 @@ namespace FitLead.Application.Invitations.EventHandlers
     : INotificationHandler<InvitationAcceptedNotification>
     {
         private readonly ITrainerClientRepository _trainerClientRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
         public InvitationAcceptedNotificationHandler(
-            ITrainerClientRepository trainerClientRepository)
+            ITrainerClientRepository trainerClientRepository,
+            IUnitOfWork unitOfWork)
         {
             _trainerClientRepository = trainerClientRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task Handle(
@@ -30,7 +34,8 @@ namespace FitLead.Application.Invitations.EventHandlers
                 notification.TrainerId,
                 notification.ClientId,
                 cancellationToken);
+
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
     }
-
 }
