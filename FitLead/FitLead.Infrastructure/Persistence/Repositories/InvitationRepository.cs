@@ -59,5 +59,13 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                   && x.CreatedAt < end,
                 cancellationToken);
         }
+
+        public async Task<IReadOnlyList<Invitation>> GetExpiredPendingAsync(DateTime now, CancellationToken cancellationToken)
+        {
+            return await _context.Invitations
+             .Where(i => i.Status == InvitationStatus.Pending)
+             .Where(i => i.ExpiresAt <= now)                  
+             .ToListAsync(cancellationToken);
+        }
     }
 }
