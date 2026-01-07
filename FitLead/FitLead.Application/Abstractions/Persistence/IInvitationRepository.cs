@@ -21,5 +21,9 @@ namespace FitLead.Application.Abstractions.Persistence
             Guid trainerId,
             DateTime dateUtc,
             CancellationToken cancellationToken);
+
+        Task<IReadOnlyList<Invitation>> GetExpiredPendingAsync(
+            DateTime now,
+            CancellationToken cancellationToken);
     }
 }

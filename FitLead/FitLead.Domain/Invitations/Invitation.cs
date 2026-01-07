@@ -70,6 +70,8 @@ namespace FitLead.Domain.Invitations
                 throw new InvalidOperationException("Invitation has expired");
 
             Status = InvitationStatus.Declined;
+
+            RaiseDomainEvent(new InvitationDeclinedDomainEvent(Id, TrainerId, ClientId));
         }
 
         public void Expire(DateTime now)
@@ -81,6 +83,8 @@ namespace FitLead.Domain.Invitations
                 return;
 
             Status = InvitationStatus.Expired;
+
+            RaiseDomainEvent(new InvitationExpiredDomainEvent(Id, TrainerId, ClientId));
         }
 
         private void EnsurePending()
