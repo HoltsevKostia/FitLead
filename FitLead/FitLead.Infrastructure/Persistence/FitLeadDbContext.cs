@@ -20,6 +20,7 @@ namespace FitLead.Infrastructure.Persistence
         public DbSet<Workout> Workouts => Set<Workout>();
         public DbSet<WorkoutExercise> WorkoutExercises => Set<WorkoutExercise>();
         public DbSet<Invitation> Invitations => Set<Invitation>();
+        public DbSet<TrainingProgramWorkout> TrainingProgramWorkouts => Set<TrainingProgramWorkout>();
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
