@@ -44,5 +44,11 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                 ))
                 .ToListAsync(cancellationToken);
         }
+
+        public Task<bool> IsOwnedByTrainerAsync(Guid programId, Guid trainerId, CancellationToken cancellationToken)
+        {
+            return _context.TrainingPrograms
+                .AnyAsync(x => x.Id == programId && x.TrainerId == trainerId, cancellationToken);
+        }
     }
 }

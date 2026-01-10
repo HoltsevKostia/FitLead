@@ -9,6 +9,7 @@ namespace FitLead.Domain.Trainings
 {
     public sealed class TrainingProgramWorkout : Entity<Guid>
     {
+        public Guid TrainingProgramId { get; private set; }
         public Guid WorkoutId { get; private set; }
         public int Order { get; private set; }
 
@@ -17,7 +18,8 @@ namespace FitLead.Domain.Trainings
         internal TrainingProgramWorkout(
             Guid id,
             Guid workoutId,
-            int order)
+            int order,
+            Guid trainingProgramId)
         {
             if (workoutId == Guid.Empty)
                 throw new ArgumentException("WorkoutId is required");
@@ -28,6 +30,7 @@ namespace FitLead.Domain.Trainings
             Id = id;
             WorkoutId = workoutId;
             Order = order;
+            TrainingProgramId = trainingProgramId;
         }
 
         internal void ChangeOrder(int order)

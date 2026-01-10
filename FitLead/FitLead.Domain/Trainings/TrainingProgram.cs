@@ -50,7 +50,8 @@ namespace FitLead.Domain.Trainings
             var entry = new TrainingProgramWorkout(
                 Guid.NewGuid(),
                 workoutId,
-                order);
+                order,
+                Id);
 
             _workouts.Add(entry);
         }

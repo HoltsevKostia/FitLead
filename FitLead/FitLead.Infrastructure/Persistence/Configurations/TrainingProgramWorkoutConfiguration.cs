@@ -17,16 +17,21 @@ namespace FitLead.Infrastructure.Persistence.Configurations
             builder.Property(x => x.Id)
                 .ValueGeneratedNever();
 
+            builder.Property(x => x.TrainingProgramId)
+                .IsRequired();
+
             builder.Property(x => x.WorkoutId)
                 .IsRequired();
 
             builder.Property(x => x.Order)
                 .IsRequired();
 
-            builder.Property<Guid>("training_program_id")
-                .IsRequired();
+            builder.HasIndex(x => x.TrainingProgramId);
 
-            builder.HasIndex("training_program_id");
+            builder.HasOne<TrainingProgram>()
+                .WithMany(x => x.Workouts)
+                .HasForeignKey(x => x.TrainingProgramId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

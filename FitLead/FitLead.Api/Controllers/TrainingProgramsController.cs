@@ -1,6 +1,7 @@
 ﻿using FitLead.Api.Contracts.Trainings;
 using FitLead.Application.Trainings.Commands.TrainingPrograms;
 using FitLead.Application.Trainings.Queries.TrainingProgram;
+using FitLead.Application.Trainings.Queries.Workout;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -39,6 +40,21 @@ namespace FitLead.Api.Controllers
                 new GetTrainingProgramsByTrainerIdQuery(trainerId));
 
             return Ok(programs);
+        }
+
+        [HttpGet("{programId:guid}/workouts")]
+        public async Task<ActionResult<IReadOnlyList<WorkoutDto>>> GetWorkouts(
+        Guid programId,
+        [FromQuery] Guid trainerId,
+        CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new GetWorkoutsByProgramIdQuery(
+                    programId,
+                    trainerId),
+                cancellationToken);
+
+            return Ok(result);
         }
 
         [HttpPost("{programId:guid}/workouts")]
