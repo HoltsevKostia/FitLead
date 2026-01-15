@@ -35,9 +35,6 @@ namespace FitLead.Infrastructure.Persistence.Configurations
             builder.Property(x => x.Role)
                 .IsRequired()
                 .HasConversion<int>();
-
-            builder.Property<List<Guid>>("_clientIds")
-                .HasColumnName("client_ids");
         }
     }
 }
