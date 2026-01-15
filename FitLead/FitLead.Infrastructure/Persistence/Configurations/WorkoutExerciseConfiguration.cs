@@ -28,6 +28,23 @@ namespace FitLead.Infrastructure.Persistence.Configurations
 
             builder.Property(x => x.RestSeconds)
                 .IsRequired();
+
+            builder.HasIndex(x => x.ExerciseId);
+
+            builder.HasOne<Exercise>()
+                .WithMany()
+                .HasForeignKey(x => x.ExerciseId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Property<Guid>("workout_id")
+                .IsRequired();
+
+            builder.HasIndex("workout_id");
+
+            builder.HasOne<Workout>()
+                .WithMany(x => x.Exercises)
+                .HasForeignKey("workout_id")
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

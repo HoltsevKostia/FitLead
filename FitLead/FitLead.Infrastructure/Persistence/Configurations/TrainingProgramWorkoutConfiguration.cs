@@ -27,11 +27,17 @@ namespace FitLead.Infrastructure.Persistence.Configurations
                 .IsRequired();
 
             builder.HasIndex(x => x.TrainingProgramId);
+            builder.HasIndex(x => x.WorkoutId);
 
             builder.HasOne<TrainingProgram>()
                 .WithMany(x => x.Workouts)
                 .HasForeignKey(x => x.TrainingProgramId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne<Workout>()
+                .WithMany()
+                .HasForeignKey(x => x.WorkoutId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
