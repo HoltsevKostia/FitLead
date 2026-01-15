@@ -1,4 +1,5 @@
 ﻿using FitLead.Domain.Trainings;
+using FitLead.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -17,6 +18,11 @@ namespace FitLead.Infrastructure.Persistence.Configurations
 
             builder.Property(x => x.Id)
                 .ValueGeneratedNever();
+
+            builder.HasOne<User>()
+                .WithMany()
+                .HasForeignKey(x => x.TrainerId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.Property(x => x.Title)
                 .IsRequired()

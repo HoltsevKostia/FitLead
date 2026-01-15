@@ -1,4 +1,5 @@
 ﻿using FitLead.Domain.Invitations;
+using FitLead.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -32,6 +33,16 @@ namespace FitLead.Infrastructure.Persistence.Configurations
 
             builder.Property(x => x.ClientId)
                 .IsRequired();
+
+            builder.HasOne<User>()
+                .WithMany()
+                .HasForeignKey(x => x.TrainerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne<User>()
+                .WithMany()
+                .HasForeignKey(x => x.ClientId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasIndex(x => x.ClientId);
             builder.HasIndex(x => x.TrainerId);

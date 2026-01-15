@@ -1,4 +1,5 @@
 ﻿using FitLead.Domain.Trainings;
+using FitLead.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -28,6 +29,13 @@ namespace FitLead.Infrastructure.Persistence.Configurations
                 .WithOne()
                 .HasForeignKey("workout_id")
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne<User>()
+                .WithMany()
+                .HasForeignKey(x => x.TrainerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasIndex(x => x.TrainerId);
         }
     }
 }
