@@ -1,17 +1,13 @@
 ﻿using FitLead.Application.Common.Results;
 using FitLead.Domain.Common.Exceptions;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FitLead.Application.Common.Pipeline
 {
     public sealed class DomainExceptionToResultBehavior<TRequest, TResponse>
     : IPipelineBehavior<TRequest, TResponse>
-    where TRequest : notnull
+        where TRequest : notnull
+        where TResponse : Result
     {
         private readonly IResultFactory<TResponse> _factory;
 

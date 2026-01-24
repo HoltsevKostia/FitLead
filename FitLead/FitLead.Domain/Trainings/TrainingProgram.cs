@@ -1,4 +1,5 @@
 ﻿using FitLead.Domain.Common;
+using FitLead.Domain.Common.Exceptions;
 using FitLead.Domain.Users;
 using System;
 using System.Collections.Generic;
@@ -72,19 +73,24 @@ namespace FitLead.Domain.Trainings
         public void ReorderWorkouts(IReadOnlyList<Guid> orderedWorkoutIds)
         {
             if (orderedWorkoutIds is null || orderedWorkoutIds.Count == 0)
-                throw new ArgumentException("Workout order list is required");
-
-            if (orderedWorkoutIds.Count != orderedWorkoutIds.Distinct().Count())
-                throw new ArgumentException("Workout order list contains duplicates");
+                throw new DomainRuleViolationException(
+                    "training_program.workouts.order.required",
+                    "Workout order list is required");
 
             var existingIds = Workouts.Select(x => x.WorkoutId).ToHashSet();
 
             if (existingIds.Count != orderedWorkoutIds.Count)
-                throw new ArgumentException("Workout order list must include all workouts from the program");
+                throw new DomainRuleViolationException(
+                    "training_program.workouts.order.invalid_count",
+                    "Workout order list must include all workouts from the program");
 
             foreach (var id in orderedWorkoutIds)
+            {
                 if (!existingIds.Contains(id))
-                    throw new ArgumentException("Workout order list contains workout not in the program");
+                    throw new DomainRuleViolationException(
+                        "training_program.workouts.order.contains_unknown_workout",
+                        "Workout order list contains workout not in the program");
+            }
 
             var order = 1;
             foreach (var id in orderedWorkoutIds)
