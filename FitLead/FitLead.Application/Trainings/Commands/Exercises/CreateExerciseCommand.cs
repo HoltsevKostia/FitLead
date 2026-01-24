@@ -1,4 +1,4 @@
-﻿using FitLead.Application.Common;
+﻿using FitLead.Application.Common.Results;
 using MediatR;
 
 namespace FitLead.Application.Trainings.Commands.Exercises
