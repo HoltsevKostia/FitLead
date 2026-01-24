@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace FitLead.Infrastructure.Persistence.Repositories
@@ -40,6 +41,13 @@ namespace FitLead.Infrastructure.Persistence.Repositories
         {
             return await _context.Workouts
                 .AnyAsync(x => x.Id == id, cancellationToken);
+        }
+
+        public async Task<Guid?> GetTrainerIdAsync(Guid workoutId, CancellationToken cancellationToken)
+        {
+            var workout = await _context.Workouts.FirstOrDefaultAsync(x => x.Id == workoutId, cancellationToken);
+            
+            return workout?.TrainerId;
         }
     }
 }

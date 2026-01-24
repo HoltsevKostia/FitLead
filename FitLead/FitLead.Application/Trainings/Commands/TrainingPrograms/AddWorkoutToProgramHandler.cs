@@ -44,6 +44,11 @@ namespace FitLead.Application.Trainings.Commands.TrainingPrograms
             if (!workoutExists)
                 return Result.Failure("Workout not found");
 
+            var workoutTrainerId = await _workoutRepository.GetTrainerIdAsync(request.WorkoutId, cancellationToken);
+
+            if (workoutTrainerId.Value != program.TrainerId)
+                return Result.Failure("Workout does not belong to the same trainer as the program");
+
             program.AddWorkout(request.WorkoutId);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
