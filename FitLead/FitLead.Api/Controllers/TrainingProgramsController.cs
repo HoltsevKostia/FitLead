@@ -92,5 +92,21 @@ namespace FitLead.Api.Controllers
 
             return Ok();
         }
+
+        [HttpPut("{programId:guid}/workouts/order")]
+        public async Task<IActionResult> ReorderWorkouts(
+            Guid programId,
+            [FromBody] ReorderProgramWorkoutsRequest request,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new ReorderProgramWorkoutsCommand(programId, request.WorkoutIds),
+                cancellationToken);
+
+            if (!result.IsSuccess)
+                return BadRequest(result.Error);
+
+            return Ok();
+        }
     }
 }

@@ -68,5 +68,30 @@ namespace FitLead.Domain.Trainings
             foreach (var w in _workouts.OrderBy(x => x.Order))
                 w.ChangeOrder(order++);
         }
+
+        public void ReorderWorkouts(IReadOnlyList<Guid> orderedWorkoutIds)
+        {
+            if (orderedWorkoutIds is null || orderedWorkoutIds.Count == 0)
+                throw new ArgumentException("Workout order list is required");
+
+            if (orderedWorkoutIds.Count != orderedWorkoutIds.Distinct().Count())
+                throw new ArgumentException("Workout order list contains duplicates");
+
+            var existingIds = Workouts.Select(x => x.WorkoutId).ToHashSet();
+
+            if (existingIds.Count != orderedWorkoutIds.Count)
+                throw new ArgumentException("Workout order list must include all workouts from the program");
+
+            foreach (var id in orderedWorkoutIds)
+                if (!existingIds.Contains(id))
+                    throw new ArgumentException("Workout order list contains workout not in the program");
+
+            var order = 1;
+            foreach (var id in orderedWorkoutIds)
+            {
+                var link = Workouts.First(x => x.WorkoutId == id);
+                link.ChangeOrder(order++);
+            }
+        }
     }
 }
