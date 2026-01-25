@@ -84,5 +84,17 @@ namespace FitLead.Api.Controllers
 
             return Ok(result);
         }
+
+        [HttpGet("{workoutId:guid}")]
+        public async Task<IActionResult> GetWorkoutDetails(
+            Guid workoutId,
+            [FromQuery] Guid trainerId,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new GetWorkoutDetailsByIdQuery(workoutId, trainerId), cancellationToken);
+
+            return Ok(result);
+        }
     }
 }

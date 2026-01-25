@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace FitLead.Application.Trainings.Exercises.Queries
 {
     public sealed record ExerciseDto(
-    Guid Id,
-    string Name,
-    string Description,
-    string? MediaUrl
-);
+        Guid Id,
+        string Name,
+        string Description,
+        string? MediaUrl
+    );
 }
