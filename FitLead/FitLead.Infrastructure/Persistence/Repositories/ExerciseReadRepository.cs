@@ -1,5 +1,5 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
-using FitLead.Application.Trainings.Queries.Exercise;
+using FitLead.Application.Trainings.Exercises.Queries;
 using Microsoft.EntityFrameworkCore;
 
 

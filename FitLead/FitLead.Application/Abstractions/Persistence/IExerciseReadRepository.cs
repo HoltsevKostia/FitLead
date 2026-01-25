@@ -1,4 +1,4 @@
-﻿using FitLead.Application.Trainings.Queries.Exercise;
+﻿using FitLead.Application.Trainings.Exercises.Queries;
 using System;
 using System.Collections.Generic;
 using System.Linq;

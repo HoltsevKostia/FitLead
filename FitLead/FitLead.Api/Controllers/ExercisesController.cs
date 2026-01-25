@@ -1,6 +1,6 @@
 ﻿using FitLead.Api.Contracts.Trainings;
-using FitLead.Application.Trainings.Commands.Exercises;
-using FitLead.Application.Trainings.Queries.Exercise;
+using FitLead.Application.Trainings.Exercises.Commands;
+using FitLead.Application.Trainings.Exercises.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
