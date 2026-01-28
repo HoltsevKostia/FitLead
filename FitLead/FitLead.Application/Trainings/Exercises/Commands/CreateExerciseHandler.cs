@@ -1,5 +1,6 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
+using FitLead.Application.Common.Identity;
 using FitLead.Application.Common.Results;
 using FitLead.Domain.Trainings;
 using FitLead.Domain.Users;
@@ -15,15 +16,18 @@ namespace FitLead.Application.Trainings.Exercises.Commands
     public sealed class CreateExerciseHandler
     : IRequestHandler<CreateExerciseCommand, Result<Guid>>
     {
+        private readonly IUserContext _user;
         private readonly IUserRepository _userRepository;
         private readonly IExerciseRepository _exerciseRepository;
         private readonly IUnitOfWork _unitOfWork;
 
         public CreateExerciseHandler(
+            IUserContext user,
             IUserRepository userRepository,
             IExerciseRepository exerciseRepository,
             IUnitOfWork unitOfWork)
         {
+            _user = user;
             _userRepository = userRepository;
             _exerciseRepository = exerciseRepository;
             _unitOfWork = unitOfWork;
@@ -34,7 +38,7 @@ namespace FitLead.Application.Trainings.Exercises.Commands
             CancellationToken cancellationToken)
         {
             var trainer = await _userRepository.GetByIdAsync(
-                request.TrainerId,
+                _user.UserId,
                 cancellationToken);
 
             if (trainer is null)
@@ -44,7 +48,7 @@ namespace FitLead.Application.Trainings.Exercises.Commands
                 return Result<Guid>.Failure("User is not a trainer");
 
             var exercise = Exercise.Create(
-                request.TrainerId,
+                _user.UserId,
                 request.Name,
                 request.Description,
                 request.MediaUrl);

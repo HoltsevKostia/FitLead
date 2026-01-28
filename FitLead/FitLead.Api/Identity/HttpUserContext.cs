@@ -1,4 +1,5 @@
-﻿using FitLead.Application.Common.Identity;
+﻿
+using FitLead.Application.Common.Identity;
 using System.Security.Claims;
 
 
@@ -11,8 +12,7 @@ namespace FitLead.Infrastructure.Identity
 
         public HttpUserContext(IHttpContextAccessor http) => _http = http;
 
-        public bool IsAuthenticated =>
-            _http.HttpContext?.User?.Identity?.IsAuthenticated == true;
+        public bool IsAuthenticated => UserIdOrNull.HasValue;
 
         public Guid UserId =>
             UserIdOrNull ?? throw new UnauthorizedAccessException("UserId is not available");

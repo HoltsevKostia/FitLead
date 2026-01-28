@@ -1,4 +1,5 @@
 ﻿using FitLead.Api.Contracts.Trainings;
+using FitLead.Api.Identity;
 using FitLead.Application.Trainings.Exercises.Commands;
 using FitLead.Application.Trainings.Exercises.Queries;
 using MediatR;
@@ -17,6 +18,7 @@ namespace FitLead.Api.Controllers
             _mediator = mediator;
         }
 
+        [RequireUser]
         [HttpPost]
         public async Task<IActionResult> Create(
             [FromBody] CreateExerciseRequest request,
@@ -24,7 +26,6 @@ namespace FitLead.Api.Controllers
         {
             var result = await _mediator.Send(
                 new CreateExerciseCommand(
-                    request.TrainerId,
                     request.Name,
                     request.Description,
                     request.MediaUrl),
@@ -35,19 +36,20 @@ namespace FitLead.Api.Controllers
 
             return Ok(result.Value);
         }
-
-        [HttpGet("trainer/{trainerId:guid}")]
+       
+        [RequireUser]
+        [HttpGet]
         public async Task<IActionResult> GetByTrainer(
-            Guid trainerId,
             CancellationToken cancellationToken)
         {
             var exercises = await _mediator.Send(
-                new GetExercisesByTrainerQuery(trainerId),
+                new GetExercisesByTrainerQuery(),
                 cancellationToken);
 
             return Ok(exercises);
         }
 
+        [RequireUser]
         [HttpPut("{exerciseId:guid}")]
         public async Task<IActionResult> Update(
             Guid exerciseId,
@@ -68,14 +70,14 @@ namespace FitLead.Api.Controllers
             return Ok();
         }
 
+        [RequireUser]
         [HttpDelete("{exerciseId:guid}")]
         public async Task<IActionResult> Delete(
             Guid exerciseId,
-            [FromQuery] Guid trainerId,
             CancellationToken cancellationToken)
         {
             var result = await _mediator.Send(
-                new DeleteExerciseCommand(exerciseId, trainerId),
+                new DeleteExerciseCommand(exerciseId),
                 cancellationToken);
 
             if (!result.IsSuccess)

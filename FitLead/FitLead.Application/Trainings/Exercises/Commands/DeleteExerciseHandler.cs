@@ -1,5 +1,6 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
+using FitLead.Application.Common.Identity;
 using FitLead.Application.Common.Results;
 using MediatR;
 using System;
@@ -13,13 +14,16 @@ namespace FitLead.Application.Trainings.Exercises.Commands
     public sealed class DeleteExerciseHandler
     : IRequestHandler<DeleteExerciseCommand, Result>
     {
+        private readonly IUserContext _user;
         private readonly IExerciseRepository _exerciseRepository;
         private readonly IUnitOfWork _unitOfWork;
 
         public DeleteExerciseHandler(
+            IUserContext user,
             IExerciseRepository exerciseRepository,
             IUnitOfWork unitOfWork)
         {
+            _user = user;
             _exerciseRepository = exerciseRepository;
             _unitOfWork = unitOfWork;
         }
@@ -33,7 +37,7 @@ namespace FitLead.Application.Trainings.Exercises.Commands
             if (exercise is null)
                 return Result.Failure("Exercise not found");
 
-            if (exercise.TrainerId != request.TrainerId)
+            if (exercise.TrainerId != _user.UserId)
                 return Result.Failure("Forbidden");
 
             _exerciseRepository.Remove(exercise);

@@ -4,7 +4,6 @@ using MediatR;
 namespace FitLead.Application.Trainings.Exercises.Commands
 {
     public sealed record CreateExerciseCommand(
-        Guid TrainerId,
         string Name,
         string Description,
         string? MediaUrl

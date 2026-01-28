@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 namespace FitLead.Application.Trainings.Exercises.Commands
 {
     public sealed record DeleteExerciseCommand(
-        Guid ExerciseId,
-        Guid TrainerId
+        Guid ExerciseId
     ) : IRequest<Result>;
 }
