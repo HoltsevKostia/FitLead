@@ -1,3 +1,4 @@
+using FitLead.Api.Swagger;
 using FitLead.Application.Common.Identity;
 using FitLead.Application.Trainings.TrainingPrograms.Commands;
 using FitLead.Infrastructure;
@@ -10,7 +11,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.OperationFilter<UserContextHeaderOperationFilter>();
+});
 
 builder.Services.AddMediatR(cfg =>
 {

@@ -10,7 +10,6 @@ namespace FitLead.Application.Trainings.Exercises.Commands
 {
     public sealed record UpdateExerciseCommand(
         Guid ExerciseId,
-        Guid TrainerId,
         string Name,
         string Description,
         string? MediaUrl

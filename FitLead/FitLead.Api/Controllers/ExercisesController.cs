@@ -51,14 +51,12 @@ namespace FitLead.Api.Controllers
         [HttpPut("{exerciseId:guid}")]
         public async Task<IActionResult> Update(
             Guid exerciseId,
-            [FromQuery] Guid trainerId,
-            [FromBody] UpdateExerciseRequest request,
+            UpdateExerciseRequest request,
             CancellationToken cancellationToken)
         {
             var result = await _mediator.Send(
                 new UpdateExerciseCommand(
                     exerciseId,
-                    trainerId,
                     request.Name,
                     request.Description,
                     request.MediaUrl),
