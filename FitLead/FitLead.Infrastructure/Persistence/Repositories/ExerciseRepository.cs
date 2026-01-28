@@ -40,5 +40,10 @@ namespace FitLead.Infrastructure.Persistence.Repositories
             return await _context.Exercises
                 .AnyAsync(x => x.Id == id, cancellationToken);
         }
+
+        public void Remove(Exercise exercise)
+        {
+            _context.Exercises.Remove(exercise);
+        }
     }
 }

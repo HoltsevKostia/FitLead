@@ -1,6 +1,5 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
-using FitLead.Application.Common.Pipeline;
 using FitLead.Application.Common.Results;
 using FitLead.Infrastructure.Persistence;
 using FitLead.Infrastructure.Persistence.Repositories;
@@ -36,10 +35,7 @@ namespace FitLead.Infrastructure
             services.AddScoped<IInvitationRepository, InvitationRepository>();
             services.AddScoped<IInvitationReadRepository, InvitationReadRepository>();
             services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
-            services.AddScoped<IResultFactory<Result>, ResultFactory>();
-            services.AddScoped(typeof(IResultFactory<>), typeof(ResultFactory<>));
             services.AddScoped(typeof(IPipelineBehavior<,>), typeof(DomainExceptionToResultBehavior<,>));
-
 
             return services;
         }

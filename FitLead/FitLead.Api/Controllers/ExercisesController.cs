@@ -69,5 +69,21 @@ namespace FitLead.Api.Controllers
 
             return Ok();
         }
+
+        [HttpDelete("{exerciseId:guid}")]
+        public async Task<IActionResult> Delete(
+            Guid exerciseId,
+            [FromQuery] Guid trainerId,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new DeleteExerciseCommand(exerciseId, trainerId),
+                cancellationToken);
+
+            if (!result.IsSuccess)
+                return BadRequest(result.Error);
+
+            return Ok();
+        }
     }
 }
