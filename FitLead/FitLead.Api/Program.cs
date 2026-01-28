@@ -1,5 +1,7 @@
+using FitLead.Application.Common.Identity;
 using FitLead.Application.Trainings.TrainingPrograms.Commands;
 using FitLead.Infrastructure;
+using FitLead.Infrastructure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +17,8 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(CreateTrainingProgramCommand).Assembly);
 });
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUserContext, HttpUserContext>();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
