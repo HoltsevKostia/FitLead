@@ -1,4 +1,5 @@
 ﻿using FitLead.Domain.Common;
+using FitLead.Domain.Common.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,10 +46,10 @@ namespace FitLead.Domain.Trainings
             int restSeconds)
         {
             if (repetitions <= 0 || sets <= 0)
-                throw new ArgumentException("Invalid repetitions or sets");
+                throw new DomainRuleViolationException("workout.exercise.update.invalid_reps_or_sets", "Invalid repetitions or sets");
 
             if (restSeconds < 0)
-                throw new ArgumentException("RestSeconds cannot be negative");
+                throw new DomainRuleViolationException("workout.exercise.update.rest_seconds_negative", "RestSeconds cannot be negative");
 
             Repetitions = repetitions;
             Sets = sets;

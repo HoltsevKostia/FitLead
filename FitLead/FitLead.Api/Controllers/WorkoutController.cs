@@ -96,5 +96,27 @@ namespace FitLead.Api.Controllers
 
             return Ok(result);
         }
+
+        [HttpPut("{workoutId:guid}/exercises/{workoutExerciseId:guid}")]
+        public async Task<IActionResult> UpdateExercise(
+            Guid workoutId,
+            Guid workoutExerciseId,
+            [FromBody] UpdateWorkoutExerciseRequest request,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new UpdateWorkoutExerciseCommand(
+                    workoutId,
+                    workoutExerciseId,
+                    request.Repetitions,
+                    request.Sets,
+                    request.RestSeconds),
+                cancellationToken);
+
+            if (!result.IsSuccess)
+                return BadRequest(result.Error);
+
+            return Ok();
+        }
     }
 }

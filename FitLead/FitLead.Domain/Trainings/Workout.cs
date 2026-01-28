@@ -1,4 +1,5 @@
 ﻿using FitLead.Domain.Common;
+using FitLead.Domain.Common.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -70,6 +71,15 @@ namespace FitLead.Domain.Trainings
                 throw new InvalidOperationException("Exercise not found in workout");
 
             _exercises.Remove(entry);
+        }
+
+        public void UpdateExercise(Guid workoutExerciseId, int repetitions, int sets, int restSeconds)
+        {
+            var entry = _exercises.FirstOrDefault(x => x.Id == workoutExerciseId);
+            if (entry is null)
+                throw new DomainRuleViolationException("workout.exercise.update.not_found", "Exercise not found in workout");
+
+            entry.Update(repetitions, sets, restSeconds);
         }
     }
 }
