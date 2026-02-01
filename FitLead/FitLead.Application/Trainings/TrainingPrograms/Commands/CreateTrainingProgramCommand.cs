@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 namespace FitLead.Application.Trainings.TrainingPrograms.Commands
 {
     public record CreateTrainingProgramCommand(
-        Guid TrainerId,
         string Title
     ) : IRequest<Result<Guid>>;
 }

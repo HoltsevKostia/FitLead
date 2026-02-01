@@ -1,5 +1,6 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
+using FitLead.Application.Common.Identity;
 using FitLead.Application.Common.Results;
 using FitLead.Domain.Trainings;
 using FitLead.Domain.Users;
@@ -15,15 +16,18 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Commands
     public class CreateTrainingProgramHandler
     : IRequestHandler<CreateTrainingProgramCommand, Result<Guid>>
     {
+        private readonly IUserContext _user;
         private readonly ITrainingProgramRepository _programRepository;
         private readonly IUserRepository _userRepository;
         private readonly IUnitOfWork _unitOfWork;
 
         public CreateTrainingProgramHandler(
+            IUserContext user,
             ITrainingProgramRepository programRepository,
             IUserRepository userRepository,
             IUnitOfWork unitOfWork)
         {
+            _user = user;
             _programRepository = programRepository;
             _userRepository = userRepository;
             _unitOfWork = unitOfWork;
@@ -34,7 +38,7 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Commands
             CancellationToken cancellationToken)
         {
             var trainer = await _userRepository.GetByIdAsync(
-                request.TrainerId,
+                _user.UserId,
                 cancellationToken);
 
             if (trainer is null)
@@ -45,7 +49,7 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Commands
 
             var program = TrainingProgram.Create(
                 request.Title,
-                trainer.Id);
+                _user.UserId);
 
             await _programRepository.AddAsync(program, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);

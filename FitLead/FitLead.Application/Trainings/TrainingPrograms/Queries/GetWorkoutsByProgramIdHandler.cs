@@ -1,4 +1,5 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
+using FitLead.Application.Common.Identity;
 using FitLead.Application.Trainings.Workouts.Queries;
 using MediatR;
 
@@ -8,9 +9,13 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Queries
     public sealed class GetWorkoutsByProgramIdHandler
         : IRequestHandler<GetWorkoutsByProgramIdQuery, IReadOnlyList<WorkoutDto>>
     {
+        private readonly IUserContext _user;
         private readonly ITrainingProgramReadRepository _repository;
-        public GetWorkoutsByProgramIdHandler(ITrainingProgramReadRepository trainingProgramReadRepository)
+        public GetWorkoutsByProgramIdHandler(
+            IUserContext user,
+            ITrainingProgramReadRepository trainingProgramReadRepository)
         {
+            _user = user;
             _repository = trainingProgramReadRepository;
         }
 
@@ -18,7 +23,7 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Queries
         {
             var isOwner = await _repository.IsOwnedByTrainerAsync(
             request.ProgramId,
-            request.TrainerId,
+            _user.UserId,
             cancellationToken);
 
             if (!isOwner)

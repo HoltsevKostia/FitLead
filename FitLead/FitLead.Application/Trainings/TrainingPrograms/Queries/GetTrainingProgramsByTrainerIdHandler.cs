@@ -1,4 +1,5 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
+using FitLead.Application.Common.Identity;
 using MediatR;
 
 namespace FitLead.Application.Trainings.TrainingPrograms.Queries
@@ -8,11 +9,14 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Queries
         GetTrainingProgramsByTrainerIdQuery,
         IReadOnlyList<TrainingProgramDto>>
     {
+        private readonly IUserContext _user;
         private readonly ITrainingProgramReadRepository _repository;
 
         public GetTrainingProgramsByTrainerIdHandler(
+            IUserContext user,
             ITrainingProgramReadRepository repository)
         {
+            _user = user;
             _repository = repository;
         }
 
@@ -21,7 +25,7 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Queries
             CancellationToken cancellationToken)
         {
             return await _repository.GetByTrainerIdAsync(
-                request.TrainerId,
+                _user.UserId,
                 cancellationToken);
         }
     }

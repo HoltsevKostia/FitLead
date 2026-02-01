@@ -1,4 +1,5 @@
 ﻿using FitLead.Api.Contracts.Trainings;
+using FitLead.Api.Identity;
 using FitLead.Application.Trainings.TrainingPrograms.Commands;
 using FitLead.Application.Trainings.TrainingPrograms.Queries;
 using FitLead.Application.Trainings.Workouts.Queries;
@@ -18,6 +19,7 @@ namespace FitLead.Api.Controllers
             _mediator = mediator;
         }
 
+        [RequireUser]
         [HttpPost]
         public async Task<IActionResult> Create(
         CreateTrainingProgramCommand command)
@@ -29,34 +31,34 @@ namespace FitLead.Api.Controllers
 
             return CreatedAtAction(
                 nameof(GetByTrainer),
-                new { trainerId = command.TrainerId },
                 result.Value);
         }
 
-        [HttpGet("trainer/{trainerId:guid}")]
-        public async Task<IActionResult> GetByTrainer(Guid trainerId)
+        [RequireUser]
+        [HttpGet]
+        public async Task<IActionResult> GetByTrainer()
         {
             var programs = await _mediator.Send(
-                new GetTrainingProgramsByTrainerIdQuery(trainerId));
+                new GetTrainingProgramsByTrainerIdQuery());
 
             return Ok(programs);
         }
 
+        [RequireUser]
         [HttpGet("{programId:guid}/workouts")]
         public async Task<ActionResult<IReadOnlyList<WorkoutDto>>> GetWorkouts(
         Guid programId,
-        [FromQuery] Guid trainerId,
         CancellationToken cancellationToken)
         {
             var result = await _mediator.Send(
                 new GetWorkoutsByProgramIdQuery(
-                    programId,
-                    trainerId),
+                    programId),
                 cancellationToken);
 
             return Ok(result);
         }
 
+        [RequireUser]
         [HttpPost("{programId:guid}/workouts")]
         public async Task<IActionResult> AddWorkout(
             Guid programId,
@@ -75,6 +77,7 @@ namespace FitLead.Api.Controllers
             return Ok();
         }
 
+        [RequireUser]
         [HttpDelete("{programId:guid}/workouts/{workoutId:guid}")]
         public async Task<IActionResult> RemoveWorkout(
             Guid programId,
@@ -93,6 +96,7 @@ namespace FitLead.Api.Controllers
             return Ok();
         }
 
+        [RequireUser]
         [HttpPut("{programId:guid}/workouts/order")]
         public async Task<IActionResult> ReorderWorkouts(
             Guid programId,
