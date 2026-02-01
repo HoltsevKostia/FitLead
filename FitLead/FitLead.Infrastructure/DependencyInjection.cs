@@ -1,8 +1,10 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
 using FitLead.Application.Common.Results;
+using FitLead.Application.Common.Time;
 using FitLead.Infrastructure.Persistence;
 using FitLead.Infrastructure.Persistence.Repositories;
+using FitLead.Infrastructure.Time;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -36,6 +38,8 @@ namespace FitLead.Infrastructure
             services.AddScoped<IInvitationReadRepository, InvitationReadRepository>();
             services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
             services.AddScoped(typeof(IPipelineBehavior<,>), typeof(DomainExceptionToResultBehavior<,>));
+            services.AddSingleton(TimeProvider.System);
+            services.AddSingleton<IClock, SystemClock>();
 
             return services;
         }
