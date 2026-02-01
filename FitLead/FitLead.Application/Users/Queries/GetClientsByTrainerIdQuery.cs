@@ -8,6 +8,6 @@ using System.Threading.Tasks;
 namespace FitLead.Application.Users.Queries
 {
     public sealed record GetClientsByTrainerIdQuery(
-    Guid TrainerId
+    
 ) : IRequest<IReadOnlyList<TrainerClientDto>>;
 }
