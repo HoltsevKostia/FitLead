@@ -7,6 +7,6 @@ using System.Threading.Tasks;
 
 namespace FitLead.Application.Trainings.Workouts.Queries
 {
-    public sealed record GetWorkoutDetailsByIdQuery(Guid WorkoutId, Guid TrainerId)
+    public sealed record GetWorkoutDetailsByIdQuery(Guid WorkoutId)
     : IRequest<WorkoutDetailsDto?>;
 }

@@ -1,4 +1,5 @@
 ﻿using FitLead.Api.Contracts.Trainings;
+using FitLead.Api.Identity;
 using FitLead.Application.Trainings.Workouts.Commands;
 using FitLead.Application.Trainings.Workouts.Queries;
 using MediatR;
@@ -17,6 +18,7 @@ namespace FitLead.Api.Controllers
             _mediator = mediator;
         }
 
+        [RequireUser]
         [HttpPost]
         public async Task<IActionResult> Create(
             [FromBody] CreateWorkoutRequest request,
@@ -24,7 +26,6 @@ namespace FitLead.Api.Controllers
         {
             var result = await _mediator.Send(
                 new CreateWorkoutCommand(
-                    request.TrainerId,
                     request.Name),
                 cancellationToken);
 
@@ -34,6 +35,7 @@ namespace FitLead.Api.Controllers
             return Ok(result.Value);
         }
 
+        [RequireUser]
         [HttpPost("{workoutId:guid}/exercises")]
         public async Task<IActionResult> AddExercise(
             Guid workoutId,
@@ -55,6 +57,7 @@ namespace FitLead.Api.Controllers
             return Ok();
         }
 
+        [RequireUser]
         [HttpDelete("{workoutId:guid}/exercises/{workoutExerciseId:guid}")]
         public async Task<IActionResult> RemoveExercise(
             Guid workoutId,
@@ -73,30 +76,31 @@ namespace FitLead.Api.Controllers
             return Ok();
         }
 
-        [HttpGet("trainer/{trainerId:guid}")]
+        [RequireUser]
+        [HttpGet]
         public async Task<IActionResult> GetByTrainer(
-            Guid trainerId,
             CancellationToken cancellationToken)
         {
             var result = await _mediator.Send(
-                new GetWorkoutsByTrainerQuery(trainerId),
+                new GetWorkoutsByTrainerQuery(),
                 cancellationToken);
 
             return Ok(result);
         }
 
+        [RequireUser]
         [HttpGet("{workoutId:guid}")]
         public async Task<IActionResult> GetWorkoutDetails(
             Guid workoutId,
-            [FromQuery] Guid trainerId,
             CancellationToken cancellationToken)
         {
             var result = await _mediator.Send(
-                new GetWorkoutDetailsByIdQuery(workoutId, trainerId), cancellationToken);
+                new GetWorkoutDetailsByIdQuery(workoutId), cancellationToken);
 
             return Ok(result);
         }
 
+        [RequireUser]
         [HttpPut("{workoutId:guid}/exercises/{workoutExerciseId:guid}")]
         public async Task<IActionResult> UpdateExercise(
             Guid workoutId,

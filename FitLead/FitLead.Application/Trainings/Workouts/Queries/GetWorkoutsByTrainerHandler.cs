@@ -1,4 +1,5 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
+using FitLead.Application.Common.Identity;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -11,10 +12,12 @@ namespace FitLead.Application.Trainings.Workouts.Queries
     public sealed class GetWorkoutsByTrainerHandler
     : IRequestHandler<GetWorkoutsByTrainerQuery, IReadOnlyList<WorkoutDto>>
     {
+        private readonly IUserContext _user;
         private readonly IWorkoutReadRepository _repository;
 
-        public GetWorkoutsByTrainerHandler(IWorkoutReadRepository repository)
+        public GetWorkoutsByTrainerHandler(IUserContext user, IWorkoutReadRepository repository)
         {
+            _user = user;
             _repository = repository;
         }
 
@@ -23,7 +26,7 @@ namespace FitLead.Application.Trainings.Workouts.Queries
             CancellationToken cancellationToken)
         {
             return await _repository.GetByTrainerIdAsync(
-                request.TrainerId,
+                _user.UserId,
                 cancellationToken);
         }
     }

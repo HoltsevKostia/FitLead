@@ -1,5 +1,6 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
+using FitLead.Application.Common.Identity;
 using FitLead.Application.Common.Results;
 using FitLead.Domain.Trainings;
 using FitLead.Domain.Users;
@@ -11,15 +12,18 @@ namespace FitLead.Application.Trainings.Workouts.Commands
     public sealed class CreateWorkoutHandler
     : IRequestHandler<CreateWorkoutCommand, Result<Guid>>
     {
+        private readonly IUserContext _user;
         private readonly IWorkoutRepository _repository;
         private readonly IUserRepository _userRepository;
         private readonly IUnitOfWork _unitOfWork;
 
         public CreateWorkoutHandler(
+            IUserContext user,
             IWorkoutRepository repository,
             IUserRepository userRepository,
             IUnitOfWork unitOfWork)
         {
+            _user = user;
             _repository = repository;
             _userRepository = userRepository;
             _unitOfWork = unitOfWork;
@@ -30,7 +34,7 @@ namespace FitLead.Application.Trainings.Workouts.Commands
             CancellationToken cancellationToken)
         {
             var trainer = await _userRepository.GetByIdAsync(
-                request.TrainerId,
+                _user.UserId,
                 cancellationToken);
 
             if (trainer is null)
@@ -41,7 +45,7 @@ namespace FitLead.Application.Trainings.Workouts.Commands
 
             var workout = Workout.Create(
                 request.Name,
-                request.TrainerId);
+                _user.UserId);
 
             await _repository.AddAsync(workout, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
