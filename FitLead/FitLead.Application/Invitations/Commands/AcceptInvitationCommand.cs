@@ -9,8 +9,6 @@ using System.Threading.Tasks;
 namespace FitLead.Application.Invitations.Commands
 {
     public sealed record AcceptInvitationCommand(
-        Guid ClientId,
-        Guid InvitationId,
-        DateTime Now
+        Guid InvitationId
     ) : IRequest<Result>;
 }

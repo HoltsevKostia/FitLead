@@ -1,6 +1,8 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
+using FitLead.Application.Common.Identity;
 using FitLead.Application.Common.Results;
+using FitLead.Application.Common.Time;
 using FitLead.Domain.Invitations;
 using FitLead.Domain.Users;
 using MediatR;
@@ -15,12 +17,21 @@ namespace FitLead.Application.Invitations.Commands
     public sealed class AcceptInvitationHandler
         : IRequestHandler<AcceptInvitationCommand, Result>
     {
+        private readonly IUserContext _user;
+        private readonly IClock _clock;
         private readonly IUserRepository _userRepository;
         private readonly IInvitationRepository _invitationRepository;
         private readonly IUnitOfWork _unitOfWork;
 
-        public AcceptInvitationHandler(IUserRepository userRepository, IInvitationRepository invitationRepository, IUnitOfWork unitOfWork)
+        public AcceptInvitationHandler(
+            IUserContext user,
+            IClock clock,
+            IUserRepository userRepository,
+            IInvitationRepository invitationRepository,
+            IUnitOfWork unitOfWork)
         {
+            _user = user;
+            _clock = clock;
             _userRepository = userRepository;
             _unitOfWork = unitOfWork;
             _invitationRepository = invitationRepository;
@@ -28,7 +39,7 @@ namespace FitLead.Application.Invitations.Commands
 
         public async Task<Result> Handle(AcceptInvitationCommand request, CancellationToken cancellationToken)
         {
-            var client = await _userRepository.GetByIdAsync(request.ClientId, cancellationToken);
+            var client = await _userRepository.GetByIdAsync(_user.UserId, cancellationToken);
 
             if (client is null)
                 return Result.Failure("Client not found");
@@ -41,10 +52,10 @@ namespace FitLead.Application.Invitations.Commands
             if (invitation is null)
                 return Result.Failure("Invitation not found");
             
-            if (invitation.ClientId != request.ClientId)
+            if (invitation.ClientId != _user.UserId)
                 return Result.Failure("Invitation does not belong to this client");
 
-            invitation.Accept(request.Now);
+            invitation.Accept(_clock.UtcNow);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             return Result.Success();

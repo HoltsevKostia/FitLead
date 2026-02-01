@@ -24,7 +24,7 @@ namespace FitLead.Infrastructure.BackgroundJobs.Invitations
                 var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
                 await mediator.Send(
-                    new ExpireInvitationsCommand(DateTime.UtcNow),
+                    new ExpireInvitationsCommand(),
                     stoppingToken);
 
                 await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);

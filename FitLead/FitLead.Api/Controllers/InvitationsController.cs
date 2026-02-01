@@ -1,4 +1,5 @@
 ﻿using FitLead.Api.Contracts.Invitations;
+using FitLead.Api.Identity;
 using FitLead.Application.Invitations.Commands;
 using FitLead.Application.Invitations.Queries;
 using MediatR;
@@ -17,32 +18,31 @@ namespace FitLead.Api.Controllers
             _mediator = mediator;
         }
 
-        [HttpGet("client/{clientId}")]
+        [RequireUser]
+        [HttpGet("client")]
         public async Task<IActionResult> GetPendingForClient(
-            Guid clientId,
             CancellationToken cancellationToken)
         {
             var result = await _mediator.Send(
-                new GetPendingInvitationsForClientQuery(
-                    clientId,
-                    DateTime.UtcNow),
+                new GetPendingInvitationsForClientQuery(),
                 cancellationToken);
 
             return Ok(result);
         }
 
-        [HttpGet("trainer/{trainerId}")]
+        [RequireUser]
+        [HttpGet("trainer")]
         public async Task<IActionResult> GetSentByTrainer(
-            Guid trainerId,
             CancellationToken cancellationToken)
         {
             var result = await _mediator.Send(
-                new GetSentInvitationsByTrainerQuery(trainerId),
+                new GetSentInvitationsByTrainerQuery(),
                 cancellationToken);
 
             return Ok(result);
         }
 
+        [RequireUser]
         [HttpPost]
         public async Task<IActionResult> Create(
            [FromBody] CreateInvitationRequest request,
@@ -50,9 +50,7 @@ namespace FitLead.Api.Controllers
         {
             var result = await _mediator.Send(
                 new CreateInvitationCommand(
-                    request.TrainerId,
-                    request.ClientId,
-                    DateTime.UtcNow),
+                    request.ClientId),
                 cancellationToken);
 
             if (!result.IsSuccess)
@@ -61,6 +59,7 @@ namespace FitLead.Api.Controllers
             return Ok(result.Value);
         }
 
+        [RequireUser]
         [HttpPost("{invitationId:guid}/accept")]
         public async Task<IActionResult> Accept(
             Guid invitationId,
@@ -69,9 +68,7 @@ namespace FitLead.Api.Controllers
         {
             var result = await _mediator.Send(
                 new AcceptInvitationCommand(
-                    request.ClientId,
-                    invitationId,
-                    DateTime.UtcNow),
+                    invitationId),
                 cancellationToken);
 
             if (!result.IsSuccess)
@@ -80,6 +77,7 @@ namespace FitLead.Api.Controllers
             return Ok();
         }
 
+        [RequireUser]
         [HttpPost("{invitationId:guid}/decline")]
         public async Task<IActionResult> Decline(
             Guid invitationId,
@@ -88,9 +86,7 @@ namespace FitLead.Api.Controllers
         {
             var result = await _mediator.Send(
                 new DeclineInvitationCommand(
-                    request.ClientId,
-                    invitationId,
-                    DateTime.UtcNow),
+                    invitationId),
                 cancellationToken);
 
             if (!result.IsSuccess)

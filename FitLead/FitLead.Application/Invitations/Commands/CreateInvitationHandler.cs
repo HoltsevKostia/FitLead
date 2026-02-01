@@ -1,6 +1,8 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
+using FitLead.Application.Common.Identity;
 using FitLead.Application.Common.Results;
+using FitLead.Application.Common.Time;
 using FitLead.Domain.Invitations;
 using FitLead.Domain.Users;
 using MediatR;
@@ -11,12 +13,21 @@ namespace FitLead.Application.Invitations.Commands
     public sealed class CreateInvitationHandler 
         : IRequestHandler<CreateInvitationCommand, Result<Guid>>
     {
+        private readonly IUserContext _user;
+        private readonly IClock _clock;
         private readonly IUserRepository _userRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IInvitationRepository _invitationRepository;
 
-        public CreateInvitationHandler(IUserRepository userRepository, IUnitOfWork unitOfWork, IInvitationRepository invitationRepository)
+        public CreateInvitationHandler(
+            IUserContext user,
+            IClock clock,
+            IUserRepository userRepository,
+            IUnitOfWork unitOfWork,
+            IInvitationRepository invitationRepository)
         {
+            _user = user;
+            _clock = clock;
             _userRepository = userRepository;
             _unitOfWork = unitOfWork;
             _invitationRepository = invitationRepository;
@@ -26,7 +37,7 @@ namespace FitLead.Application.Invitations.Commands
             CreateInvitationCommand request,
             CancellationToken cancellationToken)
         {
-            var trainer = await _userRepository.GetByIdAsync(request.TrainerId, cancellationToken);
+            var trainer = await _userRepository.GetByIdAsync(_user.UserId, cancellationToken);
 
             if (trainer is null)
                 return Result<Guid>.Failure("Trainer not found");
@@ -44,7 +55,7 @@ namespace FitLead.Application.Invitations.Commands
 
             var alreadyPending = await _invitationRepository
                 .ExistsPendingAsync(
-                    request.TrainerId,
+                    _user.UserId,
                     request.ClientId,
                     cancellationToken);
 
@@ -53,17 +64,17 @@ namespace FitLead.Application.Invitations.Commands
 
             var sentToday = await _invitationRepository
                 .CountSentByTrainerForDateAsync(
-                    request.TrainerId,
-                    request.Now,
+                    _user.UserId,
+                    _clock.UtcNow,
                     cancellationToken);
 
             if (sentToday >= 2)
                 return Result<Guid>.Failure("Daily invitation limit reached");
 
             var invitation = Invitation.Create(
-                request.TrainerId,
+                _user.UserId,
                 request.ClientId,
-                request.Now);
+                _clock.UtcNow);
 
             await _invitationRepository.AddAsync(invitation, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);

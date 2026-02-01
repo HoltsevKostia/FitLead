@@ -5,8 +5,6 @@ using MediatR;
 namespace FitLead.Application.Invitations.Commands
 {
     public sealed record DeclineInvitationCommand(
-        Guid ClientId,
-        Guid InvitationId,
-        DateTime Now
+        Guid InvitationId
     ) : IRequest<Result>;
 }

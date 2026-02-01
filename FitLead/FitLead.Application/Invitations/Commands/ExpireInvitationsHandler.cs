@@ -1,6 +1,7 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
 using FitLead.Application.Common.Results;
+using FitLead.Application.Common.Time;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -13,13 +14,16 @@ namespace FitLead.Application.Invitations.Commands
     public sealed class ExpireInvitationsHandler
     : IRequestHandler<ExpireInvitationsCommand, Result>
     {
+        private readonly IClock _clock;
         private readonly IInvitationRepository _invitationRepository;
         private readonly IUnitOfWork _unitOfWork;
 
         public ExpireInvitationsHandler(
+            IClock clock,
             IInvitationRepository invitationRepository,
             IUnitOfWork unitOfWork)
         {
+            _clock = clock;
             _invitationRepository = invitationRepository;
             _unitOfWork = unitOfWork;
         }
@@ -29,11 +33,11 @@ namespace FitLead.Application.Invitations.Commands
             CancellationToken cancellationToken)
         {
             var invitations = await _invitationRepository
-                .GetExpiredPendingAsync(request.Now, cancellationToken);
+                .GetExpiredPendingAsync(_clock.UtcNow, cancellationToken);
 
             foreach (var invitation in invitations)
             {
-                invitation.Expire(request.Now);
+                invitation.Expire(_clock.UtcNow);
             }
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
