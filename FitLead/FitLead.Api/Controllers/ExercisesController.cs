@@ -1,4 +1,5 @@
-﻿using FitLead.Api.Contracts.Trainings;
+﻿using FitLead.Api.Common.Results;
+using FitLead.Api.Contracts.Trainings;
 using FitLead.Api.Identity;
 using FitLead.Application.Trainings.Exercises.Commands;
 using FitLead.Application.Trainings.Exercises.Queries;
@@ -31,10 +32,7 @@ namespace FitLead.Api.Controllers
                     request.MediaUrl),
                 cancellationToken);
 
-            if (!result.IsSuccess)
-                return BadRequest(result.Error);
-
-            return Ok(result.Value);
+            return result.ToCreated(this);
         }
        
         [RequireUser]
@@ -46,7 +44,7 @@ namespace FitLead.Api.Controllers
                 new GetExercisesByTrainerQuery(),
                 cancellationToken);
 
-            return Ok(exercises);
+            return exercises.ToActionResult(this);
         }
 
         [RequireUser]
@@ -64,10 +62,7 @@ namespace FitLead.Api.Controllers
                     request.MediaUrl),
                 cancellationToken);
 
-            if (!result.IsSuccess)
-                return BadRequest(result.Error);
-
-            return Ok();
+            return result.ToActionResult(this);
         }
 
         [RequireUser]
@@ -80,10 +75,7 @@ namespace FitLead.Api.Controllers
                 new DeleteExerciseCommand(exerciseId),
                 cancellationToken);
 
-            if (!result.IsSuccess)
-                return BadRequest(result.Error);
-
-            return Ok();
+            return result.ToActionResult(this);
         }
     }
 }

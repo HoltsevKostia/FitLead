@@ -1,5 +1,6 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
+using FitLead.Application.Common.Errors;
 using FitLead.Application.Common.Identity;
 using FitLead.Application.Common.Results;
 using MediatR;
@@ -31,9 +32,10 @@ namespace FitLead.Application.Trainings.Exercises.Commands
                 cancellationToken);
 
             if (exercise is null)
-                return Result.Failure("Exercise not found");
+                return Result.Failure(Error.NotFound("exercise.not_found", "Exercise not found"));
 
-            if (exercise.TrainerId != _user.UserId) return Result.Failure("Forbidden");
+            if (exercise.TrainerId != _user.UserId)
+                return Result.Failure(Error.Forbidden("exercise.forbidden", "Forbidden"));
 
             exercise.Update(request.Name, request.Description, request.MediaUrl);
 

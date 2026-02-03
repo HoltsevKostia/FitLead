@@ -1,4 +1,4 @@
-﻿using FitLead.Application.Common.Results;
+﻿using FitLead.Application.Common.Errors;
 using FitLead.Domain.Common.Exceptions;
 using MediatR;
 
@@ -6,8 +6,8 @@ using MediatR;
 namespace FitLead.Application.Common.Results
 {
     public sealed class DomainExceptionToResultBehavior<TRequest, TResponse>
-    : IPipelineBehavior<TRequest, TResponse>
-    where TRequest : notnull
+        : IPipelineBehavior<TRequest, TResponse>
+        where TRequest : notnull
     {
         public async Task<TResponse> Handle(
             TRequest request,
@@ -20,21 +20,31 @@ namespace FitLead.Application.Common.Results
             }
             catch (DomainException ex)
             {
+                var error = Error.Failure("domain.exception", ex.Message);
+
                 // Result (non-generic)
                 if (typeof(TResponse) == typeof(Result))
-                {
-                    return (TResponse)(object)Result.Failure(ex.Message);
-                }
+                    return (TResponse)(object)Result.Failure(error);
 
                 // Result<T>
                 if (typeof(TResponse).IsGenericType &&
                     typeof(TResponse).GetGenericTypeDefinition() == typeof(Result<>))
                 {
-                    var failureMethod = typeof(Result<>)
-                        .MakeGenericType(typeof(TResponse).GetGenericArguments()[0])
-                        .GetMethod(nameof(Result<object>.Failure))!;
+                    var t = typeof(TResponse).GetGenericArguments()[0];
+                    var resultType = typeof(Result<>).MakeGenericType(t);
 
-                    return (TResponse)failureMethod.Invoke(null, new object[] { ex.Message })!;
+                    // Find: public static Result<T> Failure(Error error)
+                    var failureMethod = resultType.GetMethod(
+                        "Failure",
+                        System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static,
+                        binder: null,
+                        types: new[] { typeof(Error) },
+                        modifiers: null);
+
+                    if (failureMethod is null)
+                        throw; // unexpected: signature changed
+
+                    return (TResponse)failureMethod.Invoke(null, new object[] { error })!;
                 }
 
                 throw;
