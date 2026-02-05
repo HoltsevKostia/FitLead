@@ -10,5 +10,5 @@ namespace FitLead.Application.Trainings.Workouts.Commands
         int Repetitions,
         int Sets,
         int RestSeconds
-    ) : IRequest<Result>;
+    ) : IRequest<Result<Guid>>;
 }

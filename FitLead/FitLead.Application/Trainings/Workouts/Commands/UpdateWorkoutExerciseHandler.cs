@@ -1,14 +1,10 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
+using FitLead.Application.Common.Errors;
 using FitLead.Application.Common.Identity;
 using FitLead.Application.Common.Results;
-using FitLead.Domain.Users;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace FitLead.Application.Trainings.Workouts.Commands
 {
@@ -36,10 +32,10 @@ namespace FitLead.Application.Trainings.Workouts.Commands
                 cancellationToken);
 
             if (workout is null)
-                return Result.Failure("Workout not found");
+                return Result.Failure(Error.NotFound("workout.not_found", "Workout not found"));
 
             if (workout.TrainerId != _user.UserId)
-                return Result<Guid>.Failure("Forbidden");
+                return Result.Failure(Error.Forbidden("workout.forbidden", "Forbidden"));
 
             workout.UpdateExercise(
                 request.WorkoutExerciseId,

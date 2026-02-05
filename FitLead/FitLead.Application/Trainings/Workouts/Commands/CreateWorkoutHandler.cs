@@ -1,5 +1,6 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
+using FitLead.Application.Common.Errors;
 using FitLead.Application.Common.Identity;
 using FitLead.Application.Common.Results;
 using FitLead.Domain.Trainings;
@@ -38,10 +39,10 @@ namespace FitLead.Application.Trainings.Workouts.Commands
                 cancellationToken);
 
             if (trainer is null)
-                return Result<Guid>.Failure("Trainer not found");
+                return Result<Guid>.Failure(Error.NotFound("trainer.not_found", "Trainer not found"));
 
             if (trainer.Role != UserRole.Trainer)
-                return Result<Guid>.Failure("User is not a trainer");
+                return Result<Guid>.Failure(Error.Forbidden("trainer.required", "User is not a trainer"));
 
             var workout = Workout.Create(
                 request.Name,

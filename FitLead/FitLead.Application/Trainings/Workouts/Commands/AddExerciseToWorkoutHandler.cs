@@ -1,5 +1,6 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
+using FitLead.Application.Common.Errors;
 using FitLead.Application.Common.Results;
 using MediatR;
 
@@ -7,7 +8,7 @@ using MediatR;
 namespace FitLead.Application.Trainings.Workouts.Commands
 {
     public sealed class AddExerciseToWorkoutHandler
-    : IRequestHandler<AddExerciseToWorkoutCommand, Result>
+    : IRequestHandler<AddExerciseToWorkoutCommand, Result<Guid>>
     {
         private readonly IWorkoutRepository _repository;
         private readonly IExerciseRepository _exerciseRepository;
@@ -23,7 +24,7 @@ namespace FitLead.Application.Trainings.Workouts.Commands
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Result> Handle(
+        public async Task<Result<Guid>> Handle(
             AddExerciseToWorkoutCommand request,
             CancellationToken cancellationToken)
         {
@@ -32,16 +33,16 @@ namespace FitLead.Application.Trainings.Workouts.Commands
                 cancellationToken);
 
             if (workout is null)
-                return Result.Failure("Workout not found");
+                return Result<Guid>.Failure(Error.NotFound("workout.not_found", "Workout not found"));
 
             var exerciseExists = await _exerciseRepository.ExistsAsync(
                 request.ExerciseId,
                 cancellationToken);
 
             if (!exerciseExists)
-                return Result.Failure("Exercise not found");
+                return Result<Guid>.Failure(Error.NotFound("exercise.not_found", "Exercise not found"));
 
-            workout.AddExercise(
+            var entryId = workout.AddExercise(
                 request.ExerciseId,
                 request.Repetitions,
                 request.Sets,
@@ -49,7 +50,7 @@ namespace FitLead.Application.Trainings.Workouts.Commands
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return Result.Success();
+            return Result<Guid>.Success(entryId);
         }
     }
 }

@@ -1,16 +1,13 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
+using FitLead.Application.Common.Errors;
 using FitLead.Application.Common.Identity;
+using FitLead.Application.Common.Results;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FitLead.Application.Trainings.Workouts.Queries
 {
     public sealed class GetWorkoutDetailsByIdHandler
-        : IRequestHandler<GetWorkoutDetailsByIdQuery, WorkoutDetailsDto?>
+        : IRequestHandler<GetWorkoutDetailsByIdQuery, Result<WorkoutDetailsDto>>
     {
         private readonly IUserContext _user;
         private readonly IWorkoutReadRepository _repository;
@@ -19,7 +16,7 @@ namespace FitLead.Application.Trainings.Workouts.Queries
             _repository = workoutReadRepository;
         }
 
-        public async Task<WorkoutDetailsDto?> Handle(GetWorkoutDetailsByIdQuery request, CancellationToken cancellationToken)
+        public async Task<Result<WorkoutDetailsDto>> Handle(GetWorkoutDetailsByIdQuery request, CancellationToken cancellationToken)
         {
             var dto = await _repository.GetWorkoutDetailsByIdAsync(
                 request.WorkoutId,
@@ -27,9 +24,9 @@ namespace FitLead.Application.Trainings.Workouts.Queries
                 cancellationToken);
 
             if (dto is null)
-                throw new KeyNotFoundException("Workout not found");
+                return Result<WorkoutDetailsDto>.Failure(Error.NotFound("workout.not_found", "Workout not found"));
 
-            return dto;
+            return Result<WorkoutDetailsDto>.Success(dto);
         }
     }
 }

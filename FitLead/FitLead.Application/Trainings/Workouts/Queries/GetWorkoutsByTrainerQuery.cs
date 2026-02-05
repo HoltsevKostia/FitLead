@@ -1,13 +1,9 @@
-﻿using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FitLead.Application.Common.Results;
+using MediatR;
 
 namespace FitLead.Application.Trainings.Workouts.Queries
 {
     public sealed record GetWorkoutsByTrainerQuery(
     
-    ) : IRequest<IReadOnlyList<WorkoutDto>>;
+    ) : IRequest<Result<IReadOnlyList<WorkoutDto>>>;
 }

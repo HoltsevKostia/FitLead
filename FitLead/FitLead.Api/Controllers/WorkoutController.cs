@@ -1,4 +1,5 @@
-﻿using FitLead.Api.Contracts.Trainings;
+﻿using FitLead.Api.Common.Results;
+using FitLead.Api.Contracts.Trainings;
 using FitLead.Api.Identity;
 using FitLead.Application.Trainings.Workouts.Commands;
 using FitLead.Application.Trainings.Workouts.Queries;
@@ -29,10 +30,7 @@ namespace FitLead.Api.Controllers
                     request.Name),
                 cancellationToken);
 
-            if (!result.IsSuccess)
-                return BadRequest(result.Error);
-
-            return Ok(result.Value);
+            return result.ToCreated(this);
         }
 
         [RequireUser]
@@ -51,10 +49,7 @@ namespace FitLead.Api.Controllers
                     request.RestSeconds),
                 cancellationToken);
 
-            if (!result.IsSuccess)
-                return BadRequest(result.Error);
-
-            return Ok();
+            return result.ToCreated(this);
         }
 
         [RequireUser]
@@ -70,10 +65,7 @@ namespace FitLead.Api.Controllers
                     workoutExerciseId),
                 cancellationToken);
 
-            if (!result.IsSuccess)
-                return BadRequest(result.Error);
-
-            return Ok();
+            return result.ToActionResult(this);
         }
 
         [RequireUser]
@@ -85,7 +77,7 @@ namespace FitLead.Api.Controllers
                 new GetWorkoutsByTrainerQuery(),
                 cancellationToken);
 
-            return Ok(result);
+            return result.ToActionResult(this);
         }
 
         [RequireUser]
@@ -97,7 +89,7 @@ namespace FitLead.Api.Controllers
             var result = await _mediator.Send(
                 new GetWorkoutDetailsByIdQuery(workoutId), cancellationToken);
 
-            return Ok(result);
+            return result.ToActionResult(this);
         }
 
         [RequireUser]
@@ -131,7 +123,7 @@ namespace FitLead.Api.Controllers
                 new RenameWorkoutCommand(workoutId, request.Name),
                 cancellationToken);
 
-            return Ok();
+            return result.ToActionResult(this);
         }
     }
 }
