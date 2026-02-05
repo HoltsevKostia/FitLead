@@ -1,8 +1,8 @@
-﻿using FitLead.Api.Contracts.Trainings;
+﻿using FitLead.Api.Common.Results;
+using FitLead.Api.Contracts.Trainings;
 using FitLead.Api.Identity;
 using FitLead.Application.Trainings.TrainingPrograms.Commands;
 using FitLead.Application.Trainings.TrainingPrograms.Queries;
-using FitLead.Application.Trainings.Workouts.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,12 +26,7 @@ namespace FitLead.Api.Controllers
         {
             var result = await _mediator.Send(command);
 
-            if (!result.IsSuccess)
-                return BadRequest(result.Error);
-
-            return CreatedAtAction(
-                nameof(GetByTrainer),
-                result.Value);
+            return result.ToCreated(this);
         }
 
         [RequireUser]
@@ -41,12 +36,12 @@ namespace FitLead.Api.Controllers
             var programs = await _mediator.Send(
                 new GetTrainingProgramsByTrainerIdQuery());
 
-            return Ok(programs);
+            return programs.ToActionResult(this);
         }
 
         [RequireUser]
         [HttpGet("{programId:guid}/workouts")]
-        public async Task<ActionResult<IReadOnlyList<WorkoutDto>>> GetWorkouts(
+        public async Task<IActionResult> GetWorkouts(
         Guid programId,
         CancellationToken cancellationToken)
         {
@@ -55,7 +50,7 @@ namespace FitLead.Api.Controllers
                     programId),
                 cancellationToken);
 
-            return Ok(result);
+            return result.ToActionResult(this);
         }
 
         [RequireUser]
@@ -71,10 +66,7 @@ namespace FitLead.Api.Controllers
                     request.WorkoutId),
                 cancellationToken);
 
-            if (!result.IsSuccess)
-                return BadRequest(result.Error);
-
-            return Ok();
+            return result.ToActionResult(this);
         }
 
         [RequireUser]
@@ -90,10 +82,7 @@ namespace FitLead.Api.Controllers
                     workoutId),
                 cancellationToken);
 
-            if (!result.IsSuccess)
-                return BadRequest(result.Error);
-
-            return Ok();
+            return result.ToActionResult(this);
         }
 
         [RequireUser]
@@ -107,10 +96,7 @@ namespace FitLead.Api.Controllers
                 new ReorderProgramWorkoutsCommand(programId, request.WorkoutIds),
                 cancellationToken);
 
-            if (!result.IsSuccess)
-                return BadRequest(result.Error);
-
-            return Ok();
+            return result.ToActionResult(this);
         }
     }
 }

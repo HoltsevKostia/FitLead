@@ -1,5 +1,7 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
+using FitLead.Application.Common.Errors;
 using FitLead.Application.Common.Identity;
+using FitLead.Application.Common.Results;
 using FitLead.Application.Trainings.Workouts.Queries;
 using MediatR;
 
@@ -7,7 +9,7 @@ using MediatR;
 namespace FitLead.Application.Trainings.TrainingPrograms.Queries
 {
     public sealed class GetWorkoutsByProgramIdHandler
-        : IRequestHandler<GetWorkoutsByProgramIdQuery, IReadOnlyList<WorkoutDto>>
+        : IRequestHandler<GetWorkoutsByProgramIdQuery, Result<IReadOnlyList<WorkoutDto>>>
     {
         private readonly IUserContext _user;
         private readonly ITrainingProgramReadRepository _repository;
@@ -19,7 +21,7 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Queries
             _repository = trainingProgramReadRepository;
         }
 
-        public async Task<IReadOnlyList<WorkoutDto>> Handle(GetWorkoutsByProgramIdQuery request, CancellationToken cancellationToken)
+        public async Task<Result<IReadOnlyList<WorkoutDto>>> Handle(GetWorkoutsByProgramIdQuery request, CancellationToken cancellationToken)
         {
             var isOwner = await _repository.IsOwnedByTrainerAsync(
             request.ProgramId,
@@ -27,12 +29,13 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Queries
             cancellationToken);
 
             if (!isOwner)
-                throw new UnauthorizedAccessException(
-                    "Training program does not belong to this trainer");
+                return Result<IReadOnlyList<WorkoutDto>>.Failure(
+                    Error.Forbidden("training_program.forbidden", "Forbidden"));
 
-            return await _repository.GetWorkoutsByProgramIdAsync(
+            var workouts = await _repository.GetWorkoutsByProgramIdAsync(
                 request.ProgramId,
                 cancellationToken);
+            return Result<IReadOnlyList<WorkoutDto>>.Success(workouts);
         }      
     }
 }

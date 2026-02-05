@@ -1,12 +1,8 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
+using FitLead.Application.Common.Errors;
 using FitLead.Application.Common.Results;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FitLead.Application.Trainings.TrainingPrograms.Commands
 {
@@ -33,7 +29,7 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Commands
                 cancellationToken);
 
             if (program is null)
-                return Result.Failure("Training program not found");
+                return Result.Failure(Error.NotFound("training_program.not_found", "Training program not found"));
 
             program.RemoveWorkout(request.WorkoutId);
 

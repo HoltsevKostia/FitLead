@@ -1,5 +1,6 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common.Identity;
+using FitLead.Application.Common.Results;
 using MediatR;
 
 namespace FitLead.Application.Trainings.TrainingPrograms.Queries
@@ -7,7 +8,7 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Queries
     public sealed class GetTrainingProgramsByTrainerIdHandler
     : IRequestHandler<
         GetTrainingProgramsByTrainerIdQuery,
-        IReadOnlyList<TrainingProgramDto>>
+        Result<IReadOnlyList<TrainingProgramDto>>>
     {
         private readonly IUserContext _user;
         private readonly ITrainingProgramReadRepository _repository;
@@ -20,13 +21,14 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Queries
             _repository = repository;
         }
 
-        public async Task<IReadOnlyList<TrainingProgramDto>> Handle(
+        public async Task<Result<IReadOnlyList<TrainingProgramDto>>> Handle(
             GetTrainingProgramsByTrainerIdQuery request,
             CancellationToken cancellationToken)
         {
-            return await _repository.GetByTrainerIdAsync(
+            var programs = await _repository.GetByTrainerIdAsync(
                 _user.UserId,
                 cancellationToken);
+            return Result<IReadOnlyList<TrainingProgramDto>>.Success(programs);
         }
     }
 }
