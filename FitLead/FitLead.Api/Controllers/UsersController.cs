@@ -1,5 +1,6 @@
+using FitLead.Api.Common.Results;
 using FitLead.Api.Identity;
-using FitLead.Application.Users.Commands.CreateUser;
+using FitLead.Application.Users.Commands;
 using FitLead.Application.Users.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -22,10 +23,7 @@ namespace FitLead.Api.Controllers
         {
             var result = await _mediator.Send(command);
 
-            if (!result.IsSuccess)
-                return BadRequest(result.Error);
-
-            return Ok(new { userId = result.Value });
+            return result.ToCreated(this);
         }
 
         [RequireUser]
@@ -35,7 +33,7 @@ namespace FitLead.Api.Controllers
             var clients = await _mediator.Send(
                 new GetClientsByTrainerIdQuery());
 
-            return Ok(clients);
+            return clients.ToActionResult(this);
         }
     }
 }

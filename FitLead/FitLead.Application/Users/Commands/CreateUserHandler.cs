@@ -4,11 +4,6 @@ using FitLead.Application.Common.Errors;
 using FitLead.Application.Common.Results;
 using FitLead.Domain.Users;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FitLead.Application.Users.Commands
 {
@@ -30,28 +25,16 @@ namespace FitLead.Application.Users.Commands
             CreateUserCommand request,
             CancellationToken cancellationToken)
         {
-            var exists = await _userRepository.ExistsByEmailAsync(
-                request.Email,
-                cancellationToken);
+            if (request.Role is not (UserRole.Trainer or UserRole.Client))
+                return Result<Guid>.Failure(Error.Validation("user.role_invalid", "Unsupported role"));
 
+            var exists = await _userRepository.ExistsByEmailAsync(request.Email, cancellationToken);
             if (exists)
                 return Result<Guid>.Failure(Error.Conflict("user.email_exists", "User with this email already exists"));
 
-            User user = request.Role switch
-            {
-                UserRole.Trainer => User.CreateTrainer(
-                    request.Email,
-                    request.FullName),
-
-                UserRole.Client => User.CreateClient(
-                    request.Email,
-                    request.FullName),
-
-                _ => null
-            };
-
-            if (user is null)
-                return Result<Guid>.Failure(Error.Validation("user.role_invalid", "Unsupported role"));
+            var user = request.Role == UserRole.Trainer
+                ? User.CreateTrainer(request.Email, request.FullName)
+                : User.CreateClient(request.Email, request.FullName);
 
             await _userRepository.AddAsync(user, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);

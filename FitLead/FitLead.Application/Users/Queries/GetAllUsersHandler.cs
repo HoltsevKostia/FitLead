@@ -1,15 +1,11 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
+using FitLead.Application.Common.Results;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FitLead.Application.Users.Queries
 {
     public sealed class GetAllUsersHandler
-        : IRequestHandler<GetAllUsersQuery, IReadOnlyList<UserDto>>
+        : IRequestHandler<GetAllUsersQuery, Result<IReadOnlyList<UserDto>>>
     {
         private readonly IUserReadRepository _repository;
 
@@ -18,9 +14,10 @@ namespace FitLead.Application.Users.Queries
             _repository = repository;
         }
 
-        public async Task<IReadOnlyList<UserDto>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken)
+        public async Task<Result<IReadOnlyList<UserDto>>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken)
         {
-            return await _repository.GetAllAsync(cancellationToken);
+            var users = await _repository.GetAllAsync(cancellationToken);
+            return Result<IReadOnlyList<UserDto>>.Success(users);
         }
     }
 }
