@@ -48,20 +48,24 @@ namespace FitLead.Domain.Trainings
             Name = name.Trim();
         }
 
-        public void AddExercise(
+        public Guid AddExercise(
             Guid exerciseId,
             int repetitions,
             int sets,
             int restSeconds)
         {
+            var entryId = Guid.NewGuid();
+
             var entry = new WorkoutExercise(
-                Guid.NewGuid(),
+                entryId,
                 exerciseId,
                 repetitions,
                 sets,
                 restSeconds);
 
             _exercises.Add(entry);
+            
+            return entryId;
         }
 
         public void RemoveExercise(Guid workoutExerciseId)

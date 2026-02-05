@@ -1,5 +1,6 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
+using FitLead.Application.Common.Errors;
 using FitLead.Application.Common.Results;
 using MediatR;
 
@@ -29,7 +30,7 @@ namespace FitLead.Application.Trainings.Workouts.Commands
                 cancellationToken);
 
             if (workout is null)
-                return Result.Failure("Workout not found");
+                return Result.Failure(Error.NotFound("workout.not_found", "Workout not found"));
 
             workout.Rename(request.Name);
 

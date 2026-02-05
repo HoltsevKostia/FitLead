@@ -117,8 +117,19 @@ namespace FitLead.Api.Controllers
                     request.RestSeconds),
                 cancellationToken);
 
-            if (!result.IsSuccess)
-                return BadRequest(result.Error);
+            return result.ToActionResult(this);
+        }
+
+        [RequireUser]
+        [HttpPut("{workoutId:guid}/name")]
+        public async Task<IActionResult> Rename(
+            Guid workoutId,
+            [FromBody] RenameWorkoutRequest request,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new RenameWorkoutCommand(workoutId, request.Name),
+                cancellationToken);
 
             return Ok();
         }
