@@ -1,9 +1,9 @@
-﻿using MediatR;
-
+﻿using FitLead.Application.Common.Results;
+using MediatR;
 
 namespace FitLead.Application.Invitations.Queries
 {
     public sealed record GetSentInvitationsByTrainerQuery(
         
-    ) : IRequest<IReadOnlyList<InvitationDto>>;
+    ) : IRequest<Result<IReadOnlyList<InvitationDto>>>;
 }

@@ -1,6 +1,5 @@
 ﻿using FitLead.Domain.Invitations;
 
-
 namespace FitLead.Application.Invitations.Queries
 {
     public sealed class InvitationDto

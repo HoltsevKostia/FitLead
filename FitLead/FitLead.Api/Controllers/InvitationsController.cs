@@ -1,5 +1,6 @@
 ﻿using FitLead.Api.Contracts.Invitations;
 using FitLead.Api.Identity;
+using FitLead.Api.Common.Results;
 using FitLead.Application.Invitations.Commands;
 using FitLead.Application.Invitations.Queries;
 using MediatR;
@@ -27,7 +28,7 @@ namespace FitLead.Api.Controllers
                 new GetPendingInvitationsForClientQuery(),
                 cancellationToken);
 
-            return Ok(result);
+            return result.ToActionResult(this);
         }
 
         [RequireUser]
@@ -39,7 +40,7 @@ namespace FitLead.Api.Controllers
                 new GetSentInvitationsByTrainerQuery(),
                 cancellationToken);
 
-            return Ok(result);
+            return result.ToActionResult(this);
         }
 
         [RequireUser]
@@ -53,10 +54,7 @@ namespace FitLead.Api.Controllers
                     request.ClientId),
                 cancellationToken);
 
-            if (!result.IsSuccess)
-                return BadRequest(result.Error);
-
-            return Ok(result.Value);
+            return result.ToCreated(this);
         }
 
         [RequireUser]
@@ -71,10 +69,7 @@ namespace FitLead.Api.Controllers
                     invitationId),
                 cancellationToken);
 
-            if (!result.IsSuccess)
-                return BadRequest(result.Error);
-
-            return Ok();
+            return result.ToActionResult(this);
         }
 
         [RequireUser]
@@ -89,10 +84,7 @@ namespace FitLead.Api.Controllers
                     invitationId),
                 cancellationToken);
 
-            if (!result.IsSuccess)
-                return BadRequest(result.Error);
-
-            return Ok();
+            return result.ToActionResult(this);
         }
     }
 }

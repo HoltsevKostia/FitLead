@@ -1,5 +1,6 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
+using FitLead.Application.Common.Errors;
 using FitLead.Application.Common.Identity;
 using FitLead.Application.Common.Results;
 using FitLead.Application.Common.Time;
@@ -41,10 +42,10 @@ namespace FitLead.Application.Invitations.Commands
                 cancellationToken);
 
             if (invitation is null)
-                return Result.Failure("Invitation not found");
+                return Result.Failure(Error.NotFound("invitation.not_found", "Invitation not found"));
 
             if (invitation.ClientId != _user.UserId)
-                return Result.Failure("Forbidden");
+                return Result.Failure(Error.Forbidden("invitation.forbidden", "Invitation does not belong to this client"));
 
             invitation.Decline(_clock.UtcNow);
 

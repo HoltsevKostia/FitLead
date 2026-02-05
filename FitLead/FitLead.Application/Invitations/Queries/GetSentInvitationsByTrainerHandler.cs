@@ -1,12 +1,13 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common.Identity;
+using FitLead.Application.Common.Results;
 using MediatR;
 
 
 namespace FitLead.Application.Invitations.Queries
 {
     public sealed class GetSentInvitationsByTrainerHandler
-    : IRequestHandler<GetSentInvitationsByTrainerQuery, IReadOnlyList<InvitationDto>>
+    : IRequestHandler<GetSentInvitationsByTrainerQuery, Result<IReadOnlyList<InvitationDto>>>
     {
         private readonly IUserContext _user;
         private readonly IInvitationReadRepository _repository;
@@ -19,13 +20,14 @@ namespace FitLead.Application.Invitations.Queries
             _repository = repository;
         }
 
-        public async Task<IReadOnlyList<InvitationDto>> Handle(
+        public async Task<Result<IReadOnlyList<InvitationDto>>> Handle(
             GetSentInvitationsByTrainerQuery request,
             CancellationToken cancellationToken)
         {
-            return await _repository.GetSentByTrainerAsync(
+            var invitations = await _repository.GetSentByTrainerAsync(
                 _user.UserId,
                 cancellationToken);
+            return Result<IReadOnlyList<InvitationDto>>.Success(invitations);
         }
     }
 }
