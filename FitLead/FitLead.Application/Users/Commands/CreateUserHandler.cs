@@ -1,5 +1,6 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
+using FitLead.Application.Common.Errors;
 using FitLead.Application.Common.Results;
 using FitLead.Domain.Users;
 using MediatR;
@@ -9,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FitLead.Application.Users.Commands.CreateUser
+namespace FitLead.Application.Users.Commands
 {
     public sealed class CreateUserHandler
     : IRequestHandler<CreateUserCommand, Result<Guid>>
@@ -34,7 +35,7 @@ namespace FitLead.Application.Users.Commands.CreateUser
                 cancellationToken);
 
             if (exists)
-                return Result<Guid>.Failure("User with this email already exists");
+                return Result<Guid>.Failure(Error.Conflict("user.email_exists", "User with this email already exists"));
 
             User user = request.Role switch
             {
@@ -46,8 +47,11 @@ namespace FitLead.Application.Users.Commands.CreateUser
                     request.Email,
                     request.FullName),
 
-                _ => throw new InvalidOperationException("Unsupported role")
+                _ => null
             };
+
+            if (user is null)
+                return Result<Guid>.Failure(Error.Validation("user.role_invalid", "Unsupported role"));
 
             await _userRepository.AddAsync(user, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);

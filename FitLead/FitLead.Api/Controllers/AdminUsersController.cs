@@ -1,3 +1,4 @@
+using FitLead.Api.Common.Results;
 using FitLead.Application.Users.Queries;
 using FitLead.Domain.Users;
 using MediatR;
@@ -22,7 +23,7 @@ namespace FitLead.Api.Controllers
             var users = await _mediator.Send(
                 new GetAllUsersQuery());
 
-            return Ok(users);
+            return users.ToActionResult(this);
         }
 
         [HttpGet("trainers")]
@@ -31,7 +32,7 @@ namespace FitLead.Api.Controllers
             var trainers = await _mediator.Send(
                 new GetUsersByRoleQuery(UserRole.Trainer));
 
-            return Ok(trainers);
+            return trainers.ToActionResult(this);
         }
 
         [HttpGet("clients")]
@@ -40,7 +41,7 @@ namespace FitLead.Api.Controllers
             var clients = await _mediator.Send(
                 new GetUsersByRoleQuery(UserRole.Client));
 
-            return Ok(clients);
+            return clients.ToActionResult(this);
         }
     }
 }

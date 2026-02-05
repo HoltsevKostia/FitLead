@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FitLead.Application.Users.Commands.CreateUser
+namespace FitLead.Application.Users.Commands
 {
     public sealed record CreateUserCommand(
     string Email,
