@@ -41,6 +41,15 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                 .AnyAsync(x => x.Id == id, cancellationToken);
         }
 
+        public  Task DeleteWorkoutExercisesByExerciseIdAsync(
+            Guid exerciseId,
+            CancellationToken cancellationToken)
+        {
+            return _context.WorkoutExercises
+                .Where(x => x.ExerciseId == exerciseId)
+                .ExecuteDeleteAsync(cancellationToken);
+        }
+
         public void Remove(Exercise exercise)
         {
             _context.Exercises.Remove(exercise);
