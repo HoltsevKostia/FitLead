@@ -28,5 +28,13 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                     x.MediaUrl))
                 .ToListAsync(cancellationToken);
         }
+
+        public async Task<int> GetUsageCountAsync(
+            Guid exerciseId,
+            CancellationToken cancellationToken)
+        {
+            return await _context.WorkoutExercises
+                .CountAsync(x => x.ExerciseId == exerciseId, cancellationToken);
+        }
     }
 }

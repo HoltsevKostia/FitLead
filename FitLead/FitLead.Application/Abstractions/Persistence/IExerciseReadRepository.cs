@@ -12,5 +12,9 @@ namespace FitLead.Application.Abstractions.Persistence
         Task<IReadOnlyList<ExerciseDto>> GetByTrainerIdAsync(
             Guid trainerId,
             CancellationToken cancellationToken);
+
+        Task<int> GetUsageCountAsync(
+            Guid exerciseId,
+            CancellationToken cancellationToken);
     }
 }

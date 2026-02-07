@@ -78,6 +78,16 @@ namespace FitLead.Api.Common.Results
             };
 
             problem.Extensions["errorCode"] = error.Code;
+            if (error.Metadata is not null)
+            {
+                foreach (var entry in error.Metadata)
+                {
+                    if (problem.Extensions.ContainsKey(entry.Key))
+                        continue;
+
+                    problem.Extensions[entry.Key] = entry.Value;
+                }
+            }
 
             return new ObjectResult(problem) { StatusCode = status };
         }
