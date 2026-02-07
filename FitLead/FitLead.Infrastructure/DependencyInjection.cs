@@ -1,7 +1,9 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
+using FitLead.Application.Common.Deletion;
 using FitLead.Application.Common.Results;
 using FitLead.Application.Common.Time;
+using FitLead.Infrastructure.Deletion;
 using FitLead.Infrastructure.Persistence;
 using FitLead.Infrastructure.Persistence.Repositories;
 using FitLead.Infrastructure.Time;
@@ -40,6 +42,10 @@ namespace FitLead.Infrastructure
             services.AddScoped(typeof(IPipelineBehavior<,>), typeof(DomainExceptionToResultBehavior<,>));
             services.AddSingleton(TimeProvider.System);
             services.AddSingleton<IClock, SystemClock>();
+            services.AddDataProtection();
+            services.Configure<DeletionTokenOptions>(
+                configuration.GetSection(DeletionTokenOptions.SectionName));
+            services.AddSingleton<IDeletionConfirmationTokenService, DataProtectionDeletionConfirmationTokenService>();
 
             return services;
         }
