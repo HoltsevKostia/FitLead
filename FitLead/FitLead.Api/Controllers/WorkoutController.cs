@@ -138,5 +138,19 @@ namespace FitLead.Api.Controllers
 
             return result.ToActionResult(this);
         }
+
+        [RequireUser]
+        [HttpPost("{workoutId:guid}/deletion-confirmations")]
+        public async Task<IActionResult> ConfirmDelete(
+            Guid workoutId,
+            [FromBody] ConfirmDeleteWorkoutRequest request,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new ConfirmDeleteWorkoutCommand(workoutId, request.Token),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
     }
 }

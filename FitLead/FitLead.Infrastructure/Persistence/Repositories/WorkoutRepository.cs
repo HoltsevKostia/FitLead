@@ -50,6 +50,15 @@ namespace FitLead.Infrastructure.Persistence.Repositories
             return workout?.TrainerId;
         }
 
+        public async Task DeleteTrainingProgramWorkoutsByWorkoutIdAsync(
+            Guid workoutId,
+            CancellationToken cancellationToken)
+        {
+            await _context.TrainingProgramWorkouts
+                .Where(x => x.WorkoutId == workoutId)
+                .ExecuteDeleteAsync(cancellationToken);
+        }
+
         public void Remove(Workout workout)
         {
             _context.Workouts.Remove(workout);
