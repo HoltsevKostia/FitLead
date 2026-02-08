@@ -12,5 +12,9 @@ namespace FitLead.Application.Abstractions.Persistence
             Guid workoutId,
             Guid trainerId,
             CancellationToken cancellationToken);
+
+        Task<int> GetUsageCountAsync(
+            Guid workoutId,
+            CancellationToken cancellationToken);
     }
 }

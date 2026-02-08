@@ -8,5 +8,6 @@ namespace FitLead.Application.Abstractions.Persistence
         Task AddAsync(Workout workout, CancellationToken cancellationToken);
         Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken);
         Task<Guid?> GetTrainerIdAsync(Guid workoutId, CancellationToken cancellationToken);
+        void Remove(Workout workout);
     }
 }

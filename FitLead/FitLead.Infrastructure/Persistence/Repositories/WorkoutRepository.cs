@@ -49,5 +49,10 @@ namespace FitLead.Infrastructure.Persistence.Repositories
             
             return workout?.TrainerId;
         }
+
+        public void Remove(Workout workout)
+        {
+            _context.Workouts.Remove(workout);
+        }
     }
 }
