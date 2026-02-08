@@ -4,7 +4,6 @@ using FitLead.Application.Common.Results;
 using FitLead.Application.Common.Time;
 using MediatR;
 
-
 namespace FitLead.Application.Invitations.Queries
 {
     public sealed class GetPendingInvitationsForClientHandler

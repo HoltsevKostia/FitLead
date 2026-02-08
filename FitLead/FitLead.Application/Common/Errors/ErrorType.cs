@@ -1,5 +1,4 @@
-﻿
-namespace FitLead.Application.Common.Errors
+﻿namespace FitLead.Application.Common.Errors
 {
     public enum ErrorType
     {

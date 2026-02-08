@@ -1,5 +1,4 @@
-﻿
-namespace FitLead.Application.Common.Time
+﻿namespace FitLead.Application.Common.Time
 {
     public interface IClock
     {

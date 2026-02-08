@@ -3,7 +3,6 @@ using FitLead.Application.Common.Identity;
 using FitLead.Application.Common.Results;
 using MediatR;
 
-
 namespace FitLead.Application.Invitations.Queries
 {
     public sealed class GetSentInvitationsByTrainerHandler

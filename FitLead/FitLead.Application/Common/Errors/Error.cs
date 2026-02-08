@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FitLead.Application.Common.Errors
+﻿namespace FitLead.Application.Common.Errors
 {
     public sealed record Error(
         string Code,
@@ -15,6 +9,7 @@ namespace FitLead.Application.Common.Errors
         public static Error Validation(string code, string message, IReadOnlyDictionary<string, object?>? metadata = null)
             => new(code, message, ErrorType.Validation, metadata);
 
+        // probably redundant
         public static Error Unauthorized(string code, string message, IReadOnlyDictionary<string, object?>? metadata = null)
             => new(code, message, ErrorType.Unauthorized, metadata);
 

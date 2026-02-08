@@ -78,7 +78,6 @@ namespace FitLead.Application.Trainings.Exercises.Commands
                     metadata));
             }
 
-            // Detach links (bulk delete) if any exist.
             if (usageCount > 0)
             {
                 await _exerciseRepository.DeleteWorkoutExercisesByExerciseIdAsync(

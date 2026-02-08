@@ -22,11 +22,9 @@ namespace FitLead.Application.Common.Results
             {
                 var error = Error.Failure("domain.exception", ex.Message);
 
-                // Result (non-generic)
                 if (typeof(TResponse) == typeof(Result))
                     return (TResponse)(object)Result.Failure(error);
 
-                // Result<T>
                 if (typeof(TResponse).IsGenericType &&
                     typeof(TResponse).GetGenericTypeDefinition() == typeof(Result<>))
                 {
@@ -42,7 +40,7 @@ namespace FitLead.Application.Common.Results
                         modifiers: null);
 
                     if (failureMethod is null)
-                        throw; // unexpected: signature changed
+                        throw;
 
                     return (TResponse)failureMethod.Invoke(null, new object[] { error })!;
                 }

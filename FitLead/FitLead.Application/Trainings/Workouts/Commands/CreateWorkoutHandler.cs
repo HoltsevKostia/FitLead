@@ -7,7 +7,6 @@ using FitLead.Domain.Trainings;
 using FitLead.Domain.Users;
 using MediatR;
 
-
 namespace FitLead.Application.Trainings.Workouts.Commands
 {
     public sealed class CreateWorkoutHandler

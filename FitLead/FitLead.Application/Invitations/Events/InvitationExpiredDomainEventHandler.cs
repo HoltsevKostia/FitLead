@@ -1,9 +1,4 @@
 ﻿using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FitLead.Application.Invitations.Events
 {
@@ -14,7 +9,6 @@ namespace FitLead.Application.Invitations.Events
             InvitationDeclinedNotification notification,
             CancellationToken cancellationToken)
         {
-            // future: notify trainer, analytics, etc.
             return Task.CompletedTask;
         }
     }

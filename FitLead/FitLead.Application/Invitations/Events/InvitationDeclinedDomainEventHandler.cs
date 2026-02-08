@@ -1,6 +1,5 @@
 ﻿using MediatR;
 
-
 namespace FitLead.Application.Invitations.Events
 {
     public sealed class InvitationDeclinedDomainEventHandler

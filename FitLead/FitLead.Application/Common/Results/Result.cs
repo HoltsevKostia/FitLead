@@ -17,10 +17,6 @@ namespace FitLead.Application.Common.Results
 
         public static Result Failure(Error error)
             => new(false, error ?? throw new ArgumentNullException(nameof(error)));
-
-        // old method needed for build
-        public static Result Failure(string message)
-            => Failure(Error.Failure("failure", message));
     }
 
     public sealed class Result<T> : Result
@@ -37,9 +33,5 @@ namespace FitLead.Application.Common.Results
 
         public static new Result<T> Failure(Error error)
             => new(false, default, error ?? throw new ArgumentNullException(nameof(error)));
-
-        // old method needed for build
-        public static new Result<T> Failure(string message)
-            => Failure(Error.Failure("failure", message));
     }
 }
