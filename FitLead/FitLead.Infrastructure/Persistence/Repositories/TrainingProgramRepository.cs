@@ -35,6 +35,15 @@ namespace FitLead.Infrastructure.Persistence.Repositories
             await _context.TrainingPrograms.AddAsync(program, cancellationToken);
         }
 
+        public async Task DeleteTrainingProgramWorkoutsByProgramIdAsync(
+            Guid programId,
+            CancellationToken cancellationToken)
+        {
+            await _context.TrainingProgramWorkouts
+                .Where(x => x.TrainingProgramId == programId)
+                .ExecuteDeleteAsync(cancellationToken);
+        }
+
         public void Remove(TrainingProgram program)
         {
             _context.TrainingPrograms.Remove(program);
