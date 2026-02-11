@@ -50,5 +50,13 @@ namespace FitLead.Infrastructure.Persistence.Repositories
             return _context.TrainingPrograms
                 .AnyAsync(x => x.Id == programId && x.TrainerId == trainerId, cancellationToken);
         }
+
+        public Task<int> GetUsageCountAsync(
+            Guid programId,
+            CancellationToken cancellationToken)
+        {
+            return _context.TrainingProgramWorkouts
+                .CountAsync(x => x.TrainingProgramId == programId, cancellationToken);
+        }
     }
 }

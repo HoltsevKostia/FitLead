@@ -34,5 +34,10 @@ namespace FitLead.Infrastructure.Persistence.Repositories
         {
             await _context.TrainingPrograms.AddAsync(program, cancellationToken);
         }
+
+        public void Remove(TrainingProgram program)
+        {
+            _context.TrainingPrograms.Remove(program);
+        }
     }
 }

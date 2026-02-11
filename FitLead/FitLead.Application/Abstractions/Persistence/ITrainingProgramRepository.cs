@@ -6,5 +6,6 @@ namespace FitLead.Application.Abstractions.Persistence
     {
         Task AddAsync(TrainingProgram program, CancellationToken cancellationToken);
         Task<TrainingProgram?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
+        void Remove(TrainingProgram program);
     }
 }
