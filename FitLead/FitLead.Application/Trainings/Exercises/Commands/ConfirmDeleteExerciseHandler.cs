@@ -2,6 +2,7 @@ using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
 using FitLead.Application.Common.Deletion;
 using FitLead.Application.Common.Errors;
+using FitLead.Application.Common.Identity;
 using FitLead.Application.Common.Results;
 using FitLead.Application.Common.Time;
 using MediatR;
@@ -11,6 +12,7 @@ namespace FitLead.Application.Trainings.Exercises.Commands
     public sealed class ConfirmDeleteExerciseHandler
     : IRequestHandler<ConfirmDeleteExerciseCommand, Result>
     {
+        private readonly IUserContext _user;
         private readonly IExerciseRepository _exerciseRepository;
         private readonly IExerciseReadRepository _exerciseReadRepository;
         private readonly IDeletionConfirmationTokenService _tokenService;
@@ -18,12 +20,14 @@ namespace FitLead.Application.Trainings.Exercises.Commands
         private readonly IUnitOfWork _unitOfWork;
 
         public ConfirmDeleteExerciseHandler(
+            IUserContext user,
             IExerciseRepository exerciseRepository,
             IExerciseReadRepository exerciseReadRepository,
             IDeletionConfirmationTokenService tokenService,
             IClock clock,
             IUnitOfWork unitOfWork)
         {
+            _user = user;
             _exerciseRepository = exerciseRepository;
             _exerciseReadRepository = exerciseReadRepository;
             _tokenService = tokenService;
@@ -41,6 +45,9 @@ namespace FitLead.Application.Trainings.Exercises.Commands
 
             if (exercise is null)
                 return Result.Failure(Error.NotFound("exercise.not_found", "Exercise not found"));
+
+            if (exercise.TrainerId != _user.UserId)
+                return Result.Failure(Error.Forbidden("exercise.forbidden", "Forbidden"));
 
             if (!_tokenService.TryValidateToken(
                     request.Token,
