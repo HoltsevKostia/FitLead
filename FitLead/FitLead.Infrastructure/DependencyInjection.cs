@@ -7,6 +7,7 @@ using FitLead.Infrastructure.Deletion;
 using FitLead.Infrastructure.Persistence;
 using FitLead.Infrastructure.Persistence.Repositories;
 using FitLead.Infrastructure.Time;
+using EntityFramework.Exceptions.PostgreSQL;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -23,7 +24,8 @@ namespace FitLead.Infrastructure
         {
             services.AddDbContext<FitLeadDbContext>(options =>
                 options.UseNpgsql(
-                    configuration.GetConnectionString("DefaultConnection")));
+                    configuration.GetConnectionString("DefaultConnection"))
+                    .UseExceptionProcessor());
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IUserRepository, UserRepository>();

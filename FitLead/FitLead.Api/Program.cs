@@ -1,3 +1,4 @@
+using FitLead.Api.Common.Errors;
 using FitLead.Api.Swagger;
 using FitLead.Application.Common.Identity;
 using FitLead.Application.Trainings.TrainingPrograms.Commands;
@@ -21,6 +22,9 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(CreateTrainingProgramCommand).Assembly);
 });
 
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserContext, HttpUserContext>();
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -33,6 +37,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseExceptionHandler();
 
 app.UseHttpsRedirection();
 
