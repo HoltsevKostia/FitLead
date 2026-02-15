@@ -1,5 +1,5 @@
-﻿using FitLead.Application.Common;
-using FitLead.Domain.Common;
+using FitLead.Application.Common;
+using FitLead.Common.Domain;
 
 namespace FitLead.Infrastructure.Persistence
 {

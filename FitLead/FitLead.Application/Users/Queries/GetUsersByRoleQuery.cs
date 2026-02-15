@@ -1,5 +1,5 @@
 using FitLead.Domain.Users;
-using FitLead.Application.Common.Results;
+using FitLead.Common.Results;
 using MediatR;
 
 namespace FitLead.Application.Users.Queries

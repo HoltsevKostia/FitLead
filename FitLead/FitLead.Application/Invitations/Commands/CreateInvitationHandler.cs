@@ -1,13 +1,12 @@
-﻿using FitLead.Application.Abstractions.Persistence;
+using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
-using FitLead.Application.Common.Errors;
+using FitLead.Common.Errors;
 using FitLead.Application.Common.Identity;
-using FitLead.Application.Common.Results;
+using FitLead.Common.Results;
 using FitLead.Application.Common.Time;
 using FitLead.Domain.Invitations;
 using FitLead.Domain.Users;
 using MediatR;
-
 
 namespace FitLead.Application.Invitations.Commands
 {

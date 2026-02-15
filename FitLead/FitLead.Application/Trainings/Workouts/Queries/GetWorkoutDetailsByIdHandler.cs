@@ -1,7 +1,7 @@
-﻿using FitLead.Application.Abstractions.Persistence;
-using FitLead.Application.Common.Errors;
+using FitLead.Application.Abstractions.Persistence;
+using FitLead.Common.Errors;
 using FitLead.Application.Common.Identity;
-using FitLead.Application.Common.Results;
+using FitLead.Common.Results;
 using MediatR;
 
 namespace FitLead.Application.Trainings.Workouts.Queries

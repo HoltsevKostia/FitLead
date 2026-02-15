@@ -1,4 +1,4 @@
-﻿using FitLead.Application.Common.Results;
+using FitLead.Common.Results;
 using FitLead.Application.Trainings.Workouts.Queries;
 using MediatR;
 

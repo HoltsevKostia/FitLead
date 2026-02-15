@@ -1,6 +1,6 @@
-﻿using FitLead.Application.Common.Errors;
+using FitLead.Common.Errors;
 
-namespace FitLead.Application.Common.Results
+namespace FitLead.Common.Results
 {
     public class Result
     {

@@ -1,6 +1,6 @@
-﻿using FitLead.Application.Common;
+using FitLead.Application.Common;
 using FitLead.Application.Invitations.EventHandlers;
-using FitLead.Domain.Common;
+using FitLead.Common.Domain;
 using FitLead.Domain.Invitations.Events;
 using MediatR;
 using System;

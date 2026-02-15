@@ -1,7 +1,7 @@
-﻿using FitLead.Application.Common.Errors;
-using FitLead.Application.Common.Results;
+using FitLead.Common.Errors;
+using FitLead.Common.Results;
 using Microsoft.AspNetCore.Mvc;
-using AppError = FitLead.Application.Common.Errors.Error;
+using AppError = FitLead.Common.Errors.Error;
 
 namespace FitLead.Api.Common.Results
 {

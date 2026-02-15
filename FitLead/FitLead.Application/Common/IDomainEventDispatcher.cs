@@ -1,4 +1,4 @@
-﻿using FitLead.Domain.Common;
+using FitLead.Common.Domain;
 
 namespace FitLead.Application.Common
 {

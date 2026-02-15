@@ -1,7 +1,7 @@
-﻿using FitLead.Application.Abstractions.Persistence;
+using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
-using FitLead.Application.Common.Errors;
-using FitLead.Application.Common.Results;
+using FitLead.Common.Errors;
+using FitLead.Common.Results;
 using MediatR;
 
 namespace FitLead.Application.Trainings.TrainingPrograms.Commands

@@ -1,9 +1,9 @@
-﻿using FitLead.Application.Abstractions.Persistence;
+using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
 using FitLead.Application.Common.Deletion;
-using FitLead.Application.Common.Errors;
+using FitLead.Common.Errors;
 using FitLead.Application.Common.Identity;
-using FitLead.Application.Common.Results;
+using FitLead.Common.Results;
 using FitLead.Application.Common.Time;
 using MediatR;
 

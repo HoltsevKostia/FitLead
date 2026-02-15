@@ -1,4 +1,4 @@
-﻿using FitLead.Domain.Common;
+using FitLead.Common.Domain;
 using FitLead.Domain.Invitations.Events;
 
 namespace FitLead.Domain.Invitations

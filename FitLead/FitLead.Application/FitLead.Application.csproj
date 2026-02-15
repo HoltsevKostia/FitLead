@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\FitLead.Common\FitLead.Common.csproj" />
     <ProjectReference Include="..\FitLead.Domain\FitLead.Domain.csproj" />
   </ItemGroup>
 
