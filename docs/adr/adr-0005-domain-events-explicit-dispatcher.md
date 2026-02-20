@@ -28,5 +28,5 @@ Cons:
 - [ADR-0002](adr-0002-cqrs-with-mediatr.md)
 
 ## Key code references
-- [`DomainEventDispatcher.cs`](Fitlead/Fitlead/FitLead.Infrastructure/DomainEventDispatcher.cs)
-- [`IDomainEventDispatcher.cs`](Fitlead/Fitlead/FitLead.Application/Common/IDomainEventDispatcher.cs)
+- [`DomainEventDispatcher.cs`](/Fitlead/Fitlead/FitLead.Infrastructure/DomainEventDispatcher.cs)
+- [`IDomainEventDispatcher.cs`](/Fitlead/Fitlead/FitLead.Application/Common/IDomainEventDispatcher.cs)

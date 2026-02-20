@@ -26,5 +26,5 @@ Cons:
 - [ADR-0010](adr-0010-dry-run-confirm-delete-with-tokens.md)
 
 ## Key code references
-- [`IClock.cs`](FitLead/FitLead/FitLead.Application/Common/Time/IClock.cs)
-- [`SystemClock.cs`](FitLead/FitLead/FitLead.Infrastructure/Time/SystemClock.cs)
+- [`IClock.cs`](/FitLead/FitLead/FitLead.Application/Common/Time/IClock.cs)
+- [`SystemClock.cs`]/(FitLead/FitLead/FitLead.Infrastructure/Time/SystemClock.cs)

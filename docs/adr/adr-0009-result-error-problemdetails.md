@@ -32,6 +32,6 @@ Cons:
 - [ADR-0012](adr-0012-shared-kernel-fitlead-common.md)
 
 ## Key code references
-- [`Result.cs`](FitLead/FitLead/FitLead.Common/Results/Result.cs)
-- [`Error.cs`](FitLead/FitLead/FitLead.Common/Errors/Error.cs)
-- [`ResultExtensions.cs`](FitLead/FitLead/FitLead.Api/Common/Results/ResultExtensions.cs)
+- [`Result.cs`](/FitLead/FitLead/FitLead.Common/Results/Result.cs)
+- [`Error.cs`](/FitLead/FitLead/FitLead.Common/Errors/Error.cs)
+- [`ResultExtensions.cs`](/FitLead/FitLead/FitLead.Api/Common/Results/ResultExtensions.cs)

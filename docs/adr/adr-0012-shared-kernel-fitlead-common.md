@@ -30,4 +30,4 @@ Cons:
 - [ADR-0009](adr-0009-result-error-problemdetails.md)
 
 ## Key code references
-- [`FitLead.Common`](FitLead/FitLead//FitLead.Common)
+- [`FitLead.Common`](/FitLead/FitLead//FitLead.Common)

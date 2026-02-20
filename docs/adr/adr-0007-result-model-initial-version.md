@@ -26,4 +26,4 @@ Cons:
 - limited error typing and weaker API error contracts
 
 ## Key code references
-- [`Result.cs`](Fitlead/Fitlead/FitLead.Common/Results/Result.cs)
+- [`Result.cs`](/Fitlead/Fitlead/FitLead.Common/Results/Result.cs)

@@ -24,6 +24,6 @@ Cons:
 - [ADR-0006](adr-0006-iusercontext-dev-header-fallback.md)
 
 ## Key code references
-- [`User.cs`](Fitlead/Fitlead/FitLead.Domain/Users/User.cs)
-- [`UserRole.cs`](Fitlead/Fitlead/FitLead.Domain/Users/UserRole.cs)
+- [`User.cs`](/Fitlead/Fitlead/FitLead.Domain/Users/User.cs)
+- [`UserRole.cs`](/Fitlead/Fitlead/FitLead.Domain/Users/UserRole.cs)
 

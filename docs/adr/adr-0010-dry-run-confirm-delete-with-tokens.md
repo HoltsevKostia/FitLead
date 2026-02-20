@@ -43,6 +43,6 @@ Cons:
 - [ADR-0008](adr-0008-time-abstraction-iclock-timeprovider.md)
 
 ## Key code references
-- [`IDeletionConfirmationTokenService.cs`](FitLead/FitLead/FitLead.Application/Common/Deletion/IDeletionConfirmationTokenService.cs)
-- [`DeleteExerciseHandler.cs`](FitLead/FitLead/FitLead.Application/Trainings/Exercises/Commands/DeleteExerciseHandler.cs)
-- [`ConfirmDeleteExerciseHandler.cs.cs`](FitLead/FitLead/FitLead.Application/Trainings/Exercises/Commands/ConfirmDeleteExerciseHandler.cs)
+- [`IDeletionConfirmationTokenService.cs`](/FitLead/FitLead/FitLead.Application/Common/Deletion/IDeletionConfirmationTokenService.cs)
+- [`DeleteExerciseHandler.cs`](/FitLead/FitLead/FitLead.Application/Trainings/Exercises/Commands/DeleteExerciseHandler.cs)
+- [`ConfirmDeleteExerciseHandler.cs.cs`](/FitLead/FitLead/FitLead.Application/Trainings/Exercises/Commands/ConfirmDeleteExerciseHandler.cs)

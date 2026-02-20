@@ -26,5 +26,5 @@ Cons:
 - [ADR-0003](adr-0003-single-user-aggregate-role-as-state.md)
 
 ## Key code references
-- [`IUserContext.cs`](Fitlead/Fitlead/FitLead.Application/Common/Identity/IUserContext.cs)
-- [`HttpUserContext.cs`](Fitlead/Fitlead/FitLead.Infrastructure/Identity/HttpUserContext.cs)
+- [`IUserContext.cs`](/Fitlead/Fitlead/FitLead.Application/Common/Identity/IUserContext.cs)
+- [`HttpUserContext.cs`](/Fitlead/Fitlead/FitLead.Infrastructure/Identity/HttpUserContext.cs)

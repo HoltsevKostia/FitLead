@@ -31,5 +31,5 @@ Cons:
 - [ADR-0005](adr-0005-domain-events-explicit-dispatcher.md)
 
 ## Key code references
-- [`Invitation.cs`](Fitlead/Fitlead/FitLead.Domain/Invitations/Invitation.cs)
-- [`InvitationExpirationWorker.cs`](Fitlead/Fitlead/FitLead.Infrastructure/BackgroundJobs/Invitations/InvitationExpirationWorker.cs)
+- [`Invitation.cs`](/Fitlead/Fitlead/FitLead.Domain/Invitations/Invitation.cs)
+- [`InvitationExpirationWorker.cs`](/Fitlead/Fitlead/FitLead.Infrastructure/BackgroundJobs/Invitations/InvitationExpirationWorker.cs)

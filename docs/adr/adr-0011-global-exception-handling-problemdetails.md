@@ -39,4 +39,4 @@ Cons:
 - [ADR-0009](adr-0009-result-error-problemdetails.md)
 
 ## Key code references
-- [`GlobalExceptionHandler.cs`](FitLead/FitLead/FitLead.Api/Common/Errors/GlobalExceptionHandler.cs)
+- [`GlobalExceptionHandler.cs`](/FitLead/FitLead/FitLead.Api/Common/Errors/GlobalExceptionHandler.cs)
