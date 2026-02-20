@@ -1,6 +1,20 @@
 <Solution>
   <Folder Name="/docs/" />
-  <Folder Name="/docs/adr/" />
+  <Folder Name="/docs/adr/">
+    <File Path="../docs/adr/adr-0001-clean-architecture-layering.md" />
+    <File Path="../docs/adr/adr-0002-cqrs-with-mediatr.md" />
+    <File Path="../docs/adr/adr-0003-single-user-aggregate-role-as-state.md" />
+    <File Path="../docs/adr/adr-0004-invitations-lifecycle-expiration-anti-spam.md" />
+    <File Path="../docs/adr/adr-0005-domain-events-explicit-dispatcher.md" />
+    <File Path="../docs/adr/adr-0006-iusercontext-dev-header-fallback.md" />
+    <File Path="../docs/adr/adr-0007-result-model-initial-version.md" />
+    <File Path="../docs/adr/adr-0008-time-abstraction-iclock-timeprovider.md" />
+    <File Path="../docs/adr/adr-0009-result-error-problemdetails.md" />
+    <File Path="../docs/adr/adr-0010-dry-run-confirm-delete-with-tokens.md" />
+    <File Path="../docs/adr/adr-0011-global-exception-handling-problemdetails.md" />
+    <File Path="../docs/adr/adr-0012-shared-kernel-fitlead-common.md" />
+    <File Path="../docs/adr/README.md" />
+  </Folder>
   <Project Path="FitLead.Api/FitLead.Api.csproj" />
   <Project Path="FitLead.Application/FitLead.Application.csproj" />
   <Project Path="FitLead.Common/FitLead.Common.csproj" Id="c8d69740-87e1-4941-81f6-1fb8c0757c86" />

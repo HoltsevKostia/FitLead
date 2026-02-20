@@ -32,6 +32,6 @@ Cons:
 - [ADR-0009](adr-0009-result-error-problemdetails.md)
 
 ## Key code references
-- [`Result.cs`](FitLead/FitLead.Common/Results/Result.cs)
-- [`CreateTrainingProgramCommand.cs`](FitLead/FitLead.Application/Trainings/TrainingPrograms/Commands/CreateTrainingProgramCommand.cs)
-- [`GetTrainingProgramsByTrainerIdQuery.cs`](FitLead/FitLead.Application/Trainings/TrainingPrograms/Queries/GetTrainingProgramsByTrainerIdQuery.cs)
+- [`Result.cs`](/FitLead/FitLead.Common/Results/Result.cs)
+- [`CreateTrainingProgramCommand.cs`](/FitLead/FitLead.Application/Trainings/TrainingPrograms/Commands/CreateTrainingProgramCommand.cs)
+- [`GetTrainingProgramsByTrainerIdQuery.cs`](/FitLead/FitLead.Application/Trainings/TrainingPrograms/Queries/GetTrainingProgramsByTrainerIdQuery.cs)
