@@ -1,4 +1,6 @@
 <Solution>
+  <Folder Name="/docs/" />
+  <Folder Name="/docs/adr/" />
   <Project Path="FitLead.Api/FitLead.Api.csproj" />
   <Project Path="FitLead.Application/FitLead.Application.csproj" />
   <Project Path="FitLead.Common/FitLead.Common.csproj" Id="c8d69740-87e1-4941-81f6-1fb8c0757c86" />
