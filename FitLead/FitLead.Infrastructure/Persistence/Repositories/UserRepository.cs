@@ -1,6 +1,5 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
 using FitLead.Domain.Users;
-using FitLead.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace FitLead.Infrastructure.Persistence.Repositories

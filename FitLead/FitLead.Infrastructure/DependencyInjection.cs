@@ -1,17 +1,17 @@
+using EntityFramework.Exceptions.PostgreSQL;
 using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
 using FitLead.Application.Common.Deletion;
+using FitLead.Application.Common.Results;
 using FitLead.Application.Common.Time;
 using FitLead.Infrastructure.Deletion;
 using FitLead.Infrastructure.Persistence;
 using FitLead.Infrastructure.Persistence.Repositories;
 using FitLead.Infrastructure.Time;
-using EntityFramework.Exceptions.PostgreSQL;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using FitLead.Application.Common.Results;
 
 namespace FitLead.Infrastructure
 {

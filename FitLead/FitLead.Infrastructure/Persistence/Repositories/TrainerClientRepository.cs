@@ -1,5 +1,4 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
-using FitLead.Infrastructure.Persistence;
 using FitLead.Infrastructure.Persistence.Models;
 using Microsoft.EntityFrameworkCore;
 
