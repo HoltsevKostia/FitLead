@@ -1,5 +1,6 @@
 using FitLead.Common.Domain;
-using FitLead.Domain.Common.Exceptions;
+using FitLead.Common.Errors;
+using FitLead.Common.Results;
 
 namespace FitLead.Domain.Trainings
 {
@@ -12,22 +13,13 @@ namespace FitLead.Domain.Trainings
 
         private WorkoutExercise() { } // EF
 
-        internal WorkoutExercise(
+        private WorkoutExercise(
             Guid id,
             Guid exerciseId,
             int repetitions,
             int sets,
             int restSeconds)
         {
-            if (exerciseId == Guid.Empty)
-                throw new ArgumentException("ExerciseId is required");
-
-            if (repetitions <= 0 || sets <= 0)
-                throw new ArgumentException("Invalid repetitions or sets");
-
-            if (restSeconds < 0)
-                throw new ArgumentException("RestSeconds cannot be negative");
-
             Id = id;
             ExerciseId = exerciseId;
             Repetitions = repetitions;
@@ -35,20 +27,47 @@ namespace FitLead.Domain.Trainings
             RestSeconds = restSeconds;
         }
 
-        public void Update(
+        internal static Result<WorkoutExercise> Create(
+            Guid id,
+            Guid exerciseId,
+            int repetitions,
+            int sets,
+            int restSeconds)
+        {
+            if (exerciseId == Guid.Empty)
+                return Result<WorkoutExercise>.Failure(
+                    Error.Validation("workout.exercise.create.exercise_id_required", "ExerciseId is required"));
+
+            if (repetitions <= 0 || sets <= 0)
+                return Result<WorkoutExercise>.Failure(
+                    Error.Validation("workout.exercise.create.invalid_reps_or_sets", "Invalid repetitions or sets"));
+
+            if (restSeconds < 0)
+                return Result<WorkoutExercise>.Failure(
+                    Error.Validation("workout.exercise.create.rest_seconds_negative", "RestSeconds cannot be negative"));
+
+            return Result<WorkoutExercise>.Success(
+                new WorkoutExercise(id, exerciseId, repetitions, sets, restSeconds));
+        }
+
+        public Result Update(
             int repetitions,
             int sets,
             int restSeconds)
         {
             if (repetitions <= 0 || sets <= 0)
-                throw new DomainRuleViolationException("workout.exercise.update.invalid_reps_or_sets", "Invalid repetitions or sets");
+                return Result.Failure(
+                    Error.Validation("workout.exercise.update.invalid_reps_or_sets", "Invalid repetitions or sets"));
 
             if (restSeconds < 0)
-                throw new DomainRuleViolationException("workout.exercise.update.rest_seconds_negative", "RestSeconds cannot be negative");
+                return Result.Failure(
+                    Error.Validation("workout.exercise.update.rest_seconds_negative", "RestSeconds cannot be negative"));
 
             Repetitions = repetitions;
             Sets = sets;
             RestSeconds = restSeconds;
+
+            return Result.Success();
         }
     }
 }

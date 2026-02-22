@@ -1,4 +1,6 @@
 using FitLead.Common.Domain;
+using FitLead.Common.Errors;
+using FitLead.Common.Results;
 
 namespace FitLead.Domain.Trainings
 {
@@ -10,30 +12,45 @@ namespace FitLead.Domain.Trainings
 
         private TrainingProgramWorkout() { } // EF
 
-        internal TrainingProgramWorkout(
+        private TrainingProgramWorkout(
             Guid id,
             Guid workoutId,
             int order,
             Guid trainingProgramId)
         {
-            if (workoutId == Guid.Empty)
-                throw new ArgumentException("WorkoutId is required");
-
-            if (order <= 0)
-                throw new ArgumentException("Order must be positive");
-
             Id = id;
             WorkoutId = workoutId;
             Order = order;
             TrainingProgramId = trainingProgramId;
         }
 
-        internal void ChangeOrder(int order)
+        internal static Result<TrainingProgramWorkout> Create(
+            Guid id,
+            Guid workoutId,
+            int order,
+            Guid trainingProgramId)
+        {
+            if (workoutId == Guid.Empty)
+                return Result<TrainingProgramWorkout>.Failure(
+                    Error.Validation("training_program.workout.create.workout_id_required", "WorkoutId is required"));
+
+            if (order <= 0)
+                return Result<TrainingProgramWorkout>.Failure(
+                    Error.Validation("training_program.workout.create.order_positive_required", "Order must be positive"));
+
+            return Result<TrainingProgramWorkout>.Success(
+                new TrainingProgramWorkout(id, workoutId, order, trainingProgramId));
+        }
+
+        internal Result ChangeOrder(int order)
         {
             if (order <= 0)
-                throw new ArgumentException("Order must be positive");
+                return Result.Failure(
+                    Error.Validation("training_program.workout.order.positive_required", "Order must be positive"));
 
             Order = order;
+
+            return Result.Success();
         }
     }
 }

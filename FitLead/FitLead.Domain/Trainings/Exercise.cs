@@ -1,5 +1,6 @@
 using FitLead.Common.Domain;
-using FitLead.Domain.Common.Exceptions;
+using FitLead.Common.Errors;
+using FitLead.Common.Results;
 
 namespace FitLead.Domain.Trainings
 {
@@ -27,34 +28,37 @@ namespace FitLead.Domain.Trainings
             MediaUrl = mediaUrl;
         }
 
-        public static Exercise Create(
+        public static Result<Exercise> Create(
             Guid trainerId,
             string name,
             string description,
             string? mediaUrl = null)
         {
             if (trainerId == Guid.Empty)
-                throw new ArgumentException("TrainerId is required");
+                return Result<Exercise>.Failure(
+                    Error.Validation("exercise.create.trainer_id_required", "TrainerId is required"));
 
             if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentException("Exercise name is required");
+                return Result<Exercise>.Failure(
+                    Error.Validation("exercise.create.name_required", "Exercise name is required"));
 
-            return new Exercise(
-                Guid.NewGuid(),
-                trainerId,
-                name.Trim(),
-                description?.Trim() ?? string.Empty,
-                mediaUrl);
+            return Result<Exercise>.Success(
+                new Exercise(
+                    Guid.NewGuid(),
+                    trainerId,
+                    name.Trim(),
+                    description?.Trim() ?? string.Empty,
+                    mediaUrl));
         }
 
-        private void Rename(string name)
+        private Result Rename(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
-                throw new DomainRuleViolationException(
-                    "exercise.update.name.required",
-                    "Exercise name is required");
+                return Result.Failure(
+                    Error.Validation("exercise.update.name.required", "Exercise name is required"));
 
             Name = name.Trim();
+            return Result.Success();
         }
 
         private void UpdateDescription(string description)
@@ -62,16 +66,15 @@ namespace FitLead.Domain.Trainings
             Description = description?.Trim() ?? string.Empty;
         }
 
-        private void UpdateMediaUrl(string? mediaUrl)
+        private Result UpdateMediaUrl(string? mediaUrl)
         {
             if (!string.IsNullOrWhiteSpace(mediaUrl))
             {
                 var trimmed = mediaUrl.Trim();
 
                 if (trimmed.Length > 500)
-                    throw new DomainRuleViolationException(
-                        "exercise.update.media_url.too_long",
-                        "MediaUrl is too long");
+                    return Result.Failure(
+                        Error.Validation("exercise.update.media_url.too_long", "MediaUrl is too long"));
 
                 MediaUrl = trimmed;
             }
@@ -79,15 +82,23 @@ namespace FitLead.Domain.Trainings
             {
                 MediaUrl = null;
             }
+
+            return Result.Success();
         }
 
-        public void Update(string name, string description, string? mediaUrl)
+        public Result Update(string name, string description, string? mediaUrl)
         {
-            Rename(name);
+            var renameResult = Rename(name);
+            if (renameResult.IsFailure)
+                return renameResult;
 
             UpdateDescription(description);
 
-            UpdateMediaUrl(mediaUrl);
+            var mediaResult = UpdateMediaUrl(mediaUrl);
+            if (mediaResult.IsFailure)
+                return mediaResult;
+
+            return Result.Success();
         }
     }
 }

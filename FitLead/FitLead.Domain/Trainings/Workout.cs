@@ -1,5 +1,6 @@
 using FitLead.Common.Domain;
-using FitLead.Domain.Common.Exceptions;
+using FitLead.Common.Errors;
+using FitLead.Common.Results;
 
 namespace FitLead.Domain.Trainings
 {
@@ -21,29 +22,32 @@ namespace FitLead.Domain.Trainings
             TrainerId = trainerId;
         }
 
-        public static Workout Create(string name, Guid trainerId)
+        public static Result<Workout> Create(string name, Guid trainerId)
         {
             if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentException("Workout name is required");
+                return Result<Workout>.Failure(
+                    Error.Validation("workout.create.name_required", "Workout name is required"));
 
             if (trainerId == Guid.Empty)
-                throw new ArgumentException("TrainerId is required");
+                return Result<Workout>.Failure(
+                    Error.Validation("workout.create.trainer_id_required", "TrainerId is required"));
 
-            return new Workout(
-                Guid.NewGuid(),
-                name.Trim(),
-                trainerId);
+            return Result<Workout>.Success(
+                new Workout(Guid.NewGuid(), name.Trim(), trainerId));
         }
 
-        public void Rename(string name)
+        public Result Rename(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentException("Workout name is required");
+                return Result.Failure(
+                    Error.Validation("workout.rename.name_required", "Workout name is required"));
 
             Name = name.Trim();
+
+            return Result.Success();
         }
 
-        public Guid AddExercise(
+        public Result<Guid> AddExercise(
             Guid exerciseId,
             int repetitions,
             int sets,
@@ -51,34 +55,45 @@ namespace FitLead.Domain.Trainings
         {
             var entryId = Guid.NewGuid();
 
-            var entry = new WorkoutExercise(
+            var entryResult = WorkoutExercise.Create(
                 entryId,
                 exerciseId,
                 repetitions,
                 sets,
                 restSeconds);
 
-            _exercises.Add(entry);
+            if (entryResult.IsFailure)
+                return Result<Guid>.Failure(entryResult.Error);
+
+            _exercises.Add(entryResult.Value);
             
-            return entryId;
+            return Result<Guid>.Success(entryId);
         }
 
-        public void RemoveExercise(Guid workoutExerciseId)
+        public Result RemoveExercise(Guid workoutExerciseId)
         {
             var entry = _exercises.FirstOrDefault(x => x.Id == workoutExerciseId);
             if (entry is null)
-                throw new InvalidOperationException("Exercise not found in workout");
+                return Result.Failure(
+                    Error.Validation("workout.exercise.remove.not_found", "Exercise not found in workout"));
 
             _exercises.Remove(entry);
+
+            return Result.Success();
         }
 
-        public void UpdateExercise(Guid workoutExerciseId, int repetitions, int sets, int restSeconds)
+        public Result UpdateExercise(Guid workoutExerciseId, int repetitions, int sets, int restSeconds)
         {
             var entry = _exercises.FirstOrDefault(x => x.Id == workoutExerciseId);
             if (entry is null)
-                throw new DomainRuleViolationException("workout.exercise.update.not_found", "Exercise not found in workout");
+                return Result.Failure(
+                    Error.Validation("workout.exercise.update.not_found", "Exercise not found in workout"));
 
-            entry.Update(repetitions, sets, restSeconds);
+            var updateResult = entry.Update(repetitions, sets, restSeconds);
+            if (updateResult.IsFailure)
+                return updateResult;
+
+            return Result.Success();
         }
     }
 }
