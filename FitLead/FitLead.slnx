@@ -13,6 +13,7 @@
     <File Path="../docs/adr/adr-0010-dry-run-confirm-delete-with-tokens.md" />
     <File Path="../docs/adr/adr-0011-global-exception-handling-problemdetails.md" />
     <File Path="../docs/adr/adr-0012-shared-kernel-fitlead-common.md" />
+    <File Path="../docs/adr/adr-0013-domain-result-for-expected-failures.md" />
     <File Path="../docs/adr/README.md" />
   </Folder>
   <Project Path="FitLead.Api/FitLead.Api.csproj" />
