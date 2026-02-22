@@ -1,4 +1,6 @@
 using FitLead.Common.Domain;
+using FitLead.Common.Errors;
+using FitLead.Common.Results;
 
 namespace FitLead.Domain.Users
 {
@@ -18,25 +20,28 @@ namespace FitLead.Domain.Users
             Role = role;
         }
 
-        public static User CreateTrainer(string email, string fullName)
+        public static Result<User> CreateTrainer(string email, string fullName)
             => Create(email, fullName, UserRole.Trainer);
 
-        public static User CreateClient(string email, string fullName)
+        public static Result<User> CreateClient(string email, string fullName)
             => Create(email, fullName, UserRole.Client);
 
-        private static User Create(string email, string fullName, UserRole role)
+        private static Result<User> Create(string email, string fullName, UserRole role)
         {
             if (string.IsNullOrWhiteSpace(email))
-                throw new ArgumentException("Email is required");
+                return Result<User>.Failure(
+                    Error.Validation("user.create.email_required", "Email is required"));
 
             if (string.IsNullOrWhiteSpace(fullName))
-                throw new ArgumentException("Full name is required");
+                return Result<User>.Failure(
+                    Error.Validation("user.create.full_name_required", "Full name is required"));
 
-            return new User(
-                Guid.NewGuid(),
-                email.Trim(),
-                fullName.Trim(),
-                role);
+            return Result<User>.Success(
+                new User(
+                    Guid.NewGuid(),
+                    email.Trim(),
+                    fullName.Trim(),
+                    role));
         }
 
         public bool IsTrainer => Role == UserRole.Trainer;

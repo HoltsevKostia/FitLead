@@ -36,10 +36,13 @@ namespace FitLead.Application.Users.Commands
                 ? User.CreateTrainer(request.Email, request.FullName)
                 : User.CreateClient(request.Email, request.FullName);
 
-            await _userRepository.AddAsync(user, cancellationToken);
+            if (user.IsFailure)
+                return Result<Guid>.Failure(user.Error);
+
+            await _userRepository.AddAsync(user.Value, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return Result<Guid>.Success(user.Id);
+            return Result<Guid>.Success(user.Value.Id);
         }
     }
 }
