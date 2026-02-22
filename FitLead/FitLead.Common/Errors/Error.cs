@@ -6,10 +6,17 @@ namespace FitLead.Common.Errors
         ErrorType Type,
         IReadOnlyDictionary<string, object?>? Metadata = null)
     {
+        public static readonly Error None =
+            new("None", string.Empty, ErrorType.Failure);
+
+        public static readonly Error NullValue =
+            new("Null",
+                "Null value cant be provided",
+                ErrorType.Failure);
+
         public static Error Validation(string code, string message, IReadOnlyDictionary<string, object?>? metadata = null)
             => new(code, message, ErrorType.Validation, metadata);
 
-        // probably redundant
         public static Error Unauthorized(string code, string message, IReadOnlyDictionary<string, object?>? metadata = null)
             => new(code, message, ErrorType.Unauthorized, metadata);
 

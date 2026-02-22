@@ -47,9 +47,9 @@ namespace FitLead.Api.Common.Results
             return ToProblem(controller, result.Error);
         }
 
-        private static IActionResult ToProblem(ControllerBase controller, AppError? error)
+        private static IActionResult ToProblem(ControllerBase controller, AppError error)
         {
-            if (error is null)
+            if (error == AppError.None)
             {
                 var pd = new ProblemDetails
                 {
