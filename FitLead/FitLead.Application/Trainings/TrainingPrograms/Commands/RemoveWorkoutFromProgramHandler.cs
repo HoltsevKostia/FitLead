@@ -31,7 +31,9 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Commands
             if (program is null)
                 return Result.Failure(Error.NotFound("training_program.not_found", "Training program not found"));
 
-            program.RemoveWorkout(request.WorkoutId);
+            var removeResult = program.RemoveWorkout(request.WorkoutId);
+            if (removeResult.IsFailure)
+                return removeResult;
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

@@ -38,7 +38,9 @@ namespace FitLead.Application.Trainings.Workouts.Commands
             if (workout.TrainerId != _user.UserId)
                 return Result.Failure(Error.Forbidden("workout.forbidden", "Forbidden"));
 
-            workout.RemoveExercise(request.WorkoutExerciseId);
+            var removeResult = workout.RemoveExercise(request.WorkoutExerciseId);
+            if (removeResult.IsFailure)
+                return removeResult;
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

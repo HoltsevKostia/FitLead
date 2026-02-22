@@ -43,14 +43,16 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Commands
             if (trainer.Role != UserRole.Trainer)
                 return Result<Guid>.Failure(Error.Forbidden("trainer.required", "User is not a trainer"));
 
-            var program = TrainingProgram.Create(
+            var programResult = TrainingProgram.Create(
                 request.Title,
                 _user.UserId);
+            if (programResult.IsFailure)
+                return Result<Guid>.Failure(programResult.Error);
 
-            await _programRepository.AddAsync(program, cancellationToken);
+            await _programRepository.AddAsync(programResult.Value, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return Result<Guid>.Success(program.Id);
+            return Result<Guid>.Success(programResult.Value.Id);
         }
     }
 }

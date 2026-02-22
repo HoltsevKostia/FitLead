@@ -36,11 +36,13 @@ namespace FitLead.Application.Trainings.Workouts.Commands
             if (workout.TrainerId != _user.UserId)
                 return Result.Failure(Error.Forbidden("workout.forbidden", "Forbidden"));
 
-            workout.UpdateExercise(
+            var updateResult = workout.UpdateExercise(
                 request.WorkoutExerciseId,
                 request.Repetitions,
                 request.Sets,
                 request.RestSeconds);
+            if (updateResult.IsFailure)
+                return updateResult;
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

@@ -41,15 +41,17 @@ namespace FitLead.Application.Trainings.Workouts.Commands
             if (!exerciseExists)
                 return Result<Guid>.Failure(Error.NotFound("exercise.not_found", "Exercise not found"));
 
-            var entryId = workout.AddExercise(
+            var addResult = workout.AddExercise(
                 request.ExerciseId,
                 request.Repetitions,
                 request.Sets,
                 request.RestSeconds);
+            if (addResult.IsFailure)
+                return addResult;
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return Result<Guid>.Success(entryId);
+            return Result<Guid>.Success(addResult.Value);
         }
     }
 }

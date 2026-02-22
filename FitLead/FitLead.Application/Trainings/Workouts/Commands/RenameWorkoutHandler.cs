@@ -31,7 +31,9 @@ namespace FitLead.Application.Trainings.Workouts.Commands
             if (workout is null)
                 return Result.Failure(Error.NotFound("workout.not_found", "Workout not found"));
 
-            workout.Rename(request.Name);
+            var renameResult = workout.Rename(request.Name);
+            if (renameResult.IsFailure)
+                return renameResult;
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

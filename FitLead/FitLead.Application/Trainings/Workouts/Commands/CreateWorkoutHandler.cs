@@ -43,14 +43,16 @@ namespace FitLead.Application.Trainings.Workouts.Commands
             if (trainer.Role != UserRole.Trainer)
                 return Result<Guid>.Failure(Error.Forbidden("trainer.required", "User is not a trainer"));
 
-            var workout = Workout.Create(
+            var workoutResult = Workout.Create(
                 request.Name,
                 _user.UserId);
+            if (workoutResult.IsFailure)
+                return Result<Guid>.Failure(workoutResult.Error);
 
-            await _repository.AddAsync(workout, cancellationToken);
+            await _repository.AddAsync(workoutResult.Value, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return Result<Guid>.Success(workout.Id);
+            return Result<Guid>.Success(workoutResult.Value.Id);
         }
     }
 }

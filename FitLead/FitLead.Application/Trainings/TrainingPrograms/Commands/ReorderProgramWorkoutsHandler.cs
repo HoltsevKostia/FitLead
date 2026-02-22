@@ -26,7 +26,9 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Commands
             if (program is null)
                 return Result.Failure(Error.NotFound("training_program.not_found", "Training program not found"));
 
-            program.ReorderWorkouts(request.OrderedWorkoutIds);
+            var reorderResult = program.ReorderWorkouts(request.OrderedWorkoutIds);
+            if (reorderResult.IsFailure)
+                return reorderResult;
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             return Result.Success();
