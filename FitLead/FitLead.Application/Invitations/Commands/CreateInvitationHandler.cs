@@ -71,15 +71,17 @@ namespace FitLead.Application.Invitations.Commands
             if (sentToday >= 2)
                 return Result<Guid>.Failure(Error.Conflict("invitation.daily_limit", "Daily invitation limit reached"));
 
-            var invitation = Invitation.Create(
+            var invitationResult = Invitation.Create(
                 _user.UserId,
                 request.ClientId,
                 _clock.UtcNow);
+            if (invitationResult.IsFailure)
+                return Result<Guid>.Failure(invitationResult.Error);
 
-            await _invitationRepository.AddAsync(invitation, cancellationToken);
+            await _invitationRepository.AddAsync(invitationResult.Value, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return Result<Guid>.Success(invitation.Id);
+            return Result<Guid>.Success(invitationResult.Value.Id);
         }
     }
 }

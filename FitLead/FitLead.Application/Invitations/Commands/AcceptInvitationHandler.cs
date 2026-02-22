@@ -50,7 +50,9 @@ namespace FitLead.Application.Invitations.Commands
             if (invitation.ClientId != _user.UserId)
                 return Result.Failure(Error.Forbidden("invitation.forbidden", "Invitation does not belong to this client"));
 
-            invitation.Accept(_clock.UtcNow);
+            var acceptResult = invitation.Accept(_clock.UtcNow);
+            if (acceptResult.IsFailure)
+                return acceptResult;
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             return Result.Success();

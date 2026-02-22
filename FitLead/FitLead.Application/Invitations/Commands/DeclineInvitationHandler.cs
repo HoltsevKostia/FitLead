@@ -42,7 +42,9 @@ namespace FitLead.Application.Invitations.Commands
             if (invitation.ClientId != _user.UserId)
                 return Result.Failure(Error.Forbidden("invitation.forbidden", "Invitation does not belong to this client"));
 
-            invitation.Decline(_clock.UtcNow);
+            var declineResult = invitation.Decline(_clock.UtcNow);
+            if (declineResult.IsFailure)
+                return declineResult;
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             return Result.Success();

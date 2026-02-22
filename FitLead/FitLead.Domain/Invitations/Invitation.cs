@@ -1,4 +1,6 @@
 using FitLead.Common.Domain;
+using FitLead.Common.Errors;
+using FitLead.Common.Results;
 using FitLead.Domain.Invitations.Events;
 
 namespace FitLead.Domain.Invitations
@@ -28,31 +30,37 @@ namespace FitLead.Domain.Invitations
             Status = InvitationStatus.Pending;
         }
 
-        public static Invitation Create(
+        public static Result<Invitation> Create(
             Guid trainerId,
             Guid clientId,
             DateTime now)
         {
             if (trainerId == Guid.Empty)
-                throw new ArgumentException("TrainerId is required");
+                return Result<Invitation>.Failure(
+                    Error.Validation("invitation.create.trainer_id_required", "TrainerId is required"));
 
             if (clientId == Guid.Empty)
-                throw new ArgumentException("ClientId is required");
+                return Result<Invitation>.Failure(
+                    Error.Validation("invitation.create.client_id_required", "ClientId is required"));
 
-            return new Invitation(
-                Guid.NewGuid(),
-                trainerId,
-                clientId,
-                now,
-                now.AddHours(48));
+            return Result<Invitation>.Success(
+                new Invitation(
+                    Guid.NewGuid(),
+                    trainerId,
+                    clientId,
+                    now,
+                    now.AddHours(48)));
         }
 
-        public void Accept(DateTime now)
+        public Result Accept(DateTime now)
         {
-            EnsurePending();
+            var pendingResult = EnsurePending();
+            if (pendingResult.IsFailure)
+                return pendingResult;
 
             if (now > ExpiresAt)
-                throw new InvalidOperationException("Invitation has expired");
+                return Result.Failure(
+                    Error.Conflict("invitation.accept.expired", "Invitation has expired"));
 
             Status = InvitationStatus.Accepted;
 
@@ -60,18 +68,25 @@ namespace FitLead.Domain.Invitations
             Id,
             TrainerId,
             ClientId));
+
+            return Result.Success();
         }
 
-        public void Decline(DateTime now)
+        public Result Decline(DateTime now)
         {
-            EnsurePending();
+            var pendingResult = EnsurePending();
+            if (pendingResult.IsFailure)
+                return pendingResult;
 
             if (now > ExpiresAt)
-                throw new InvalidOperationException("Invitation has expired");
+                return Result.Failure(
+                    Error.Conflict("invitation.decline.expired", "Invitation has expired"));
 
             Status = InvitationStatus.Declined;
 
             RaiseDomainEvent(new InvitationDeclinedDomainEvent(Id, TrainerId, ClientId));
+
+            return Result.Success();
         }
 
         public void Expire(DateTime now)
@@ -87,11 +102,13 @@ namespace FitLead.Domain.Invitations
             RaiseDomainEvent(new InvitationExpiredDomainEvent(Id, TrainerId, ClientId));
         }
 
-        private void EnsurePending()
+        private Result EnsurePending()
         {
             if (Status != InvitationStatus.Pending)
-                throw new InvalidOperationException(
-                    $"Invitation is already {Status}");
+                return Result.Failure(
+                    Error.Conflict("invitation.status.invalid_transition", $"Invitation is already {Status}"));
+
+            return Result.Success();
         }
     }
 }
