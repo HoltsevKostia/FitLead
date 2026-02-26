@@ -1,12 +1,15 @@
-﻿using FitLead.Domain.Invitations;
+using FitLead.Domain.Invitations;
 using FitLead.Domain.Trainings;
 using FitLead.Domain.Users;
+using FitLead.Infrastructure.Identity;
 using FitLead.Infrastructure.Persistence.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace FitLead.Infrastructure.Persistence
 {
-    public class FitLeadDbContext : DbContext
+    public class FitLeadDbContext : IdentityDbContext<AppIdentityUser, IdentityRole, string>
     {
         public FitLeadDbContext(DbContextOptions<FitLeadDbContext> options)
             : base(options)
@@ -21,12 +24,12 @@ namespace FitLead.Infrastructure.Persistence
         public DbSet<WorkoutExercise> WorkoutExercises => Set<WorkoutExercise>();
         public DbSet<Invitation> Invitations => Set<Invitation>();
         public DbSet<TrainingProgramWorkout> TrainingProgramWorkouts => Set<TrainingProgramWorkout>();
-
+        public DbSet<UserIdentityLink> UserIdentityLinks => Set<UserIdentityLink>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfigurationsFromAssembly(typeof(FitLeadDbContext).Assembly);
             base.OnModelCreating(modelBuilder);
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(FitLeadDbContext).Assembly);
         }
     }
 }

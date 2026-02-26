@@ -4,6 +4,7 @@ using FitLead.Application.Common.Identity;
 using FitLead.Application.Trainings.TrainingPrograms.Commands;
 using FitLead.Infrastructure;
 using FitLead.Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +29,11 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserContext, HttpUserContext>();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+builder.Services.AddIdentityCore<AppIdentityUser>()
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<FitLead.Infrastructure.Persistence.FitLeadDbContext>()
+    .AddDefaultTokenProviders();
 
 var app = builder.Build();
 

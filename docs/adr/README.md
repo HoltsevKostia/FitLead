@@ -20,6 +20,7 @@ Each ADR captures one decision: context, decision, consequences.
 | [0011](adr-0011-global-exception-handling-problemdetails.md) | Global exception handling via `IExceptionHandler` + ProblemDetails | Accepted | 2026-02 |
 | [0012](adr-0012-shared-kernel-fitlead-common.md) | Shared kernel in `FitLead.Common` for framework-agnostic primitives | Accepted | 2026-02 |
 | [0013](adr-0013-domain-result-for-expected-failures.md) | Domain uses `Result` for expected business failures | Accepted | 2026-02 |
+| [0014](adr-0014-identity-first-auth-foundation.md) | Identity-first auth foundation with domain-identity link | Accepted | 2026-02 |
 
 ## ADR status conventions
 
