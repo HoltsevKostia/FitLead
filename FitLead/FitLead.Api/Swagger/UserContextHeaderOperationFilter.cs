@@ -1,4 +1,4 @@
-﻿using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace FitLead.Api.Swagger
@@ -9,20 +9,18 @@ namespace FitLead.Api.Swagger
         {
             operation.Parameters ??= new List<OpenApiParameter>();
 
-            // не дублюємо, якщо вже є
-            if (operation.Parameters.Any(p => p.Name == "X-User-Id"))
+            if (operation.Parameters.Any(p => p.Name == "X-Identity-User-Id"))
                 return;
 
             operation.Parameters.Add(new OpenApiParameter
             {
-                Name = "X-User-Id",
+                Name = "X-Identity-User-Id",
                 In = ParameterLocation.Header,
-                Required = false, // MVP
-                Description = "Current user id (MVP/dev only). Will be replaced by JWT claims post-MVP.",
+                Required = false,
+                Description = "Temporary dev backdoor. Use JWT login flow for /auth endpoints.",
                 Schema = new OpenApiSchema
                 {
-                    Type = "string",
-                    Format = "uuid"
+                    Type = "string"
                 }
             });
         }
