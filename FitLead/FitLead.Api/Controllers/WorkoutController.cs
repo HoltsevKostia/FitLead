@@ -1,6 +1,6 @@
-﻿using FitLead.Api.Common.Results;
+using FitLead.Api.Common.Results;
 using FitLead.Api.Contracts.Trainings;
-using FitLead.Api.Identity;
+using Microsoft.AspNetCore.Authorization;
 using FitLead.Application.Trainings.Workouts.Commands;
 using FitLead.Application.Trainings.Workouts.Queries;
 using MediatR;
@@ -19,7 +19,7 @@ namespace FitLead.Api.Controllers
             _mediator = mediator;
         }
 
-        [RequireUser]
+        [Authorize(Policy = "TrainerOnly")]
         [HttpPost]
         public async Task<IActionResult> Create(
             [FromBody] CreateWorkoutRequest request,
@@ -33,7 +33,7 @@ namespace FitLead.Api.Controllers
             return result.ToCreated(this);
         }
 
-        [RequireUser]
+        [Authorize(Policy = "TrainerOnly")]
         [HttpPost("{workoutId:guid}/exercises")]
         public async Task<IActionResult> AddExercise(
             Guid workoutId,
@@ -52,7 +52,7 @@ namespace FitLead.Api.Controllers
             return result.ToCreated(this);
         }
 
-        [RequireUser]
+        [Authorize(Policy = "TrainerOnly")]
         [HttpDelete("{workoutId:guid}/exercises/{workoutExerciseId:guid}")]
         public async Task<IActionResult> RemoveExercise(
             Guid workoutId,
@@ -68,7 +68,7 @@ namespace FitLead.Api.Controllers
             return result.ToActionResult(this);
         }
 
-        [RequireUser]
+        [Authorize(Policy = "TrainerOnly")]
         [HttpGet]
         public async Task<IActionResult> GetByTrainer(
             CancellationToken cancellationToken)
@@ -80,7 +80,7 @@ namespace FitLead.Api.Controllers
             return result.ToActionResult(this);
         }
 
-        [RequireUser]
+        [Authorize(Policy = "TrainerOnly")]
         [HttpGet("{workoutId:guid}")]
         public async Task<IActionResult> GetWorkoutDetails(
             Guid workoutId,
@@ -92,7 +92,7 @@ namespace FitLead.Api.Controllers
             return result.ToActionResult(this);
         }
 
-        [RequireUser]
+        [Authorize(Policy = "TrainerOnly")]
         [HttpPut("{workoutId:guid}/exercises/{workoutExerciseId:guid}")]
         public async Task<IActionResult> UpdateExercise(
             Guid workoutId,
@@ -112,7 +112,7 @@ namespace FitLead.Api.Controllers
             return result.ToActionResult(this);
         }
 
-        [RequireUser]
+        [Authorize(Policy = "TrainerOnly")]
         [HttpPut("{workoutId:guid}/name")]
         public async Task<IActionResult> Rename(
             Guid workoutId,
@@ -126,7 +126,7 @@ namespace FitLead.Api.Controllers
             return result.ToActionResult(this);
         }
 
-        [RequireUser]
+        [Authorize(Policy = "TrainerOnly")]
         [HttpDelete("{workoutId:guid}")]
         public async Task<IActionResult> Delete(
             Guid workoutId,
@@ -139,7 +139,7 @@ namespace FitLead.Api.Controllers
             return result.ToActionResult(this);
         }
 
-        [RequireUser]
+        [Authorize(Policy = "TrainerOnly")]
         [HttpPost("{workoutId:guid}/deletion-confirmations")]
         public async Task<IActionResult> ConfirmDelete(
             Guid workoutId,

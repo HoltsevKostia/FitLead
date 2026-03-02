@@ -5,6 +5,7 @@ using FitLead.Infrastructure.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace FitLead.Api.Controllers
 {
@@ -43,7 +44,22 @@ namespace FitLead.Api.Controllers
             if (!signInResult.Succeeded)
                 return Unauthorized();
 
-            var token = _jwtTokenService.CreateAccessToken(user);
+            var roles = await _userManager.GetRolesAsync(user);
+            var businessRoles = roles
+                .Where(r => r is "Trainer" or "Client")
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (businessRoles.Count != 1)
+                return Unauthorized();
+
+            var role = businessRoles[0];
+            var token = _jwtTokenService.CreateAccessToken(
+                user,
+                new[]
+                {
+                    new Claim(ClaimTypes.Role, role)
+                });
 
             return Ok(new LoginResponse(token.AccessToken, token.ExpiresIn));
         }

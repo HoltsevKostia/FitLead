@@ -16,7 +16,9 @@ namespace FitLead.Api.Identity
             _options = options.Value;
         }
 
-        public AccessTokenResult CreateAccessToken(AppIdentityUser user)
+        public AccessTokenResult CreateAccessToken(
+            AppIdentityUser user,
+            IEnumerable<Claim>? additionalClaims = null)
         {
             var expiresAt = DateTime.UtcNow.AddMinutes(_options.AccessTokenMinutes);
             var claims = new List<Claim>
@@ -27,6 +29,9 @@ namespace FitLead.Api.Identity
 
             if (!string.IsNullOrWhiteSpace(user.Email))
                 claims.Add(new Claim(JwtRegisteredClaimNames.Email, user.Email));
+
+            if (additionalClaims is not null)
+                claims.AddRange(additionalClaims);
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SigningKey));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
