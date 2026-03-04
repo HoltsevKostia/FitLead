@@ -1,4 +1,4 @@
-namespace FitLead.Api.Identity
+namespace FitLead.Infrastructure.Identity
 {
     public sealed class JwtOptions
     {
@@ -8,5 +8,6 @@ namespace FitLead.Api.Identity
         public string Audience { get; init; } = string.Empty;
         public string SigningKey { get; init; } = string.Empty;
         public int AccessTokenMinutes { get; init; } = 10;
+        public int RefreshTokenDays { get; init; } = 14;
     }
 }

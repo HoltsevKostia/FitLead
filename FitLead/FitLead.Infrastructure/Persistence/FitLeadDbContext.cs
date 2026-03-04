@@ -17,7 +17,7 @@ namespace FitLead.Infrastructure.Persistence
         }
 
         public DbSet<TrainingProgram> TrainingPrograms => Set<TrainingProgram>();
-        public DbSet<User> Users => Set<User>();
+        public DbSet<User> DomainUsers => Set<User>();
         public DbSet<TrainerClient> TrainerClients => Set<TrainerClient>();
         public DbSet<Exercise> Exercises => Set<Exercise>();
         public DbSet<Workout> Workouts => Set<Workout>();
@@ -25,6 +25,7 @@ namespace FitLead.Infrastructure.Persistence
         public DbSet<Invitation> Invitations => Set<Invitation>();
         public DbSet<TrainingProgramWorkout> TrainingProgramWorkouts => Set<TrainingProgramWorkout>();
         public DbSet<UserIdentityLink> UserIdentityLinks => Set<UserIdentityLink>();
+        public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

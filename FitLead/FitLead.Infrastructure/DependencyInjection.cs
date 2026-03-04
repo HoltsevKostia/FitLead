@@ -4,7 +4,9 @@ using FitLead.Application.Common;
 using FitLead.Application.Common.Deletion;
 using FitLead.Application.Common.Results;
 using FitLead.Application.Common.Time;
+using FitLead.Application.Identity;
 using FitLead.Infrastructure.Deletion;
+using FitLead.Infrastructure.Identity;
 using FitLead.Infrastructure.Persistence;
 using FitLead.Infrastructure.Persistence.Repositories;
 using FitLead.Infrastructure.Time;
@@ -48,6 +50,8 @@ namespace FitLead.Infrastructure
             services.Configure<DeletionTokenOptions>(
                 configuration.GetSection(DeletionTokenOptions.SectionName));
             services.AddSingleton<IDeletionConfirmationTokenService, DataProtectionDeletionConfirmationTokenService>();
+            services.AddScoped<ITokenHasher, TokenHasher>();
+            services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 
             return services;
         }

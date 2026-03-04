@@ -1,6 +1,6 @@
 namespace FitLead.Api.Contracts.Auth
 {
-    public sealed record LoginResponse(
+    public sealed record RefreshResponse(
         string AccessToken,
         int ExpiresIn,
         string RefreshToken);

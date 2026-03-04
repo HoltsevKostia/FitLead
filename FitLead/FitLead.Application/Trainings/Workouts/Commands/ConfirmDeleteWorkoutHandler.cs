@@ -2,10 +2,10 @@ using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
 using FitLead.Application.Common.Deletion;
 using FitLead.Common.Errors;
-using FitLead.Application.Common.Identity;
 using FitLead.Common.Results;
 using FitLead.Application.Common.Time;
 using MediatR;
+using FitLead.Application.Identity;
 
 namespace FitLead.Application.Trainings.Workouts.Commands
 {

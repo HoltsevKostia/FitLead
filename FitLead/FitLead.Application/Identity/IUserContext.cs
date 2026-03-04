@@ -1,4 +1,4 @@
-namespace FitLead.Application.Common.Identity
+namespace FitLead.Application.Identity
 {
     public interface IUserContext
     {

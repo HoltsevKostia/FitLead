@@ -1,4 +1,4 @@
-﻿using FitLead.Application.Common.Identity;
+﻿using FitLead.Application.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 

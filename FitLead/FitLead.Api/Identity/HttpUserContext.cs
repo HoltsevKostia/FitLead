@@ -1,4 +1,4 @@
-using FitLead.Application.Common.Identity;
+using FitLead.Application.Identity;
 using System.Security.Claims;
 
 namespace FitLead.Api.Identity

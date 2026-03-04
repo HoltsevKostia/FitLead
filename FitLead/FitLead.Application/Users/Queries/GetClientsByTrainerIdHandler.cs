@@ -1,5 +1,5 @@
 using FitLead.Application.Abstractions.Persistence;
-using FitLead.Application.Common.Identity;
+using FitLead.Application.Identity;
 using FitLead.Common.Results;
 using MediatR;
 

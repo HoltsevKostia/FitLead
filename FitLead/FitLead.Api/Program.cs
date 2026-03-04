@@ -1,7 +1,7 @@
 using FitLead.Api.Common.Errors;
 using FitLead.Api.Identity;
 using FitLead.Api.Swagger;
-using FitLead.Application.Common.Identity;
+using FitLead.Application.Identity;
 using FitLead.Application.Trainings.TrainingPrograms.Commands;
 using FitLead.Infrastructure;
 using FitLead.Infrastructure.Identity;
