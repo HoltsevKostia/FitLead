@@ -5,6 +5,7 @@ using FitLead.Application.Common.Deletion;
 using FitLead.Application.Common.Results;
 using FitLead.Application.Common.Time;
 using FitLead.Application.Identity;
+using FitLead.Application.Trainings.Workouts.Access;
 using FitLead.Infrastructure.Deletion;
 using FitLead.Infrastructure.Identity;
 using FitLead.Infrastructure.Persistence;
@@ -52,6 +53,8 @@ namespace FitLead.Infrastructure
             services.AddSingleton<IDeletionConfirmationTokenService, DataProtectionDeletionConfirmationTokenService>();
             services.AddScoped<ITokenHasher, TokenHasher>();
             services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+            services.AddScoped<IIdentityDomainUserLinkResolver, IdentityDomainUserLinkResolver>();
+            services.AddScoped<IWorkoutLoader, WorkoutLoader>();
 
             return services;
         }

@@ -1,6 +1,5 @@
 using FitLead.Api.Common.Errors;
 using FitLead.Api.Identity;
-using FitLead.Api.Swagger;
 using FitLead.Application.Identity;
 using FitLead.Application.Trainings.TrainingPrograms.Commands;
 using FitLead.Infrastructure;
@@ -8,6 +7,7 @@ using FitLead.Infrastructure.Identity;
 using FitLead.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Security.Claims;
@@ -22,7 +22,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    options.OperationFilter<UserContextHeaderOperationFilter>();
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -83,6 +82,52 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.MapInboundClaims = false;
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async context =>
+            {
+                var principal = context.Principal;
+                if (principal is null)
+                {
+                    context.Fail("Token principal is missing.");
+                    return;
+                }
+
+                if (principal.HasClaim(x => x.Type == CustomClaimTypes.DomainUserId))
+                    return;
+
+                var identityUserId =
+                    principal.FindFirstValue("sub");
+
+                if (string.IsNullOrWhiteSpace(identityUserId))
+                {
+                    context.Fail("Identity user id claim is missing.");
+                    return;
+                }
+
+                var resolver = context.HttpContext.RequestServices
+                    .GetRequiredService<IIdentityDomainUserLinkResolver>();
+
+                var domainUserId = await resolver.ResolveDomainUserIdAsync(
+                    identityUserId,
+                    context.HttpContext.RequestAborted);
+
+                if (!domainUserId.HasValue)
+                {
+                    context.Fail("User context enrichment failed.");
+                    return;
+                }
+
+                if (principal.Identity is not ClaimsIdentity claimsIdentity)
+                {
+                    context.Fail("Claims identity is missing.");
+                    return;
+                }
+
+                claimsIdentity.AddClaim(
+                    new Claim(CustomClaimTypes.DomainUserId, domainUserId.Value.ToString()));
+            }
+        };
 
         options.TokenValidationParameters = new TokenValidationParameters
         {

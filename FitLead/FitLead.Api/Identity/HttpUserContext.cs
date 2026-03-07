@@ -5,12 +5,11 @@ namespace FitLead.Api.Identity
 {
     public sealed class HttpUserContext : IUserContext
     {
-        private const string DevHeaderIdentityUserId = "X-Identity-User-Id";
         private readonly IHttpContextAccessor _http;
 
         public HttpUserContext(IHttpContextAccessor http) => _http = http;
 
-        public bool IsAuthenticated => !string.IsNullOrWhiteSpace(IdentityUserIdOrNull);
+        public bool IsAuthenticated => UserIdOrNull.HasValue;
 
         public string IdentityUserId =>
             IdentityUserIdOrNull ?? throw new UnauthorizedAccessException("IdentityUserId is not available");
@@ -23,19 +22,10 @@ namespace FitLead.Api.Identity
                 if (ctx is null) return null;
 
                 var identityUserId =
-                    ctx.User.FindFirstValue("sub") ??
-                    ctx.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    ctx.User.FindFirstValue("sub");
 
                 if (!string.IsNullOrWhiteSpace(identityUserId))
                     return identityUserId;
-
-                // Temporary dev backdoor until all flows move to JWT.
-                if (ctx.Request.Headers.TryGetValue(DevHeaderIdentityUserId, out var header))
-                {
-                    var raw = header.ToString().Trim();
-                    if (!string.IsNullOrWhiteSpace(raw))
-                        return raw;
-                }
 
                 return null;
             }
@@ -48,8 +38,12 @@ namespace FitLead.Api.Identity
         {
             get
             {
-                var identityUserId = IdentityUserIdOrNull;
-                if (Guid.TryParse(identityUserId, out var value))
+                var ctx = _http.HttpContext;
+                if (ctx is null)
+                    return null;
+
+                var claim = ctx.User.FindFirstValue(CustomClaimTypes.DomainUserId);
+                if (Guid.TryParse(claim, out var value))
                     return value;
 
                 return null;
