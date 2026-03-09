@@ -1,6 +1,6 @@
 using FitLead.Application.Abstractions.Persistence;
+using FitLead.Application.Trainings.Workouts.Access;
 using FitLead.Application.Common;
-using FitLead.Common.Errors;
 using FitLead.Common.Results;
 using MediatR;
 
@@ -9,14 +9,14 @@ namespace FitLead.Application.Trainings.Workouts.Commands
     public sealed class RenameWorkoutHandler
     : IRequestHandler<RenameWorkoutCommand, Result>
     {
-        private readonly IWorkoutRepository _repository;
+        private readonly IWorkoutLoader _workoutLoader;
         private readonly IUnitOfWork _unitOfWork;
 
         public RenameWorkoutHandler(
-            IWorkoutRepository repository,
+            IWorkoutLoader workoutLoader,
             IUnitOfWork unitOfWork)
         {
-            _repository = repository;
+            _workoutLoader = workoutLoader;
             _unitOfWork = unitOfWork;
         }
 
@@ -24,13 +24,14 @@ namespace FitLead.Application.Trainings.Workouts.Commands
             RenameWorkoutCommand request,
             CancellationToken cancellationToken)
         {
-            var workout = await _repository.GetByIdAsync(
+            var workoutResult = await _workoutLoader.GetOwnedOrNotFoundAsync(
                 request.WorkoutId,
                 cancellationToken);
 
-            if (workout is null)
-                return Result.Failure(Error.NotFound("workout.not_found", "Workout not found"));
+            if (workoutResult.IsFailure)
+                return Result.Failure(workoutResult.Error);
 
+            var workout = workoutResult.Value;
             var renameResult = workout.Rename(request.Name);
             if (renameResult.IsFailure)
                 return renameResult;
