@@ -5,14 +5,14 @@ using FitLead.Common.Errors;
 using FitLead.Common.Results;
 using FitLead.Application.Common.Time;
 using MediatR;
-using FitLead.Application.Identity;
+using FitLead.Application.Trainings.TrainingPrograms.Access;
 
 namespace FitLead.Application.Trainings.TrainingPrograms.Commands
 {
     public sealed class ConfirmDeleteTrainingProgramHandler
     : IRequestHandler<ConfirmDeleteTrainingProgramCommand, Result>
     {
-        private readonly IUserContext _user;
+        private readonly ITrainingProgramLoader _programLoader;
         private readonly ITrainingProgramRepository _programRepository;
         private readonly ITrainingProgramReadRepository _programReadRepository;
         private readonly IDeletionConfirmationTokenService _tokenService;
@@ -20,14 +20,14 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Commands
         private readonly IUnitOfWork _unitOfWork;
 
         public ConfirmDeleteTrainingProgramHandler(
-            IUserContext user,
+            ITrainingProgramLoader programLoader,
             ITrainingProgramRepository programRepository,
             ITrainingProgramReadRepository programReadRepository,
             IDeletionConfirmationTokenService tokenService,
             IClock clock,
             IUnitOfWork unitOfWork)
         {
-            _user = user;
+            _programLoader = programLoader;
             _programRepository = programRepository;
             _programReadRepository = programReadRepository;
             _tokenService = tokenService;
@@ -39,15 +39,12 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Commands
             ConfirmDeleteTrainingProgramCommand request,
             CancellationToken cancellationToken)
         {
-            var program = await _programRepository.GetByIdAsync(
+            var programResult = await _programLoader.GetOwnedOrNotFoundAsync(
                 request.ProgramId,
                 cancellationToken);
 
-            if (program is null)
-                return Result.Failure(Error.NotFound("training_program.not_found", "Training program not found"));
-
-            if (program.TrainerId != _user.UserId)
-                return Result.Failure(Error.Forbidden("training_program.forbidden", "Forbidden"));
+            if (programResult.IsFailure)
+                return Result.Failure(programResult.Error);
 
             if (!_tokenService.TryValidateToken(
                     request.Token,
@@ -85,6 +82,7 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Commands
                     metadata));
             }
 
+            var program = programResult.Value;
             _programRepository.Remove(program);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

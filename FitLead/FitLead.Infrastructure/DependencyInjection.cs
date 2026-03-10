@@ -6,6 +6,7 @@ using FitLead.Application.Common.Results;
 using FitLead.Application.Common.Time;
 using FitLead.Application.Identity;
 using FitLead.Application.Trainings.Exercises.Access;
+using FitLead.Application.Trainings.TrainingPrograms.Access;
 using FitLead.Application.Trainings.Workouts.Access;
 using FitLead.Infrastructure.Deletion;
 using FitLead.Infrastructure.Identity;
@@ -57,6 +58,7 @@ namespace FitLead.Infrastructure
             services.AddScoped<IIdentityDomainUserLinkResolver, IdentityDomainUserLinkResolver>();
             services.AddScoped<IWorkoutLoader, WorkoutLoader>();
             services.AddScoped<IExerciseLoader, ExerciseLoader>();
+            services.AddScoped<ITrainingProgramLoader, TrainingProgramLoader>();
 
             return services;
         }
