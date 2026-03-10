@@ -5,6 +5,7 @@ using FitLead.Application.Common.Deletion;
 using FitLead.Application.Common.Results;
 using FitLead.Application.Common.Time;
 using FitLead.Application.Identity;
+using FitLead.Application.Invitations.Access;
 using FitLead.Application.Trainings.Exercises.Access;
 using FitLead.Application.Trainings.TrainingPrograms.Access;
 using FitLead.Application.Trainings.Workouts.Access;
@@ -59,6 +60,7 @@ namespace FitLead.Infrastructure
             services.AddScoped<IWorkoutLoader, WorkoutLoader>();
             services.AddScoped<IExerciseLoader, ExerciseLoader>();
             services.AddScoped<ITrainingProgramLoader, TrainingProgramLoader>();
+            services.AddScoped<IInvitationLoader, InvitationLoader>();
 
             return services;
         }
