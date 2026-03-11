@@ -1,8 +1,10 @@
 using FitLead.Api.Common.Claims;
+using FitLead.Api.Common.Results;
 using FitLead.Api.Contracts.Auth;
 using FitLead.Api.Identity;
 using FitLead.Application.Identity;
 using FitLead.Infrastructure.Identity;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -18,17 +20,40 @@ namespace FitLead.Api.Controllers
         private readonly SignInManager<AppIdentityUser> _signInManager;
         private readonly IJwtTokenService _jwtTokenService;
         private readonly IRefreshTokenService _refreshTokenService;
+        private readonly IMediator _mediator;
 
         public AuthController(
             UserManager<AppIdentityUser> userManager,
             SignInManager<AppIdentityUser> signInManager,
             IJwtTokenService jwtTokenService,
-            IRefreshTokenService refreshTokenService)
+            IRefreshTokenService refreshTokenService,
+            IMediator mediator)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _jwtTokenService = jwtTokenService;
             _refreshTokenService = refreshTokenService;
+            _mediator = mediator;
+        }
+
+        [HttpPost("register")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        {
+            var result = await _mediator.Send(
+                new RegisterUserCommand(
+                    request.Email,
+                    request.Password,
+                    request.FullName,
+                    request.Role));
+
+            if (result.IsFailure)
+                return result.ToActionResult(this);
+
+            return StatusCode(StatusCodes.Status201Created, new RegisterResponse(
+                result.Value.AccessToken,
+                result.Value.ExpiresIn,
+                result.Value.RefreshToken));
         }
 
         [HttpPost("login")]

@@ -149,6 +149,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("ClientOnly", policy => policy.RequireRole("Client"));
 });
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+builder.Services.AddScoped<IAuthTokenIssuer, AuthTokenIssuer>();
 
 var app = builder.Build();
 

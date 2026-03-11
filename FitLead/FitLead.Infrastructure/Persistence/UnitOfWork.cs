@@ -30,5 +30,11 @@ namespace FitLead.Infrastructure.Persistence
 
             await _dispatcher.DispatchAsync(domainEvents, cancellationToken);
         }
+
+        public async Task<IAppTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
+        {
+            var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+            return new EfAppTransaction(transaction);
+        }
     }
 }

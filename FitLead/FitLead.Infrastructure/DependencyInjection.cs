@@ -57,6 +57,8 @@ namespace FitLead.Infrastructure
             services.AddSingleton<IDeletionConfirmationTokenService, DataProtectionDeletionConfirmationTokenService>();
             services.AddScoped<ITokenHasher, TokenHasher>();
             services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+            services.AddScoped<IIdentityAccountService, IdentityAccountService>();
+            services.AddScoped<IUserIdentityLinkWriter, UserIdentityLinkWriter>();
             services.AddScoped<IIdentityDomainUserLinkResolver, IdentityDomainUserLinkResolver>();
             services.AddScoped<IWorkoutLoader, WorkoutLoader>();
             services.AddScoped<IExerciseLoader, ExerciseLoader>();
