@@ -39,4 +39,9 @@ public sealed class AuthTestClient(HttpClient httpClient)
         httpClient.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", accessToken);
     }
+
+    public void ClearBearerToken()
+    {
+        httpClient.DefaultRequestHeaders.Authorization = null;
+    }
 }

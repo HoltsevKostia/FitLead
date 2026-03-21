@@ -11,26 +11,6 @@ namespace FitLead.Api.Identity
 
         public bool IsAuthenticated => UserIdOrNull.HasValue;
 
-        public string IdentityUserId =>
-            IdentityUserIdOrNull ?? throw new UnauthorizedAccessException("IdentityUserId is not available");
-
-        public string? IdentityUserIdOrNull
-        {
-            get
-            {
-                var ctx = _http.HttpContext;
-                if (ctx is null) return null;
-
-                var identityUserId =
-                    ctx.User.FindFirstValue("sub");
-
-                if (!string.IsNullOrWhiteSpace(identityUserId))
-                    return identityUserId;
-
-                return null;
-            }
-        }
-
         public Guid UserId =>
             UserIdOrNull ?? throw new UnauthorizedAccessException("Domain UserId is not available");
 
