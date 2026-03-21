@@ -17,6 +17,9 @@
     <File Path="../docs/adr/adr-0014-identity-first-auth-foundation.md" />
     <File Path="../docs/adr/README.md" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="../tests/FitLead.IntegrationTests/FitLead.IntegrationTests.csproj" />
+  </Folder>
   <Project Path="FitLead.Api/FitLead.Api.csproj" />
   <Project Path="FitLead.Application/FitLead.Application.csproj" />
   <Project Path="FitLead.Common/FitLead.Common.csproj" Id="c8d69740-87e1-4941-81f6-1fb8c0757c86" />

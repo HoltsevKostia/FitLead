@@ -21,6 +21,7 @@ Each ADR captures one decision: context, decision, consequences.
 | [0012](adr-0012-shared-kernel-fitlead-common.md) | Shared kernel in `FitLead.Common` for framework-agnostic primitives | Accepted | 2026-02 |
 | [0013](adr-0013-domain-result-for-expected-failures.md) | Domain uses `Result` for expected business failures | Accepted | 2026-02 |
 | [0014](adr-0014-identity-first-auth-foundation.md) | Identity-first auth foundation with domain-identity link | Accepted | 2026-02 |
+| [0015](adr-0015-integration-first-testing-strategy.md) | Integration-first testing strategy with feature-scoped specifications | Accepted | 2026-03 |
 
 ## ADR status conventions
 
