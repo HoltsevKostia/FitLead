@@ -8,6 +8,7 @@ using FitLead.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Security.Claims;
@@ -67,18 +68,18 @@ builder.Services.AddIdentityCore<AppIdentityUser>()
 builder.Services.Configure<JwtOptions>(
     builder.Configuration.GetSection(JwtOptions.SectionName));
 
-var jwtOptions = builder.Configuration
-    .GetSection(JwtOptions.SectionName)
-    .Get<JwtOptions>()
-    ?? throw new InvalidOperationException("Jwt configuration is missing.");
-
-JwtSigningKeyResolver.Validate(jwtOptions);
-var validationSigningKey = JwtSigningKeyResolver.CreateValidationKey(jwtOptions);
-var validAlgorithms = JwtSigningKeyResolver.GetValidAlgorithms(jwtOptions);
-
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+    .AddJwtBearer();
+
+builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+    .Configure<IOptions<JwtOptions>>((options, jwtOptionsAccessor) =>
     {
+        var jwtOptions = jwtOptionsAccessor.Value;
+        JwtSigningKeyResolver.Validate(jwtOptions);
+
+        var validationSigningKey = JwtSigningKeyResolver.CreateValidationKey(jwtOptions);
+        var validAlgorithms = JwtSigningKeyResolver.GetValidAlgorithms(jwtOptions);
+
         options.MapInboundClaims = false;
         options.Events = new JwtBearerEvents
         {

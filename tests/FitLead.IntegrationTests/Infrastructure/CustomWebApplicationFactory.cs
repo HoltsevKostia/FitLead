@@ -5,12 +5,14 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Security.Cryptography;
 
 namespace FitLead.IntegrationTests.Infrastructure;
 
 public sealed class CustomWebApplicationFactory(string connectionString)
     : WebApplicationFactory<Program>
 {
+    private static readonly (string PrivateKeyPem, string PublicKeyPem) RsaKeys = CreateTestRsaKeys();
     private readonly DatabaseCheckpoint _databaseCheckpoint = new();
 
     public async Task InitializeAsync()
@@ -34,7 +36,9 @@ public sealed class CustomWebApplicationFactory(string connectionString)
         {
             configBuilder.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["ConnectionStrings:DefaultConnection"] = connectionString
+                ["ConnectionStrings:DefaultConnection"] = connectionString,
+                ["Jwt:RsaPrivateKeyPem"] = EscapePem(RsaKeys.PrivateKeyPem),
+                ["Jwt:RsaPublicKeyPem"] = EscapePem(RsaKeys.PublicKeyPem)
             });
         });
     }
@@ -71,4 +75,13 @@ public sealed class CustomWebApplicationFactory(string connectionString)
         var errors = string.Join("; ", result.Errors.Select(x => $"{x.Code}:{x.Description}"));
         throw new InvalidOperationException($"Failed to create role '{roleName}'. {errors}");
     }
+
+    private static (string PrivateKeyPem, string PublicKeyPem) CreateTestRsaKeys()
+    {
+        using var rsa = RSA.Create(2048);
+        return (rsa.ExportRSAPrivateKeyPem(), rsa.ExportRSAPublicKeyPem());
+    }
+
+    private static string EscapePem(string pem)
+        => pem.Replace("\r\n", "\n", StringComparison.Ordinal).Replace("\n", "\\n", StringComparison.Ordinal);
 }
