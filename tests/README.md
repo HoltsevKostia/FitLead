@@ -93,8 +93,8 @@ Checklist for new tests:
 - start Docker Desktop / Docker engine
 - verify with `docker ps`
 
-`Jwt SigningKey is not configured`
-- ensure API test environment config is available (`appsettings.Testing.json`)
+`Jwt signing configuration is missing. Provide RSA key pair`
+- ensure both `Jwt:RsaPrivateKeyPem` and `Jwt:RsaPublicKeyPem` are configured (for local API typically via `dotnet user-secrets`)
 
 Intermittent auth failures
 - confirm test uses isolated data and does not rely on execution order

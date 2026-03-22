@@ -25,10 +25,7 @@ public sealed class JwtSigningKeyResolverTests
     [Fact]
     public void Validate_WhenNoSigningConfigurationProvided_ShouldThrow()
     {
-        var options = new JwtOptions
-        {
-            SigningKey = string.Empty
-        };
+        var options = new JwtOptions();
 
         var act = () => JwtSigningKeyResolver.Validate(options);
 
@@ -53,20 +50,6 @@ public sealed class JwtSigningKeyResolverTests
     }
 
     [Fact]
-    public void CreateSigningCredentials_WhenSymmetricSigningKeyProvided_ShouldUseHmacSha256()
-    {
-        var options = new JwtOptions
-        {
-            SigningKey = "symmetric-signing-key-for-tests-32+"
-        };
-
-        var credentials = JwtSigningKeyResolver.CreateSigningCredentials(options);
-
-        credentials.Algorithm.Should().Be(SecurityAlgorithms.HmacSha256);
-        credentials.Key.Should().BeOfType<SymmetricSecurityKey>();
-    }
-
-    [Fact]
     public void CreateValidationKey_WhenRsaPairProvided_ShouldReturnRsaSecurityKey()
     {
         using var rsa = RSA.Create(2048);
@@ -82,17 +65,14 @@ public sealed class JwtSigningKeyResolverTests
     }
 
     [Fact]
-    public void CreateValidationKey_WhenSigningKeyMissingAndRsaMissing_ShouldThrow()
+    public void CreateValidationKey_WhenRsaPairMissing_ShouldThrow()
     {
-        var options = new JwtOptions
-        {
-            SigningKey = string.Empty
-        };
+        var options = new JwtOptions();
 
         var act = () => JwtSigningKeyResolver.CreateValidationKey(options);
 
         act.Should().Throw<InvalidOperationException>()
-            .WithMessage("Jwt SigningKey is not configured.");
+            .WithMessage("*Provide RSA key pair*");
     }
 
     private static string EscapePem(string pem)

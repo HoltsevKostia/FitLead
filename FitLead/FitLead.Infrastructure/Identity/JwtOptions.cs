@@ -6,7 +6,6 @@ namespace FitLead.Infrastructure.Identity
 
         public string Issuer { get; init; } = string.Empty;
         public string Audience { get; init; } = string.Empty;
-        public string SigningKey { get; init; } = string.Empty;
         public string? RsaPrivateKeyPem { get; init; }
         public string? RsaPublicKeyPem { get; init; }
         public int AccessTokenMinutes { get; init; } = 10;
