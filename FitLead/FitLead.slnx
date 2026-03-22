@@ -15,6 +15,8 @@
     <File Path="../docs/adr/adr-0012-shared-kernel-fitlead-common.md" />
     <File Path="../docs/adr/adr-0013-domain-result-for-expected-failures.md" />
     <File Path="../docs/adr/adr-0014-identity-first-auth-foundation.md" />
+    <File Path="../docs/adr/adr-0015-integration-first-testing-strategy.md" />
+    <File Path="../docs/adr/adr-0016-internal-identity-service-interim-password-flow.md" />
     <File Path="../docs/adr/README.md" />
   </Folder>
   <Folder Name="/tests/">

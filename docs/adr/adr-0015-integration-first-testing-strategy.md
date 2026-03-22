@@ -27,6 +27,7 @@ Decision boundaries:
 - Test scope is prioritized by feature risk and business impact.
 - Detailed scenario definitions live in feature test specifications.
 - Unit tests are allowed as a targeted complement for stable, isolated logic, but are not the primary strategy for critical flows in this phase.
+- Integration environment is provisioned with Testcontainers to keep database setup reproducible and close to production without manual local provisioning.
 
 Architectural intent:
 - verify real interaction across API, application orchestration, persistence, Identity, and database constraints
@@ -39,6 +40,7 @@ Pros:
 - early regression protection for auth/authorization and transactional scenarios
 - lower risk of false confidence from overly mocked tests
 - strategy matches iterative delivery and feature prioritization
+- Testcontainers reduces environment drift and improves repeatability of integration runs across local and CI.
 
 Cons:
 - slower test execution compared to pure unit tests
