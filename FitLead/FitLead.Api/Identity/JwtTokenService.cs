@@ -1,6 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 using FitLead.Infrastructure.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -10,10 +9,13 @@ namespace FitLead.Api.Identity
     public sealed class JwtTokenService : IJwtTokenService
     {
         private readonly JwtOptions _options;
+        private readonly SigningCredentials _signingCredentials;
 
         public JwtTokenService(IOptions<JwtOptions> options)
         {
             _options = options.Value;
+            JwtSigningKeyResolver.Validate(_options);
+            _signingCredentials = JwtSigningKeyResolver.CreateSigningCredentials(_options);
         }
 
         public AccessTokenResult CreateAccessToken(
@@ -33,15 +35,12 @@ namespace FitLead.Api.Identity
             if (additionalClaims is not null)
                 claims.AddRange(additionalClaims);
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SigningKey));
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
             var token = new JwtSecurityToken(
                 issuer: _options.Issuer,
                 audience: _options.Audience,
                 claims: claims,
                 expires: expiresAt,
-                signingCredentials: credentials);
+                signingCredentials: _signingCredentials);
 
             var encodedToken = new JwtSecurityTokenHandler().WriteToken(token);
             var expiresIn = (int)Math.Max(1, (expiresAt - DateTime.UtcNow).TotalSeconds);

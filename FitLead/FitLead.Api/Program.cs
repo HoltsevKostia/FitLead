@@ -11,7 +11,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Security.Claims;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -73,10 +72,9 @@ var jwtOptions = builder.Configuration
     .Get<JwtOptions>()
     ?? throw new InvalidOperationException("Jwt configuration is missing.");
 
-if (string.IsNullOrWhiteSpace(jwtOptions.SigningKey))
-    throw new InvalidOperationException("Jwt SigningKey is not configured.");
-
-var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SigningKey));
+JwtSigningKeyResolver.Validate(jwtOptions);
+var validationSigningKey = JwtSigningKeyResolver.CreateValidationKey(jwtOptions);
+var validAlgorithms = JwtSigningKeyResolver.GetValidAlgorithms(jwtOptions);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -136,7 +134,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidAudience = jwtOptions.Audience,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = signingKey,
+            IssuerSigningKey = validationSigningKey,
+            ValidAlgorithms = validAlgorithms,
             ValidateLifetime = true,
             RoleClaimType = ClaimTypes.Role,
             ClockSkew = TimeSpan.FromMinutes(1)
