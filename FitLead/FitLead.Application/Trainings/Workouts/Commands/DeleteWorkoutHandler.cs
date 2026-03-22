@@ -2,17 +2,17 @@ using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
 using FitLead.Application.Common.Deletion;
 using FitLead.Common.Errors;
-using FitLead.Application.Common.Identity;
 using FitLead.Common.Results;
 using FitLead.Application.Common.Time;
 using MediatR;
+using FitLead.Application.Trainings.Workouts.Access;
 
 namespace FitLead.Application.Trainings.Workouts.Commands
 {
     public sealed class DeleteWorkoutHandler
     : IRequestHandler<DeleteWorkoutCommand, Result>
     {
-        private readonly IUserContext _user;
+        private readonly IWorkoutLoader _workoutLoader;
         private readonly IWorkoutRepository _workoutRepository;
         private readonly IWorkoutReadRepository _workoutReadRepository;
         private readonly IDeletionConfirmationTokenService _tokenService;
@@ -20,14 +20,14 @@ namespace FitLead.Application.Trainings.Workouts.Commands
         private readonly IUnitOfWork _unitOfWork;
 
         public DeleteWorkoutHandler(
-            IUserContext user,
+            IWorkoutLoader workoutLoader,
             IWorkoutRepository workoutRepository,
             IWorkoutReadRepository workoutReadRepository,
             IDeletionConfirmationTokenService tokenService,
             IClock clock,
             IUnitOfWork unitOfWork)
         {
-            _user = user;
+            _workoutLoader = workoutLoader;
             _workoutRepository = workoutRepository;
             _workoutReadRepository = workoutReadRepository;
             _tokenService = tokenService;
@@ -39,15 +39,12 @@ namespace FitLead.Application.Trainings.Workouts.Commands
             DeleteWorkoutCommand request,
             CancellationToken cancellationToken)
         {
-            var workout = await _workoutRepository.GetByIdAsync(
+            var workoutResult = await _workoutLoader.GetOwnedOrNotFoundAsync(
                 request.WorkoutId,
                 cancellationToken);
 
-            if (workout is null)
-                return Result.Failure(Error.NotFound("workout.not_found", "Workout not found"));
-
-            if (workout.TrainerId != _user.UserId)
-                return Result.Failure(Error.Forbidden("workout.forbidden", "Forbidden"));
+            if (workoutResult.IsFailure)
+                return Result.Failure(workoutResult.Error);
 
             var usageCount = await _workoutReadRepository.GetUsageCountAsync(
                 request.WorkoutId,
@@ -73,6 +70,7 @@ namespace FitLead.Application.Trainings.Workouts.Commands
                     metadata));
             }
 
+            var workout = workoutResult.Value;
             _workoutRepository.Remove(workout);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);

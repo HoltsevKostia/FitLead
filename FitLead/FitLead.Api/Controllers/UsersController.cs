@@ -1,5 +1,5 @@
 using FitLead.Api.Common.Results;
-using FitLead.Api.Identity;
+using Microsoft.AspNetCore.Authorization;
 using FitLead.Application.Users.Commands;
 using FitLead.Application.Users.Queries;
 using MediatR;
@@ -26,7 +26,7 @@ namespace FitLead.Api.Controllers
             return result.ToCreated(this);
         }
 
-        [RequireUser]
+        [Authorize(Policy = "TrainerOnly")]
         [HttpGet("clients")]
         public async Task<IActionResult> GetClientsByTrainer()
         {

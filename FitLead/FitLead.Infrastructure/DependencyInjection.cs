@@ -4,7 +4,14 @@ using FitLead.Application.Common;
 using FitLead.Application.Common.Deletion;
 using FitLead.Application.Common.Results;
 using FitLead.Application.Common.Time;
+using FitLead.Application.Identity;
+using FitLead.Application.Invitations.Access;
+using FitLead.Application.Trainings.Exercises.Access;
+using FitLead.Application.Trainings.TrainingPrograms.Access;
+using FitLead.Application.Trainings.Workouts.Access;
+using FitLead.Application.Users.Access;
 using FitLead.Infrastructure.Deletion;
+using FitLead.Infrastructure.Identity;
 using FitLead.Infrastructure.Persistence;
 using FitLead.Infrastructure.Persistence.Repositories;
 using FitLead.Infrastructure.Time;
@@ -48,6 +55,16 @@ namespace FitLead.Infrastructure
             services.Configure<DeletionTokenOptions>(
                 configuration.GetSection(DeletionTokenOptions.SectionName));
             services.AddSingleton<IDeletionConfirmationTokenService, DataProtectionDeletionConfirmationTokenService>();
+            services.AddScoped<ITokenHasher, TokenHasher>();
+            services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+            services.AddScoped<IIdentityAccountService, IdentityAccountService>();
+            services.AddScoped<IUserIdentityLinkWriter, UserIdentityLinkWriter>();
+            services.AddScoped<IIdentityDomainUserLinkResolver, IdentityDomainUserLinkResolver>();
+            services.AddScoped<IWorkoutLoader, WorkoutLoader>();
+            services.AddScoped<IExerciseLoader, ExerciseLoader>();
+            services.AddScoped<ITrainingProgramLoader, TrainingProgramLoader>();
+            services.AddScoped<IInvitationLoader, InvitationLoader>();
+            services.AddScoped<ICurrentUserLoader, CurrentUserLoader>();
 
             return services;
         }

@@ -1,5 +1,6 @@
 using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
+using FitLead.Application.Trainings.TrainingPrograms.Access;
 using FitLead.Common.Errors;
 using FitLead.Common.Results;
 using MediatR;
@@ -9,16 +10,16 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Commands
     public sealed class AddWorkoutToProgramHandler
     : IRequestHandler<AddWorkoutToProgramCommand, Result>
     {
-        private readonly ITrainingProgramRepository _programRepository;
+        private readonly ITrainingProgramLoader _programLoader;
         private readonly IWorkoutRepository _workoutRepository;
         private readonly IUnitOfWork _unitOfWork;
 
         public AddWorkoutToProgramHandler(
-            ITrainingProgramRepository programRepository,
+            ITrainingProgramLoader programLoader,
             IWorkoutRepository workoutRepository,
             IUnitOfWork unitOfWork)
         {
-            _programRepository = programRepository;
+            _programLoader = programLoader;
             _workoutRepository = workoutRepository;
             _unitOfWork = unitOfWork;
         }
@@ -27,12 +28,14 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Commands
             AddWorkoutToProgramCommand request,
             CancellationToken cancellationToken)
         {
-            var program = await _programRepository.GetByIdAsync(
+            var programResult = await _programLoader.GetOwnedOrNotFoundAsync(
                 request.ProgramId,
                 cancellationToken);
 
-            if (program is null)
-                return Result.Failure(Error.NotFound("training_program.not_found", "Training program not found"));
+            if (programResult.IsFailure)
+                return Result.Failure(programResult.Error);
+
+            var program = programResult.Value;
 
             var workoutExists = await _workoutRepository.ExistsAsync(
                 request.WorkoutId,

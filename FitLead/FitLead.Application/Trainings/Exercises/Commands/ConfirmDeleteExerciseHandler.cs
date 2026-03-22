@@ -2,17 +2,17 @@ using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
 using FitLead.Application.Common.Deletion;
 using FitLead.Common.Errors;
-using FitLead.Application.Common.Identity;
 using FitLead.Common.Results;
 using FitLead.Application.Common.Time;
 using MediatR;
+using FitLead.Application.Trainings.Exercises.Access;
 
 namespace FitLead.Application.Trainings.Exercises.Commands
 {
     public sealed class ConfirmDeleteExerciseHandler
     : IRequestHandler<ConfirmDeleteExerciseCommand, Result>
     {
-        private readonly IUserContext _user;
+        private readonly IExerciseLoader _exerciseLoader;
         private readonly IExerciseRepository _exerciseRepository;
         private readonly IExerciseReadRepository _exerciseReadRepository;
         private readonly IDeletionConfirmationTokenService _tokenService;
@@ -20,14 +20,14 @@ namespace FitLead.Application.Trainings.Exercises.Commands
         private readonly IUnitOfWork _unitOfWork;
 
         public ConfirmDeleteExerciseHandler(
-            IUserContext user,
+            IExerciseLoader exerciseLoader,
             IExerciseRepository exerciseRepository,
             IExerciseReadRepository exerciseReadRepository,
             IDeletionConfirmationTokenService tokenService,
             IClock clock,
             IUnitOfWork unitOfWork)
         {
-            _user = user;
+            _exerciseLoader = exerciseLoader;
             _exerciseRepository = exerciseRepository;
             _exerciseReadRepository = exerciseReadRepository;
             _tokenService = tokenService;
@@ -39,15 +39,12 @@ namespace FitLead.Application.Trainings.Exercises.Commands
             ConfirmDeleteExerciseCommand request,
             CancellationToken cancellationToken)
         {
-            var exercise = await _exerciseRepository.GetByIdAsync(
+            var exerciseResult = await _exerciseLoader.GetOwnedOrNotFoundAsync(
                 request.ExerciseId,
                 cancellationToken);
 
-            if (exercise is null)
-                return Result.Failure(Error.NotFound("exercise.not_found", "Exercise not found"));
-
-            if (exercise.TrainerId != _user.UserId)
-                return Result.Failure(Error.Forbidden("exercise.forbidden", "Forbidden"));
+            if (exerciseResult.IsFailure)
+                return Result.Failure(exerciseResult.Error);
 
             if (!_tokenService.TryValidateToken(
                     request.Token,
@@ -92,6 +89,7 @@ namespace FitLead.Application.Trainings.Exercises.Commands
                     cancellationToken);
             }
 
+            var exercise = exerciseResult.Value;
             _exerciseRepository.Remove(exercise);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
