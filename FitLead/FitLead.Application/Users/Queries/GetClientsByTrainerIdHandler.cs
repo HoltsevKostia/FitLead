@@ -1,6 +1,8 @@
 using FitLead.Application.Abstractions.Persistence;
-using FitLead.Application.Common.Identity;
+using FitLead.Application.Users.Access;
+using FitLead.Common.Errors;
 using FitLead.Common.Results;
+using FitLead.Domain.Users;
 using MediatR;
 
 namespace FitLead.Application.Users.Queries
@@ -8,14 +10,14 @@ namespace FitLead.Application.Users.Queries
     public sealed class GetClientsByTrainerIdHandler
     : IRequestHandler<GetClientsByTrainerIdQuery, Result<IReadOnlyList<TrainerClientDto>>>
     {
-        private readonly IUserContext _user;
+        private readonly ICurrentUserLoader _currentUserLoader;
         private readonly ITrainerClientReadRepository _repository;
 
         public GetClientsByTrainerIdHandler(
-            IUserContext user,
+            ICurrentUserLoader currentUserLoader,
             ITrainerClientReadRepository repository)
         {
-            _user = user;
+            _currentUserLoader = currentUserLoader;
             _repository = repository;
         }
 
@@ -23,9 +25,20 @@ namespace FitLead.Application.Users.Queries
             GetClientsByTrainerIdQuery request,
             CancellationToken cancellationToken)
         {
+            var currentUserResult = await _currentUserLoader.GetCurrentOrNotFoundAsync(cancellationToken);
+            if (currentUserResult.IsFailure)
+                return Result<IReadOnlyList<TrainerClientDto>>.Failure(currentUserResult.Error);
+
+            if (currentUserResult.Value.Role != UserRole.Trainer)
+            {
+                return Result<IReadOnlyList<TrainerClientDto>>.Failure(
+                    Error.Forbidden("trainer.required", "User is not a trainer"));
+            }
+
             var clients = await _repository.GetClientsByTrainerIdAsync(
-                _user.UserId,
+                currentUserResult.Value.Id,
                 cancellationToken);
+
             return Result<IReadOnlyList<TrainerClientDto>>.Success(clients);
         }
     }

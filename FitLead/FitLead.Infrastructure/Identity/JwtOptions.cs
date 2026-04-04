@@ -1,0 +1,14 @@
+namespace FitLead.Infrastructure.Identity
+{
+    public sealed class JwtOptions
+    {
+        public const string SectionName = "Jwt";
+
+        public string Issuer { get; init; } = string.Empty;
+        public string Audience { get; init; } = string.Empty;
+        public string? RsaPrivateKeyPem { get; init; }
+        public string? RsaPublicKeyPem { get; init; }
+        public int AccessTokenMinutes { get; init; } = 10;
+        public int RefreshTokenDays { get; init; } = 14;
+    }
+}

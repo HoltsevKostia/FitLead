@@ -17,7 +17,7 @@ namespace FitLead.Infrastructure.Persistence.Repositories
             Guid id,
             CancellationToken cancellationToken)
         {
-            return await _context.Users
+            return await _context.DomainUsers
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 
@@ -25,7 +25,7 @@ namespace FitLead.Infrastructure.Persistence.Repositories
             User user,
             CancellationToken cancellationToken)
         {
-            await _context.Users.AddAsync(user, cancellationToken);
+            await _context.DomainUsers.AddAsync(user, cancellationToken);
         }
 
         public async Task<bool> ExistsByEmailAsync(

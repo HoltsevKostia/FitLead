@@ -20,7 +20,7 @@ namespace FitLead.Infrastructure.Persistence.Repositories
         {
             return await (
                 from tc in _context.TrainerClients
-                join u in _context.Users on tc.ClientId equals u.Id
+                join u in _context.DomainUsers on tc.ClientId equals u.Id
                 where tc.TrainerId == trainerId
                 select new TrainerClientDto
                 {

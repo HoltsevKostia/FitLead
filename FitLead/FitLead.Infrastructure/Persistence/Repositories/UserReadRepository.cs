@@ -17,7 +17,7 @@ namespace FitLead.Infrastructure.Persistence.Repositories
         public async Task<IReadOnlyList<UserDto>> GetAllAsync(
             CancellationToken cancellationToken)
         {
-            return await _context.Users
+            return await _context.DomainUsers
                 .Select(x => new UserDto
                 {
                     Id = x.Id,
@@ -32,7 +32,7 @@ namespace FitLead.Infrastructure.Persistence.Repositories
             UserRole role,
             CancellationToken cancellationToken)
         {
-            return await _context.Users
+            return await _context.DomainUsers
                 .Where(x => x.Role == role)
                 .Select(x => new UserDto
                 {

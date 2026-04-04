@@ -1,9 +1,9 @@
-﻿using FitLead.Api.Contracts.Invitations;
-using FitLead.Api.Identity;
+using FitLead.Api.Contracts.Invitations;
 using FitLead.Api.Common.Results;
 using FitLead.Application.Invitations.Commands;
 using FitLead.Application.Invitations.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FitLead.Api.Controllers
@@ -19,7 +19,7 @@ namespace FitLead.Api.Controllers
             _mediator = mediator;
         }
 
-        [RequireUser]
+        [Authorize(Policy = "ClientOnly")]
         [HttpGet("client")]
         public async Task<IActionResult> GetPendingForClient(
             CancellationToken cancellationToken)
@@ -31,7 +31,7 @@ namespace FitLead.Api.Controllers
             return result.ToActionResult(this);
         }
 
-        [RequireUser]
+        [Authorize(Policy = "TrainerOnly")]
         [HttpGet("trainer")]
         public async Task<IActionResult> GetSentByTrainer(
             CancellationToken cancellationToken)
@@ -43,7 +43,7 @@ namespace FitLead.Api.Controllers
             return result.ToActionResult(this);
         }
 
-        [RequireUser]
+        [Authorize(Policy = "TrainerOnly")]
         [HttpPost]
         public async Task<IActionResult> Create(
            [FromBody] CreateInvitationRequest request,
@@ -57,7 +57,7 @@ namespace FitLead.Api.Controllers
             return result.ToCreated(this);
         }
 
-        [RequireUser]
+        [Authorize(Policy = "ClientOnly")]
         [HttpPost("{invitationId:guid}/accept")]
         public async Task<IActionResult> Accept(
             Guid invitationId,
@@ -72,7 +72,7 @@ namespace FitLead.Api.Controllers
             return result.ToActionResult(this);
         }
 
-        [RequireUser]
+        [Authorize(Policy = "ClientOnly")]
         [HttpPost("{invitationId:guid}/decline")]
         public async Task<IActionResult> Decline(
             Guid invitationId,

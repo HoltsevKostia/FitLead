@@ -14,7 +14,20 @@
     <File Path="../docs/adr/adr-0011-global-exception-handling-problemdetails.md" />
     <File Path="../docs/adr/adr-0012-shared-kernel-fitlead-common.md" />
     <File Path="../docs/adr/adr-0013-domain-result-for-expected-failures.md" />
+    <File Path="../docs/adr/adr-0014-identity-first-auth-foundation.md" />
+    <File Path="../docs/adr/adr-0015-integration-first-testing-strategy.md" />
+    <File Path="../docs/adr/adr-0016-internal-identity-service-interim-password-flow.md" />
     <File Path="../docs/adr/README.md" />
+  </Folder>
+  <Folder Name="/docs/testing/">
+    <File Path="../docs/testing/policy.md" />
+    <File Path="../docs/testing/master-test-plan.md" />
+  </Folder>
+  <Folder Name="/tests/">
+    <File Path="../tests/README.md" />
+    <File Path="../tests/coverage.runsettings" />
+    <File Path="../tests/run-coverage.ps1" />
+    <Project Path="../tests/FitLead.IntegrationTests/FitLead.IntegrationTests.csproj" />
   </Folder>
   <Project Path="FitLead.Api/FitLead.Api.csproj" />
   <Project Path="FitLead.Application/FitLead.Application.csproj" />

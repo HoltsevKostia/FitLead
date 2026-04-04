@@ -1,7 +1,6 @@
 using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
-using FitLead.Common.Errors;
-using FitLead.Application.Common.Identity;
+using FitLead.Application.Trainings.Workouts.Access;
 using FitLead.Common.Results;
 using MediatR;
 
@@ -10,17 +9,14 @@ namespace FitLead.Application.Trainings.Workouts.Commands
     public sealed class RemoveExerciseFromWorkoutHandler
     : IRequestHandler<RemoveExerciseFromWorkoutCommand, Result>
     {
-        private readonly IUserContext _user;
-        private readonly IWorkoutRepository _repository;
+        private readonly IWorkoutLoader _workoutLoader;
         private readonly IUnitOfWork _unitOfWork;
 
         public RemoveExerciseFromWorkoutHandler(
-            IUserContext user,
-            IWorkoutRepository repository,
+            IWorkoutLoader workoutLoader,
             IUnitOfWork unitOfWork)
         {
-            _user = user;
-            _repository = repository;
+            _workoutLoader = workoutLoader;
             _unitOfWork = unitOfWork;
         }
 
@@ -28,16 +24,14 @@ namespace FitLead.Application.Trainings.Workouts.Commands
             RemoveExerciseFromWorkoutCommand request,
             CancellationToken cancellationToken)
         {
-            var workout = await _repository.GetByIdAsync(
+            var workoutResult = await _workoutLoader.GetOwnedOrNotFoundAsync(
                 request.WorkoutId,
                 cancellationToken);
 
-            if (workout is null)
-                return Result.Failure(Error.NotFound("workout.not_found", "Workout not found"));
+            if (workoutResult.IsFailure)
+                return Result.Failure(workoutResult.Error);
 
-            if (workout.TrainerId != _user.UserId)
-                return Result.Failure(Error.Forbidden("workout.forbidden", "Forbidden"));
-
+            var workout = workoutResult.Value;
             var removeResult = workout.RemoveExercise(request.WorkoutExerciseId);
             if (removeResult.IsFailure)
                 return removeResult;
