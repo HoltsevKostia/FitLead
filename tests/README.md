@@ -7,9 +7,9 @@ Current focus:
 - feature-scoped tests inside `FitLead.IntegrationTests/Features`
 
 Project-level testing docs:
-- policy: `docs/testing/policy.md`
-- master plan: `docs/testing/master-test-plan.md`
-- auth feature spec: `FitLead/FitLead.Api/Features/Auth/tests.md`
+- policy: [`docs/testing/policy.md`](/FitLead/docs/testing/policy.md)
+- master plan: [`docs/testing/master-test-plan.md`](/FitLead/docs/testing/master-test-plan.md)
+- feature specs (auth example): [`tests/FitLead.IntegrationTests/Features/Auth/tests.md`](/FitLead/tests/FitLead.IntegrationTests/Features/Auth/tests.md)
 
 ## Prerequisites
 
