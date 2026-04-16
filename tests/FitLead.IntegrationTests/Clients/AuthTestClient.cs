@@ -1,6 +1,6 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using FitLead.Api.Contracts.Auth;
+using FitLead.Api.Auth.Contracts;
 
 namespace FitLead.IntegrationTests.Clients;
 

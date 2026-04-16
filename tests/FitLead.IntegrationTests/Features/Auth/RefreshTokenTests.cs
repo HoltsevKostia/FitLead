@@ -1,5 +1,5 @@
 using System.Net;
-using FitLead.Api.Contracts.Auth;
+using FitLead.Api.Auth.Contracts;
 using FitLead.IntegrationTests.Clients;
 using FitLead.IntegrationTests.Helpers;
 using FitLead.IntegrationTests.Infrastructure;

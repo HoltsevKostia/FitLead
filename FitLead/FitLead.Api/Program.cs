@@ -1,4 +1,4 @@
-using FitLead.Api.Common.Errors;
+using FitLead.Api.Errors;
 using FitLead.Api.Identity;
 using FitLead.Application.Identity;
 using FitLead.Application.Trainings.TrainingPrograms.Commands;
