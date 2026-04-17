@@ -1,0 +1,187 @@
+name: FitLead CI/CD
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: 8.0.x
+  CONFIGURATION: Release
+  API_PROJECT: FitLead/FitLead.Api/FitLead.Api.csproj
+  TEST_PROJECT: tests/FitLead.IntegrationTests/FitLead.IntegrationTests.csproj
+  TEST_RESULTS_DIR: tests/TestResults
+  IMAGE_NAME: fitlead-api
+
+jobs:
+  build-test:
+    name: Build and test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'FitLead/dotnet-tools.json') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Restore .NET tools
+        run: dotnet tool restore --tool-manifest FitLead/dotnet-tools.json
+
+      - name: Restore dependencies
+        run: |
+          dotnet restore "$API_PROJECT"
+          dotnet restore "$TEST_PROJECT"
+
+      - name: Build API
+        run: dotnet build "$API_PROJECT" --configuration "$CONFIGURATION" --no-restore
+
+      - name: Docker diagnostics for Testcontainers
+        run: |
+          docker version
+          docker info
+
+      - name: Run tests with coverage
+        run: |
+          dotnet test "$TEST_PROJECT" \
+            --configuration "$CONFIGURATION" \
+            --logger "trx;LogFileName=test-results.trx" \
+            --collect:"XPlat Code Coverage" \
+            --settings tests/coverage.runsettings \
+            --results-directory "$TEST_RESULTS_DIR"
+
+      - name: Generate coverage report
+        if: always()
+        run: |
+          if find "$TEST_RESULTS_DIR" -name "coverage.cobertura.xml" -print -quit | grep -q .; then
+            dotnet tool run reportgenerator --tool-manifest FitLead/dotnet-tools.json -- \
+              "-reports:$TEST_RESULTS_DIR/**/coverage.cobertura.xml" \
+              "-targetdir:tests/coverage-report" \
+              "-reporttypes:Html;TextSummary"
+          else
+            echo "Coverage file was not found; skipping ReportGenerator."
+          fi
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ${{ env.TEST_RESULTS_DIR }}
+          if-no-files-found: warn
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: tests/coverage-report
+          if-no-files-found: warn
+
+  docker-build:
+    name: Docker build
+    runs-on: ubuntu-latest
+    needs: build-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build API Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: FitLead/FitLead.Api/Dockerfile
+          push: false
+          load: true
+          tags: ${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Create Docker image metadata
+        run: |
+          mkdir -p artifacts/docker
+          {
+            echo "{"
+            echo "  \"imageName\": \"${IMAGE_NAME}\","
+            echo "  \"imageTag\": \"${GITHUB_SHA}\","
+            echo "  \"dockerfile\": \"FitLead/FitLead.Api/Dockerfile\","
+            echo "  \"buildContext\": \".\","
+            echo "  \"commitSha\": \"${GITHUB_SHA}\","
+            echo "  \"branch\": \"${GITHUB_REF_NAME}\","
+            echo "  \"workflowRunId\": \"${GITHUB_RUN_ID}\","
+            echo "  \"workflowRunNumber\": \"${GITHUB_RUN_NUMBER}\","
+            echo "  \"createdAtUtc\": \"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\""
+            echo "}"
+          } > artifacts/docker/docker-image-metadata.json
+
+      - name: Upload Docker metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image-metadata
+          path: artifacts/docker/docker-image-metadata.json
+          if-no-files-found: error
+
+  simulated-deploy:
+    name: Simulated deploy
+    runs-on: ubuntu-latest
+    needs: docker-build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Download Docker metadata
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image-metadata
+          path: artifacts/docker
+
+      - name: Create deployment manifest
+        run: |
+          mkdir -p artifacts/deployment
+          {
+            echo "FitLead simulated deployment"
+            echo "Environment: simulated-production"
+            echo "Status: simulated-success"
+            echo "Image: ${IMAGE_NAME}:${GITHUB_SHA}"
+            echo "Commit: ${GITHUB_SHA}"
+            echo "Branch: ${GITHUB_REF_NAME}"
+            echo "Workflow run: ${GITHUB_RUN_ID}"
+            echo "Run number: ${GITHUB_RUN_NUMBER}"
+            echo "Deployed at UTC: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            echo ""
+            echo "Docker metadata:"
+            cat artifacts/docker/docker-image-metadata.json
+          } > artifacts/deployment/deployment-manifest.txt
+
+          {
+            echo "## Simulated deployment"
+            echo ""
+            echo "- Environment: simulated-production"
+            echo "- Status: simulated-success"
+            echo "- Image: \`${IMAGE_NAME}:${GITHUB_SHA}\`"
+            echo "- Commit: \`${GITHUB_SHA}\`"
+            echo "- Manifest artifact: \`simulated-deployment-manifest\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload deployment manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: simulated-deployment-manifest
+          path: artifacts/deployment/deployment-manifest.txt
+          if-no-files-found: error
