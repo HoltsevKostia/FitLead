@@ -35,12 +35,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
-          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'FitLead/dotnet-tools.json') }}
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
           restore-keys: |
             nuget-${{ runner.os }}-
-
-      - name: Restore .NET tools
-        run: dotnet tool restore --tool-manifest FitLead/dotnet-tools.json
 
       - name: Restore dependencies
         run: |
@@ -64,32 +61,12 @@ jobs:
             --settings tests/coverage.runsettings \
             --results-directory "$TEST_RESULTS_DIR"
 
-      - name: Generate coverage report
-        if: always()
-        run: |
-          if find "$TEST_RESULTS_DIR" -name "coverage.cobertura.xml" -print -quit | grep -q .; then
-            dotnet tool run reportgenerator --tool-manifest FitLead/dotnet-tools.json -- \
-              "-reports:$TEST_RESULTS_DIR/**/coverage.cobertura.xml" \
-              "-targetdir:tests/coverage-report" \
-              "-reporttypes:Html;TextSummary"
-          else
-            echo "Coverage file was not found; skipping ReportGenerator."
-          fi
-
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: ${{ env.TEST_RESULTS_DIR }}
-          if-no-files-found: warn
-
-      - name: Upload coverage report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: tests/coverage-report
           if-no-files-found: warn
 
   docker-build:
