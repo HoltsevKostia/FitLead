@@ -1,5 +1,6 @@
 using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
+using FitLead.Application.Modules.Workouts;
 using FitLead.Application.Trainings.TrainingPrograms.Access;
 using FitLead.Common.Errors;
 using FitLead.Common.Results;
@@ -11,16 +12,16 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Commands
     : IRequestHandler<AddWorkoutToProgramCommand, Result>
     {
         private readonly ITrainingProgramLoader _programLoader;
-        private readonly IWorkoutRepository _workoutRepository;
+        private readonly IWorkoutsModule _workoutsModule;
         private readonly IUnitOfWork _unitOfWork;
 
         public AddWorkoutToProgramHandler(
             ITrainingProgramLoader programLoader,
-            IWorkoutRepository workoutRepository,
+            IWorkoutsModule workoutsModule,
             IUnitOfWork unitOfWork)
         {
             _programLoader = programLoader;
-            _workoutRepository = workoutRepository;
+            _workoutsModule = workoutsModule;
             _unitOfWork = unitOfWork;
         }
 
@@ -37,16 +38,14 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Commands
 
             var program = programResult.Value;
 
-            var workoutExists = await _workoutRepository.ExistsAsync(
+            var workout = await _workoutsModule.GetByIdAsync(
                 request.WorkoutId,
                 cancellationToken);
 
-            if (!workoutExists)
+            if (workout is null)
                 return Result.Failure(Error.NotFound("workout.not_found", "Workout not found"));
 
-            var workoutTrainerId = await _workoutRepository.GetTrainerIdAsync(request.WorkoutId, cancellationToken);
-
-            if (workoutTrainerId.Value != program.TrainerId)
+            if (workout.TrainerId != program.TrainerId)
                 return Result.Failure(Error.Forbidden("workout.forbidden", "Workout does not belong to the same trainer as the program"));
 
             var addResult = program.AddWorkout(request.WorkoutId);

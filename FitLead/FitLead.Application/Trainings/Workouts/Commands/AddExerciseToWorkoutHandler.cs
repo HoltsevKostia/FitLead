@@ -1,5 +1,6 @@
 using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
+using FitLead.Application.Modules.Exercises;
 using FitLead.Application.Trainings.Workouts.Access;
 using FitLead.Common.Errors;
 using FitLead.Common.Results;
@@ -11,16 +12,16 @@ namespace FitLead.Application.Trainings.Workouts.Commands
     : IRequestHandler<AddExerciseToWorkoutCommand, Result<Guid>>
     {
         private readonly IWorkoutLoader _workoutLoader;
-        private readonly IExerciseRepository _exerciseRepository;
+        private readonly IExercisesModule _exercisesModule;
         private readonly IUnitOfWork _unitOfWork;
 
         public AddExerciseToWorkoutHandler(
             IWorkoutLoader workoutLoader,
-            IExerciseRepository exerciseRepository,
+            IExercisesModule exercisesModule,
             IUnitOfWork unitOfWork)
         {
             _workoutLoader = workoutLoader;
-            _exerciseRepository = exerciseRepository;
+            _exercisesModule = exercisesModule;
             _unitOfWork = unitOfWork;
         }
 
@@ -35,7 +36,7 @@ namespace FitLead.Application.Trainings.Workouts.Commands
             if (workoutResult.IsFailure)
                 return Result<Guid>.Failure(workoutResult.Error);
 
-            var exerciseExists = await _exerciseRepository.ExistsAsync(
+            var exerciseExists = await _exercisesModule.ExistsAsync(
                 request.ExerciseId,
                 cancellationToken);
 

@@ -3,6 +3,7 @@ using FitLead.Application.Common;
 using FitLead.Common.Errors;
 using FitLead.Common.Results;
 using FitLead.Domain.Trainings;
+using FitLead.Application.Modules.Users;
 using FitLead.Domain.Users;
 using MediatR;
 using FitLead.Application.Identity;
@@ -14,18 +15,18 @@ namespace FitLead.Application.Trainings.Workouts.Commands
     {
         private readonly IUserContext _user;
         private readonly IWorkoutRepository _repository;
-        private readonly IUserRepository _userRepository;
+        private readonly IUsersModule _usersModule;
         private readonly IUnitOfWork _unitOfWork;
 
         public CreateWorkoutHandler(
             IUserContext user,
             IWorkoutRepository repository,
-            IUserRepository userRepository,
+            IUsersModule usersModule,
             IUnitOfWork unitOfWork)
         {
             _user = user;
             _repository = repository;
-            _userRepository = userRepository;
+            _usersModule = usersModule;
             _unitOfWork = unitOfWork;
         }
 
@@ -33,7 +34,7 @@ namespace FitLead.Application.Trainings.Workouts.Commands
             CreateWorkoutCommand request,
             CancellationToken cancellationToken)
         {
-            var trainer = await _userRepository.GetByIdAsync(
+            var trainer = await _usersModule.GetByIdAsync(
                 _user.UserId,
                 cancellationToken);
 

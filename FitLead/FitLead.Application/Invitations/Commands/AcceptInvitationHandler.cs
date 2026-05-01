@@ -4,6 +4,7 @@ using FitLead.Common.Errors;
 using FitLead.Common.Results;
 using FitLead.Application.Common.Time;
 using FitLead.Application.Invitations.Access;
+using FitLead.Application.Modules.Users;
 using FitLead.Domain.Users;
 using MediatR;
 using FitLead.Application.Identity;
@@ -15,27 +16,27 @@ namespace FitLead.Application.Invitations.Commands
     {
         private readonly IUserContext _user;
         private readonly IClock _clock;
-        private readonly IUserRepository _userRepository;
+        private readonly IUsersModule _usersModule;
         private readonly IInvitationLoader _invitationLoader;
         private readonly IUnitOfWork _unitOfWork;
 
         public AcceptInvitationHandler(
             IUserContext user,
             IClock clock,
-            IUserRepository userRepository,
+            IUsersModule usersModule,
             IInvitationLoader invitationLoader,
             IUnitOfWork unitOfWork)
         {
             _user = user;
             _clock = clock;
-            _userRepository = userRepository;
+            _usersModule = usersModule;
             _unitOfWork = unitOfWork;
             _invitationLoader = invitationLoader;
         }
 
         public async Task<Result> Handle(AcceptInvitationCommand request, CancellationToken cancellationToken)
         {
-            var client = await _userRepository.GetByIdAsync(_user.UserId, cancellationToken);
+            var client = await _usersModule.GetByIdAsync(_user.UserId, cancellationToken);
 
             if (client is null)
                 return Result.Failure(Error.NotFound("client.not_found", "Client not found"));
