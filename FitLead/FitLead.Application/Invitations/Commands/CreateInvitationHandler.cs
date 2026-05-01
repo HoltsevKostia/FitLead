@@ -3,6 +3,7 @@ using FitLead.Application.Common;
 using FitLead.Common.Errors;
 using FitLead.Common.Results;
 using FitLead.Application.Common.Time;
+using FitLead.Application.Modules.Users;
 using FitLead.Domain.Invitations;
 using FitLead.Domain.Users;
 using MediatR;
@@ -15,20 +16,20 @@ namespace FitLead.Application.Invitations.Commands
     {
         private readonly IUserContext _user;
         private readonly IClock _clock;
-        private readonly IUserRepository _userRepository;
+        private readonly IUsersModule _usersModule;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IInvitationRepository _invitationRepository;
 
         public CreateInvitationHandler(
             IUserContext user,
             IClock clock,
-            IUserRepository userRepository,
+            IUsersModule usersModule,
             IUnitOfWork unitOfWork,
             IInvitationRepository invitationRepository)
         {
             _user = user;
             _clock = clock;
-            _userRepository = userRepository;
+            _usersModule = usersModule;
             _unitOfWork = unitOfWork;
             _invitationRepository = invitationRepository;
         }
@@ -37,7 +38,7 @@ namespace FitLead.Application.Invitations.Commands
             CreateInvitationCommand request,
             CancellationToken cancellationToken)
         {
-            var trainer = await _userRepository.GetByIdAsync(_user.UserId, cancellationToken);
+            var trainer = await _usersModule.GetByIdAsync(_user.UserId, cancellationToken);
 
             if (trainer is null)
                 return Result<Guid>.Failure(Error.NotFound("trainer.not_found", "Trainer not found"));
@@ -45,7 +46,7 @@ namespace FitLead.Application.Invitations.Commands
             if (trainer.Role != UserRole.Trainer)
                 return Result<Guid>.Failure(Error.Forbidden("trainer.required", "User is not a trainer"));
 
-            var client = await _userRepository.GetByIdAsync(request.ClientId, cancellationToken);
+            var client = await _usersModule.GetByIdAsync(request.ClientId, cancellationToken);
 
             if (client is null)
                 return Result<Guid>.Failure(Error.NotFound("client.not_found", "Client not found"));
