@@ -1,5 +1,4 @@
 using System.Net;
-using FitLead.Api.Auth.Contracts;
 using FitLead.IntegrationTests.Clients;
 using FitLead.IntegrationTests.Helpers;
 using FitLead.IntegrationTests.Infrastructure;
@@ -11,55 +10,64 @@ namespace FitLead.IntegrationTests.Features.Auth;
 public sealed class RefreshTokenTests(IntegrationTestFixture fixture) : IntegrationTestBase(fixture)
 {
     [Fact]
-    public async Task Refresh_WithValidToken_ShouldRotateAndReturnNewTokens()
+    public async Task Refresh_WithValidCookie_ShouldRotateAndIssueNewAuthCookies()
     {
         var authClient = new AuthTestClient(HttpClient);
         var email = UniqueEmail("refresh");
 
         var register = await authClient.RegisterAsync(email, "Str0ngPass!123", "Refresh User", AuthRoles.Trainer);
         register.StatusCode.Should().Be(HttpStatusCode.Created);
-        var registerPayload = await register.ReadRequiredJsonAsync<RegisterResponse>();
+        var registerRefreshCookie = register.GetRequiredCookie(AuthCookieNames.RefreshToken);
 
-        var refresh = await authClient.RefreshAsync(registerPayload.RefreshToken);
+        var refresh = await authClient.RefreshAsync();
 
         refresh.StatusCode.Should().Be(HttpStatusCode.OK);
-        var payload = await refresh.ReadRequiredJsonAsync<RefreshResponse>();
-        payload.AccessToken.Should().NotBeNullOrWhiteSpace();
-        payload.RefreshToken.Should().NotBeNullOrWhiteSpace();
-        payload.RefreshToken.Should().NotBe(registerPayload.RefreshToken);
+        var payload = await refresh.ReadRequiredJsonAsync<AuthSessionResponse>();
+        payload.ExpiresIn.Should().BePositive();
 
-        authClient.SetBearerToken(payload.AccessToken);
+        var accessCookie = refresh.GetRequiredCookie(AuthCookieNames.AccessToken);
+        accessCookie.Value.Should().NotBeNullOrWhiteSpace();
+        accessCookie.HttpOnly.Should().BeTrue();
+        accessCookie.Path.Should().Be("/");
+
+        var refreshCookie = refresh.GetRequiredCookie(AuthCookieNames.RefreshToken);
+        refreshCookie.Value.Should().NotBeNullOrWhiteSpace();
+        refreshCookie.HttpOnly.Should().BeTrue();
+        refreshCookie.Path.Should().Be("/auth");
+        refreshCookie.Value.Should().NotBe(registerRefreshCookie.Value);
+
         var currentUser = await HttpClient.GetAsync("/auth/current-user");
         currentUser.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     [Fact]
-    public async Task Refresh_WithReusedToken_ShouldRevokeTokenFamily()
+    public async Task Refresh_WithReusedRefreshCookie_ShouldRevokeTokenFamily()
     {
-        var authClient = new AuthTestClient(HttpClient);
         var email = UniqueEmail("refresh-reuse");
+        var initialClient = new AuthTestClient(Fixture.CreateClient());
 
-        var register = await authClient.RegisterAsync(email, "Str0ngPass!123", "Refresh Reuse User", AuthRoles.Trainer);
+        var register = await initialClient.RegisterAsync(email, "Str0ngPass!123", "Refresh Reuse User", AuthRoles.Trainer);
         register.StatusCode.Should().Be(HttpStatusCode.Created);
-        var registerPayload = await register.ReadRequiredJsonAsync<RegisterResponse>();
+        var originalRefreshCookie = register.GetRequiredCookie(AuthCookieNames.RefreshToken);
 
-        var firstRefresh = await authClient.RefreshAsync(registerPayload.RefreshToken);
+        var firstRefresh = await initialClient.RefreshAsync();
         firstRefresh.StatusCode.Should().Be(HttpStatusCode.OK);
-        var firstRefreshPayload = await firstRefresh.ReadRequiredJsonAsync<RefreshResponse>();
+        var rotatedRefreshCookie = firstRefresh.GetRequiredCookie(AuthCookieNames.RefreshToken);
 
-        var secondRefresh = await authClient.RefreshAsync(registerPayload.RefreshToken);
+        var reuseClient = new AuthTestClient(Fixture.CreateClient());
+        var secondRefresh = await reuseClient.RefreshWithRefreshTokenAsync(originalRefreshCookie.Value);
         secondRefresh.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
 
-        var familyTokenAfterReuse = await authClient.RefreshAsync(firstRefreshPayload.RefreshToken);
+        var familyTokenAfterReuse = await reuseClient.RefreshWithRefreshTokenAsync(rotatedRefreshCookie.Value);
         familyTokenAfterReuse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
-    public async Task Refresh_WithInvalidToken_ShouldReturnUnauthorized()
+    public async Task Refresh_WithoutRefreshCookie_ShouldReturnUnauthorized()
     {
         var authClient = new AuthTestClient(HttpClient);
 
-        var response = await authClient.RefreshAsync("invalid-refresh-token");
+        var response = await authClient.RefreshAsync();
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }

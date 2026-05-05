@@ -25,6 +25,7 @@ In scope:
 - registration flow
 - login flow
 - refresh token flow
+- logout flow
 - invalid token / token misuse behavior
 - authorization behavior (`401` / `403`)
 - authenticated user context propagation
@@ -54,36 +55,40 @@ Rationale:
 - AUTH-COND-08: protected endpoint without token is rejected (`401`)
 - AUTH-COND-09: authenticated user without required role is rejected (`403`)
 - AUTH-COND-10: authenticated user context/claims are correctly propagated
+- AUTH-COND-11: auth cookies are issued and rotated correctly
+- AUTH-COND-12: logout clears auth cookies and invalidates session
 
 ## Test Cases
 ### Implemented (Phase 1)
-- AUTH-TC-01: Register valid trainer user -> `201` + access/refresh tokens
-  - automated by `RegisterTests.Register_WithValidTrainerPayload_ShouldReturnCreatedWithTokens`
+- AUTH-TC-01: Register valid trainer user -> `201` + auth cookies issued
+  - automated by `RegisterTests.Register_WithValidTrainerPayload_ShouldReturnCreatedAndSetAuthCookies`
 - AUTH-TC-02: Register duplicate email -> `409` + `auth.email_exists`
   - automated by `RegisterTests.Register_WithDuplicateEmail_ShouldReturnConflictWithAuthEmailExistsErrorCode`
-- AUTH-TC-04: Login valid credentials -> `200` + access/refresh tokens
-  - automated by `LoginTests.Login_WithValidCredentials_ShouldReturnOkWithTokens`
+- AUTH-TC-04: Login valid credentials -> `200` + auth cookies issued
+  - automated by `LoginTests.Login_WithValidCredentials_ShouldReturnOkAndSetAuthCookies`
 - AUTH-TC-05: Login invalid credentials -> `401`
   - automated by `LoginTests.Login_WithInvalidPassword_ShouldReturnUnauthorized`
   - automated by `LoginTests.Login_WithNonExistentEmail_ShouldReturnUnauthorized`
-- AUTH-TC-06: Refresh with valid token -> `200` + rotated refresh token + valid access token
-  - automated by `RefreshTokenTests.Refresh_WithValidToken_ShouldRotateAndReturnNewTokens`
+- AUTH-TC-06: Refresh with valid cookie -> `200` + rotated refresh cookie + renewed access cookie
+  - automated by `RefreshTokenTests.Refresh_WithValidCookie_ShouldRotateAndIssueNewAuthCookies`
 - AUTH-TC-07: Refresh token reuse detection -> `401`, token family revoked
-  - automated by `RefreshTokenTests.Refresh_WithReusedToken_ShouldRevokeTokenFamily`
+  - automated by `RefreshTokenTests.Refresh_WithReusedRefreshCookie_ShouldRevokeTokenFamily`
 - AUTH-TC-08: Unauthorized access to protected endpoint -> `401`
   - automated by `AuthorizationTests.TrainerOnlyEndpoint_WithoutAccessToken_ShouldReturnUnauthorized`
 - AUTH-TC-09: Forbidden access without role permissions -> `403`
   - automated by `AuthorizationTests.TrainerOnlyEndpoint_WithClientRole_ShouldReturnForbidden`
 - AUTH-TC-10: Current user claims propagation (`sub`, `email`, `jti`) -> `200`
-  - automated by `CurrentUserTests.CurrentUser_WithValidAccessToken_ShouldReturnSubEmailAndJti`
+  - automated by `CurrentUserTests.CurrentUser_WithValidAuthCookies_ShouldReturnSubEmailAndJti`
 
 ### Added Validation Case
 - AUTH-TC-11: Register invalid email -> `400` + validation problem details
   - automated by `RegisterTests.Register_WithInvalidEmail_ShouldReturnBadRequestWithValidationProblem`
 
-### Planned Next
-- AUTH-TC-03: registration rollback / no partial state under induced failure
-  - planned; requires controlled failure point for deterministic assertion
+### Added Cookie Contract Cases
+- AUTH-TC-12: Register valid user -> issued cookies allow immediate authenticated access
+  - automated by `RegisterTests.Register_WithValidPayload_ShouldAllowAccessToCurrentUserUsingIssuedCookies`
+- AUTH-TC-13: Logout clears auth cookies and invalidates session
+  - automated by `LogoutTests.Logout_WithAuthenticatedSession_ShouldClearAuthCookiesAndInvalidateCurrentUser`
 
 ## Priority
 Highest priority in this feature:
@@ -99,7 +104,7 @@ Highest priority in this feature:
 ## References
 - [Policy](/docs/testing/policy.md)
 - [Master plan](/docs/testing/master-test-plan.md)
-- [Auth controller](/FitLead/FitLead.Api/Controllers/AuthController.cs)
+- [Auth controller](/FitLead/FitLead.Api/Auth/AuthController.cs)
 - [Refresh token service](/FitLead/FitLead.Infrastructure/Identity/RefreshTokenService.cs)
 - Configure JWT bearer authentication in ASP.NET Core:
   https://learn.microsoft.com/uk-ua/aspnet/core/security/authentication/configure-jwt-bearer-authentication?view=aspnetcore-10.0

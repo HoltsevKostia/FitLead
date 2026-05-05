@@ -1,6 +1,6 @@
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using FitLead.Api.Auth.Contracts;
+using FitLead.IntegrationTests.Helpers;
 
 namespace FitLead.IntegrationTests.Clients;
 
@@ -27,21 +27,23 @@ public sealed class AuthTestClient(HttpClient httpClient)
     }
 
     public Task<HttpResponseMessage> RefreshAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return httpClient.PostAsync("/auth/refresh", content: null, cancellationToken);
+    }
+
+    public Task<HttpResponseMessage> RefreshWithRefreshTokenAsync(
         string refreshToken,
         CancellationToken cancellationToken = default)
     {
-        var request = new RefreshRequest(refreshToken);
-        return httpClient.PostAsJsonAsync("/auth/refresh", request, cancellationToken);
+        var request = new HttpRequestMessage(HttpMethod.Post, "/auth/refresh");
+        request.Headers.Add("Cookie", $"{AuthCookieNames.RefreshToken}={refreshToken}");
+        return httpClient.SendAsync(request, cancellationToken);
     }
 
-    public void SetBearerToken(string accessToken)
+    public Task<HttpResponseMessage> LogoutAsync(
+        CancellationToken cancellationToken = default)
     {
-        httpClient.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", accessToken);
-    }
-
-    public void ClearBearerToken()
-    {
-        httpClient.DefaultRequestHeaders.Authorization = null;
+        return httpClient.PostAsync("/auth/logout", content: null, cancellationToken);
     }
 }

@@ -1,5 +1,4 @@
 using System.Net;
-using FitLead.Api.Auth.Contracts;
 using FitLead.IntegrationTests.Clients;
 using FitLead.IntegrationTests.Helpers;
 using FitLead.IntegrationTests.Infrastructure;
@@ -11,7 +10,7 @@ namespace FitLead.IntegrationTests.Features.Auth;
 public sealed class LoginTests(IntegrationTestFixture fixture) : IntegrationTestBase(fixture)
 {
     [Fact]
-    public async Task Login_WithValidCredentials_ShouldReturnOkWithTokens()
+    public async Task Login_WithValidCredentials_ShouldReturnOkAndSetAuthCookies()
     {
         var authClient = new AuthTestClient(HttpClient);
         var email = UniqueEmail("login");
@@ -23,10 +22,16 @@ public sealed class LoginTests(IntegrationTestFixture fixture) : IntegrationTest
         var login = await authClient.LoginAsync(email, password);
 
         login.StatusCode.Should().Be(HttpStatusCode.OK);
-        var payload = await login.ReadRequiredJsonAsync<LoginResponse>();
-        payload.AccessToken.Should().NotBeNullOrWhiteSpace();
-        payload.RefreshToken.Should().NotBeNullOrWhiteSpace();
+        var payload = await login.ReadRequiredJsonAsync<AuthSessionResponse>();
         payload.ExpiresIn.Should().BePositive();
+
+        var accessCookie = login.GetRequiredCookie(AuthCookieNames.AccessToken);
+        accessCookie.HttpOnly.Should().BeTrue();
+        accessCookie.Path.Should().Be("/");
+
+        var refreshCookie = login.GetRequiredCookie(AuthCookieNames.RefreshToken);
+        refreshCookie.HttpOnly.Should().BeTrue();
+        refreshCookie.Path.Should().Be("/auth");
     }
 
     [Fact]

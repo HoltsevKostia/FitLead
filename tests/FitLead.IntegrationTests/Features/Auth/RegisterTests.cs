@@ -1,5 +1,4 @@
 using System.Net;
-using FitLead.Api.Auth.Contracts;
 using FitLead.IntegrationTests.Clients;
 using FitLead.IntegrationTests.Helpers;
 using FitLead.IntegrationTests.Infrastructure;
@@ -11,7 +10,7 @@ namespace FitLead.IntegrationTests.Features.Auth;
 public sealed class RegisterTests(IntegrationTestFixture fixture) : IntegrationTestBase(fixture)
 {
     [Fact]
-    public async Task Register_WithValidTrainerPayload_ShouldReturnCreatedWithTokens()
+    public async Task Register_WithValidTrainerPayload_ShouldReturnCreatedAndSetAuthCookies()
     {
         var authClient = new AuthTestClient(HttpClient);
         var email = UniqueEmail("trainer");
@@ -23,10 +22,18 @@ public sealed class RegisterTests(IntegrationTestFixture fixture) : IntegrationT
             AuthRoles.Trainer);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
-        var payload = await response.ReadRequiredJsonAsync<RegisterResponse>();
-        payload.AccessToken.Should().NotBeNullOrWhiteSpace();
-        payload.RefreshToken.Should().NotBeNullOrWhiteSpace();
+        var payload = await response.ReadRequiredJsonAsync<AuthSessionResponse>();
         payload.ExpiresIn.Should().BePositive();
+
+        var accessCookie = response.GetRequiredCookie(AuthCookieNames.AccessToken);
+        accessCookie.Value.Should().NotBeNullOrWhiteSpace();
+        accessCookie.HttpOnly.Should().BeTrue();
+        accessCookie.Path.Should().Be("/");
+
+        var refreshCookie = response.GetRequiredCookie(AuthCookieNames.RefreshToken);
+        refreshCookie.Value.Should().NotBeNullOrWhiteSpace();
+        refreshCookie.HttpOnly.Should().BeTrue();
+        refreshCookie.Path.Should().Be("/auth");
     }
 
     [Fact]
@@ -71,5 +78,23 @@ public sealed class RegisterTests(IntegrationTestFixture fixture) : IntegrationT
         problem.ErrorCode.Should().Be(AuthErrorCodes.EmailInvalid);
         problem.Title.Should().Be("Validation");
         problem.Detail.Should().Contain("Email format is invalid");
+    }
+
+    [Fact]
+    public async Task Register_WithValidPayload_ShouldAllowAccessToCurrentUserUsingIssuedCookies()
+    {
+        var authClient = new AuthTestClient(HttpClient);
+        var email = UniqueEmail("register-session");
+
+        var register = await authClient.RegisterAsync(
+            email,
+            "Str0ngPass!123",
+            "Registered User",
+            AuthRoles.Trainer);
+
+        register.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var currentUser = await HttpClient.GetAsync("/auth/current-user");
+        currentUser.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 }
