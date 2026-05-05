@@ -1,8 +1,16 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
+import { getCurrentUser } from "@/features/auth/server/get-current-user";
 import { RegisterForm } from "@/features/auth/ui/register-form";
 
-export default function RegisterPage() {
+export default async function RegisterPage() {
+  const currentUser = await getCurrentUser();
+
+  if (currentUser) {
+    redirect("/dashboard");
+  }
+
   return (
     <div className="space-y-6">
       <div className="space-y-2">

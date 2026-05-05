@@ -17,9 +17,9 @@ export interface AuthSession {
 }
 
 export interface CurrentUser {
-  sub: string;
+  id: string;
   email: string;
-  jti: string;
+  role: UserRole;
 }
 
 export interface LoginFormValues {

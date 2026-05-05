@@ -15,9 +15,10 @@ import {
   registerFormSchema,
 } from "@/features/auth/model/validation";
 import { authApi } from "@/lib/api/clients/auth-api";
-
-const inputClassName =
-  "w-full rounded-2xl border border-border bg-white px-4 py-3 outline-none transition focus:border-accent disabled:cursor-not-allowed disabled:opacity-70";
+import { FormAlert } from "@/shared/forms/form-alert";
+import { PasswordField } from "@/shared/forms/password-field";
+import { TextField } from "@/shared/forms/text-field";
+import { fieldErrorClassName, fieldLabelClassName } from "@/shared/forms/field-styles";
 
 const initialValues: RegisterFormValues = {
   fullName: "",
@@ -56,7 +57,6 @@ export function RegisterForm() {
   const [values, setValues] = useState<RegisterFormValues>(initialValues);
   const [fieldErrors, setFieldErrors] = useState<FormFieldErrors<RegisterFormValues>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   function updateField<K extends keyof RegisterFormValues>(
@@ -113,101 +113,56 @@ export function RegisterForm() {
 
   return (
     <form className="space-y-4" noValidate action={handleSubmit}>
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-foreground" htmlFor="register-full-name">
-          Повне ім’я
-        </label>
-        <input
-          id="register-full-name"
-          name="fullName"
-          type="text"
-          autoComplete="name"
-          required
-          maxLength={100}
-          value={values.fullName}
-          onChange={(event) => updateField("fullName", event.currentTarget.value)}
-          aria-invalid={fieldErrors.fullName ? "true" : "false"}
-          aria-describedby={fieldErrors.fullName ? "register-full-name-error" : undefined}
-          disabled={isSubmitting}
-          className={inputClassName}
-          placeholder="Ім’я та прізвище"
-        />
-        {fieldErrors.fullName ? (
-          <p id="register-full-name-error" className="text-sm text-red-700">
-            {fieldErrors.fullName}
-          </p>
-        ) : null}
-      </div>
+      <TextField
+        id="register-full-name"
+        name="fullName"
+        type="text"
+        label="Повне ім’я"
+        autoComplete="name"
+        required
+        maxLength={100}
+        value={values.fullName}
+        onChange={(event) => updateField("fullName", event.currentTarget.value)}
+        disabled={isSubmitting}
+        placeholder="Ім’я та прізвище"
+        error={fieldErrors.fullName}
+      />
 
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-foreground" htmlFor="register-email">
-          Електронна пошта
-        </label>
-        <input
-          id="register-email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          required
-          maxLength={254}
-          value={values.email}
-          onChange={(event) => updateField("email", event.currentTarget.value)}
-          aria-invalid={fieldErrors.email ? "true" : "false"}
-          aria-describedby={fieldErrors.email ? "register-email-error" : undefined}
-          disabled={isSubmitting}
-          className={inputClassName}
-          placeholder="name@example.com"
-        />
-        {fieldErrors.email ? (
-          <p id="register-email-error" className="text-sm text-red-700">
-            {fieldErrors.email}
-          </p>
-        ) : null}
-      </div>
+      <TextField
+        id="register-email"
+        name="email"
+        type="email"
+        label="Електронна пошта"
+        autoComplete="email"
+        required
+        maxLength={254}
+        value={values.email}
+        onChange={(event) => updateField("email", event.currentTarget.value)}
+        disabled={isSubmitting}
+        placeholder="name@example.com"
+        error={fieldErrors.email}
+      />
 
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-foreground" htmlFor="register-password">
-          Пароль
-        </label>
-        <div className="relative">
-          <input
-            id="register-password"
-            name="password"
-            type={showPassword ? "text" : "password"}
-            autoComplete="new-password"
-            required
-            minLength={6}
-            maxLength={128}
-            value={values.password}
-            onChange={(event) => updateField("password", event.currentTarget.value)}
-            aria-invalid={fieldErrors.password ? "true" : "false"}
-            aria-describedby={fieldErrors.password ? "register-password-error" : undefined}
-            disabled={isSubmitting}
-            className={`${inputClassName} pr-28`}
-            placeholder="Створи пароль"
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword((current) => !current)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted transition hover:text-foreground focus:outline-none"
-            aria-pressed={showPassword}
-            aria-label={showPassword ? "Приховати пароль" : "Показати пароль"}
-          >
-            {showPassword ? "Сховати" : "Показати"}
-          </button>
-        </div>
-        {fieldErrors.password ? (
-          <p id="register-password-error" className="text-sm text-red-700">
-            {fieldErrors.password}
-          </p>
-        ) : null}
-      </div>
+      <PasswordField
+        id="register-password"
+        name="password"
+        label="Пароль"
+        autoComplete="new-password"
+        required
+        minLength={6}
+        maxLength={128}
+        value={values.password}
+        onChange={(event) => updateField("password", event.currentTarget.value)}
+        disabled={isSubmitting}
+        placeholder="Створи пароль"
+        error={fieldErrors.password}
+      />
 
       <fieldset
         className="space-y-3"
         aria-describedby={fieldErrors.role ? "register-role-error" : undefined}
       >
-        <legend className="text-sm font-medium text-foreground">Роль</legend>
+        <legend className={fieldLabelClassName}>Роль</legend>
         <div className="grid gap-3">
           {roleOptions.map((option) => {
             const isSelected = values.role === option.value;
@@ -237,21 +192,13 @@ export function RegisterForm() {
           })}
         </div>
         {fieldErrors.role ? (
-          <p id="register-role-error" className="text-sm text-red-700">
+          <p id="register-role-error" className={fieldErrorClassName}>
             {fieldErrors.role}
           </p>
         ) : null}
       </fieldset>
 
-      {submitError ? (
-        <p
-          role="alert"
-          aria-live="polite"
-          className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
-        >
-          {submitError}
-        </p>
-      ) : null}
+      <FormAlert message={submitError} />
 
       <RegisterSubmitButton isSubmitting={isSubmitting} />
     </form>

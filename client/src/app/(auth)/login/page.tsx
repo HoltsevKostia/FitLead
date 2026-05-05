@@ -1,8 +1,16 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
+import { getCurrentUser } from "@/features/auth/server/get-current-user";
 import { LoginForm } from "@/features/auth/ui/login-form";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const currentUser = await getCurrentUser();
+
+  if (currentUser) {
+    redirect("/dashboard");
+  }
+
   return (
     <div className="space-y-6">
       <div className="space-y-2">
