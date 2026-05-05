@@ -8,6 +8,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using System.Security.Claims;
 
 namespace FitLead.Api.Auth
@@ -21,19 +22,22 @@ namespace FitLead.Api.Auth
         private readonly IJwtTokenService _jwtTokenService;
         private readonly IRefreshTokenService _refreshTokenService;
         private readonly IMediator _mediator;
+        private readonly JwtOptions _jwtOptions;
 
         public AuthController(
             UserManager<AppIdentityUser> userManager,
             SignInManager<AppIdentityUser> signInManager,
             IJwtTokenService jwtTokenService,
             IRefreshTokenService refreshTokenService,
-            IMediator mediator)
+            IMediator mediator,
+            IOptions<JwtOptions> jwtOptions)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _jwtTokenService = jwtTokenService;
             _refreshTokenService = refreshTokenService;
             _mediator = mediator;
+            _jwtOptions = jwtOptions.Value;
         }
 
         [HttpPost("register")]
@@ -50,15 +54,16 @@ namespace FitLead.Api.Auth
             if (result.IsFailure)
                 return result.ToActionResult(this);
 
-            return StatusCode(StatusCodes.Status201Created, new RegisterResponse(
-                result.Value.AccessToken,
-                result.Value.ExpiresIn,
-                result.Value.RefreshToken));
+            AppendAuthCookies(result.Value.AccessToken, result.Value.ExpiresIn, result.Value.RefreshToken);
+
+            return StatusCode(
+                StatusCodes.Status201Created,
+                new AuthSessionResponse(result.Value.ExpiresIn));
         }
 
         [HttpPost("login")]
         [AllowAnonymous]
-        public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
+        public async Task<ActionResult<AuthSessionResponse>> Login([FromBody] LoginRequest request)
         {
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user is null)
@@ -87,16 +92,21 @@ namespace FitLead.Api.Auth
                 user.Id,
                 HttpContext.RequestAborted);
 
-            return Ok(new LoginResponse(token.AccessToken, token.ExpiresIn, refresh.RefreshToken));
+            AppendAuthCookies(token.AccessToken, token.ExpiresIn, refresh.RefreshToken);
+
+            return Ok(new AuthSessionResponse(token.ExpiresIn));
         }
 
         [HttpPost("refresh")]
         [AllowAnonymous]
-        public async Task<ActionResult<RefreshResponse>> Refresh(
-            [FromBody] RefreshRequest request)
+        public async Task<ActionResult<AuthSessionResponse>> Refresh()
         {
+            var refreshToken = Request.Cookies[AuthCookieNames.RefreshToken];
+            if (string.IsNullOrWhiteSpace(refreshToken))
+                return Unauthorized();
+
             var rotate = await _refreshTokenService.RotateAsync(
-                request.RefreshToken,
+                refreshToken,
                 HttpContext.RequestAborted);
 
             if (!rotate.Success || string.IsNullOrWhiteSpace(rotate.NewRefreshToken) 
@@ -118,20 +128,25 @@ namespace FitLead.Api.Auth
                     new Claim(ClaimTypes.Role, role)
                 });
 
-            return Ok(new RefreshResponse(
-                access.AccessToken,
-                access.ExpiresIn,
-                rotate.NewRefreshToken!));
+            AppendAuthCookies(access.AccessToken, access.ExpiresIn, rotate.NewRefreshToken!);
+
+            return Ok(new AuthSessionResponse(access.ExpiresIn));
         }
 
         [HttpPost("logout")]
         [AllowAnonymous]
-        public async Task<IActionResult> Logout([FromBody] LogoutRequest request)
+        public async Task<IActionResult> Logout()
         {
-            await _refreshTokenService.RevokeFamilyByTokenAsync(
-                request.RefreshToken,
-                RefreshTokenRevocationReasons.Logout,
-                HttpContext.RequestAborted);
+            var refreshToken = Request.Cookies[AuthCookieNames.RefreshToken];
+            if (!string.IsNullOrWhiteSpace(refreshToken))
+            {
+                await _refreshTokenService.RevokeFamilyByTokenAsync(
+                    refreshToken,
+                    RefreshTokenRevocationReasons.Logout,
+                    HttpContext.RequestAborted);
+            }
+
+            DeleteAuthCookies();
 
             return NoContent();
         }
@@ -146,6 +161,52 @@ namespace FitLead.Api.Auth
                 email = User.GetEmail(),
                 jti = User.GetJti()
             });
+        }
+
+        private void AppendAuthCookies(
+            string accessToken,
+            int accessTokenExpiresInSeconds,
+            string refreshToken)
+        {
+            Response.Cookies.Append(
+                AuthCookieNames.AccessToken,
+                accessToken,
+                CreateCookieOptions(
+                    DateTimeOffset.UtcNow.AddSeconds(accessTokenExpiresInSeconds),
+                    path: "/"));
+
+            Response.Cookies.Append(
+                AuthCookieNames.RefreshToken,
+                refreshToken,
+                CreateCookieOptions(
+                    DateTimeOffset.UtcNow.AddDays(Math.Max(1, _jwtOptions.RefreshTokenDays)),
+                    path: "/auth"));
+        }
+
+        private void DeleteAuthCookies()
+        {
+            Response.Cookies.Delete(
+                AuthCookieNames.AccessToken,
+                CreateCookieOptions(DateTimeOffset.UtcNow.AddDays(-1), path: "/"));
+
+            Response.Cookies.Delete(
+                AuthCookieNames.RefreshToken,
+                CreateCookieOptions(DateTimeOffset.UtcNow.AddDays(-1), path: "/auth"));
+        }
+
+        private CookieOptions CreateCookieOptions(
+            DateTimeOffset expiresAt,
+            string path)
+        {
+            return new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = Request.IsHttps,
+                SameSite = SameSiteMode.Lax,
+                Expires = expiresAt,
+                Path = path,
+                IsEssential = true
+            };
         }
 
         private async Task<string?> GetSingleBusinessRoleOrNullAsync(AppIdentityUser user)

@@ -1,5 +1,4 @@
 using System.Net;
-using FitLead.Api.Auth.Contracts;
 using FitLead.IntegrationTests.Clients;
 using FitLead.IntegrationTests.Helpers;
 using FitLead.IntegrationTests.Infrastructure;
@@ -26,9 +25,7 @@ public sealed class AuthorizationTests(IntegrationTestFixture fixture) : Integra
 
         var register = await authClient.RegisterAsync(email, "Str0ngPass!123", "Client User", AuthRoles.Client);
         register.StatusCode.Should().Be(HttpStatusCode.Created);
-        var registerPayload = await register.ReadRequiredJsonAsync<RegisterResponse>();
 
-        authClient.SetBearerToken(registerPayload.AccessToken);
         var response = await HttpClient.GetAsync("/api/workouts");
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
