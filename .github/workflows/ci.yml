@@ -8,7 +8,6 @@ on:
   push:
     branches:
       - main
-      - dev
   workflow_dispatch:
 
 env:
@@ -109,7 +108,7 @@ jobs:
     needs:
       - backend-ci
       - frontend-ci
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev')
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout
