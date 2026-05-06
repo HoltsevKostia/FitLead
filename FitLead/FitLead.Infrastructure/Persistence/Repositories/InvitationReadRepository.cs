@@ -24,7 +24,7 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                 {
                     Id = x.Id,
                     TrainerId = x.TrainerId,
-                    Status = x.Status,
+                    Status = x.Status.ToString(),
                     CreatedAtUtc = x.CreatedAtUtc,
                     ExpiresAtUtc = x.ExpiresAtUtc,
                     AcceptedByClientId = x.AcceptedByClientId,
