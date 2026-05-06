@@ -1,4 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+
+import { getCurrentUser } from "@/features/auth/server/get-current-user";
+import { LogoutButton } from "@/features/auth/ui/logout-button";
 
 const links = [
   { href: "/dashboard", label: "Панель" },
@@ -8,21 +12,29 @@ const links = [
   { href: "/invitations", label: "Запрошення" },
 ];
 
-export default function AppLayout({
+export default async function AppLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser) {
+    redirect("/login");
+  }
+
   return (
     <div className="app-shell">
       <div className="container py-6">
         <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
           <aside className="card p-5">
             <div className="mb-6">
-              <p className="text-sm uppercase tracking-[0.2em] text-muted">
-                FitLead
+              <p className="text-sm uppercase tracking-[0.2em] text-muted">FitLead</p>
+              <h2 className="mt-2 text-2xl font-semibold">Кабінет</h2>
+              <p className="mt-2 text-sm text-muted">{currentUser.email}</p>
+              <p className="mt-1 text-sm text-muted">
+                {currentUser.role === "Trainer" ? "Тренер" : "Клієнт"}
               </p>
-              <h2 className="mt-2 text-2xl font-semibold">Кабінет тренера</h2>
             </div>
             <nav className="space-y-2">
               {links.map((link) => (
@@ -35,6 +47,7 @@ export default function AppLayout({
                 </Link>
               ))}
             </nav>
+            <LogoutButton />
           </aside>
           <main className="card min-h-[70vh] p-6 md:p-8">{children}</main>
         </div>
