@@ -4,6 +4,6 @@ using MediatR;
 namespace FitLead.Application.Invitations.Commands
 {
     public sealed record CreateInvitationCommand(
-        Guid ClientId
-    ) : IRequest<Result<Guid>>;
+        int ExpiresInDays
+    ) : IRequest<Result<CreateInvitationResult>>;
 }

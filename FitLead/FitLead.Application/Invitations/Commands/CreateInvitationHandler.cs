@@ -1,88 +1,91 @@
 using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
+using FitLead.Application.Common.Time;
+using FitLead.Application.Identity;
+using FitLead.Application.Invitations.Services;
+using FitLead.Application.Modules.Users;
 using FitLead.Common.Errors;
 using FitLead.Common.Results;
-using FitLead.Application.Common.Time;
-using FitLead.Application.Modules.Users;
 using FitLead.Domain.Invitations;
 using FitLead.Domain.Users;
 using MediatR;
-using FitLead.Application.Identity;
 
 namespace FitLead.Application.Invitations.Commands
 {
-    public sealed class CreateInvitationHandler 
-        : IRequestHandler<CreateInvitationCommand, Result<Guid>>
+    public sealed class CreateInvitationHandler
+        : IRequestHandler<CreateInvitationCommand, Result<CreateInvitationResult>>
     {
+        private static readonly HashSet<int> AllowedExpiryDays = [7, 14];
+
         private readonly IUserContext _user;
         private readonly IClock _clock;
         private readonly IUsersModule _usersModule;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IInvitationRepository _invitationRepository;
+        private readonly IInvitationLinkService _invitationLinkService;
 
         public CreateInvitationHandler(
             IUserContext user,
             IClock clock,
             IUsersModule usersModule,
             IUnitOfWork unitOfWork,
-            IInvitationRepository invitationRepository)
+            IInvitationRepository invitationRepository,
+            IInvitationLinkService invitationLinkService)
         {
             _user = user;
             _clock = clock;
             _usersModule = usersModule;
             _unitOfWork = unitOfWork;
             _invitationRepository = invitationRepository;
+            _invitationLinkService = invitationLinkService;
         }
 
-        public async Task<Result<Guid>> Handle(
+        public async Task<Result<CreateInvitationResult>> Handle(
             CreateInvitationCommand request,
             CancellationToken cancellationToken)
         {
             var trainer = await _usersModule.GetByIdAsync(_user.UserId, cancellationToken);
-
             if (trainer is null)
-                return Result<Guid>.Failure(Error.NotFound("trainer.not_found", "Trainer not found"));
+            {
+                return Result<CreateInvitationResult>.Failure(
+                    Error.NotFound("trainer.not_found", "Trainer not found"));
+            }
 
             if (trainer.Role != UserRole.Trainer)
-                return Result<Guid>.Failure(Error.Forbidden("trainer.required", "User is not a trainer"));
+            {
+                return Result<CreateInvitationResult>.Failure(
+                    Error.Forbidden("trainer.required", "User is not a trainer"));
+            }
 
-            var client = await _usersModule.GetByIdAsync(request.ClientId, cancellationToken);
+            if (!AllowedExpiryDays.Contains(request.ExpiresInDays))
+            {
+                return Result<CreateInvitationResult>.Failure(
+                    Error.Validation("invitation.create.expires_in_days_invalid", "ExpiresInDays must be 7 or 14"));
+            }
 
-            if (client is null)
-                return Result<Guid>.Failure(Error.NotFound("client.not_found", "Client not found"));
-
-            if (client.Role != UserRole.Client)
-                return Result<Guid>.Failure(Error.Forbidden("client.required", "User is not a client"));
-
-            var alreadyPending = await _invitationRepository
-                .ExistsPendingAsync(
-                    _user.UserId,
-                    request.ClientId,
-                    cancellationToken);
-
-            if (alreadyPending)
-                return Result<Guid>.Failure(Error.Conflict("invitation.pending", "Invitation already pending"));
-
-            var sentToday = await _invitationRepository
-                .CountSentByTrainerForDateAsync(
-                    _user.UserId,
-                    _clock.UtcNow,
-                    cancellationToken);
-
-            if (sentToday >= 2)
-                return Result<Guid>.Failure(Error.Conflict("invitation.daily_limit", "Daily invitation limit reached"));
+            var now = _clock.UtcNow;
+            var expiresAtUtc = now.AddDays(request.ExpiresInDays);
+            var linkPayload = _invitationLinkService.CreateLink();
 
             var invitationResult = Invitation.Create(
                 _user.UserId,
-                request.ClientId,
-                _clock.UtcNow);
+                linkPayload.TokenHash,
+                now,
+                expiresAtUtc);
+
             if (invitationResult.IsFailure)
-                return Result<Guid>.Failure(invitationResult.Error);
+            {
+                return Result<CreateInvitationResult>.Failure(invitationResult.Error);
+            }
 
             await _invitationRepository.AddAsync(invitationResult.Value, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return Result<Guid>.Success(invitationResult.Value.Id);
+            return Result<CreateInvitationResult>.Success(
+                new CreateInvitationResult(
+                    invitationResult.Value.Id,
+                    linkPayload.InviteUrl,
+                    expiresAtUtc));
         }
     }
 }

@@ -1,6 +1,6 @@
-﻿namespace FitLead.Api.Invitations.Contracts
+namespace FitLead.Api.Invitations.Contracts
 {
     public sealed record CreateInvitationRequest(
-        Guid ClientId
+        int ExpiresInDays
     );
 }

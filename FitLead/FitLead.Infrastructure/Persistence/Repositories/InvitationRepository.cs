@@ -1,4 +1,4 @@
-﻿using FitLead.Application.Abstractions.Persistence;
+using FitLead.Application.Abstractions.Persistence;
 using FitLead.Domain.Invitations;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,39 +28,12 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                 .FirstOrDefaultAsync(x => x.Id == invitationId, cancellationToken);
         }
 
-        public async Task<bool> ExistsPendingAsync(
-            Guid trainerId,
-            Guid clientId,
+        public async Task<Invitation?> GetByTokenHashAsync(
+            string tokenHash,
             CancellationToken cancellationToken)
-        {
-            return await _context.Invitations.AnyAsync(
-                x => x.TrainerId == trainerId
-                  && x.ClientId == clientId
-                  && x.Status == InvitationStatus.Pending,
-                cancellationToken);
-        }
-
-        public async Task<int> CountSentByTrainerForDateAsync(
-            Guid trainerId,
-            DateTime dateUtc,
-            CancellationToken cancellationToken)
-        {
-            var start = dateUtc.Date;
-            var end = start.AddDays(1);
-
-            return await _context.Invitations.CountAsync(
-                x => x.TrainerId == trainerId
-                  && x.CreatedAt >= start
-                  && x.CreatedAt < end,
-                cancellationToken);
-        }
-
-        public async Task<IReadOnlyList<Invitation>> GetExpiredPendingAsync(DateTime now, CancellationToken cancellationToken)
         {
             return await _context.Invitations
-             .Where(i => i.Status == InvitationStatus.Pending)
-             .Where(i => i.ExpiresAt <= now)                  
-             .ToListAsync(cancellationToken);
+                .FirstOrDefaultAsync(x => x.TokenHash == tokenHash, cancellationToken);
         }
     }
 }
