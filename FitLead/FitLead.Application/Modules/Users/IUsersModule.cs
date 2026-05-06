@@ -21,5 +21,9 @@ namespace FitLead.Application.Modules.Users
             Guid trainerId,
             Guid clientId,
             CancellationToken cancellationToken = default);
+
+        Task<TrainerPublicProfileDescriptor?> GetTrainerPublicProfileAsync(
+            Guid trainerId,
+            CancellationToken cancellationToken = default);
     }
 }

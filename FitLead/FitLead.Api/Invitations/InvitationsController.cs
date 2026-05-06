@@ -31,6 +31,19 @@ namespace FitLead.Api.Invitations
             return result.ToActionResult(this);
         }
 
+        [AllowAnonymous]
+        [HttpGet("{token}/preview")]
+        public async Task<IActionResult> Preview(
+            string token,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new GetInvitationPreviewQuery(token),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
+
         [Authorize(Policy = "TrainerOnly")]
         [HttpPost]
         public async Task<IActionResult> Create(

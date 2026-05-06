@@ -65,5 +65,18 @@ namespace FitLead.Infrastructure.Modules.Users
                 clientId,
                 cancellationToken);
         }
+
+        public async Task<TrainerPublicProfileDescriptor?> GetTrainerPublicProfileAsync(
+            Guid trainerId,
+            CancellationToken cancellationToken = default)
+        {
+            var trainer = await _userRepository.GetByIdAsync(trainerId, cancellationToken);
+            if (trainer is null || trainer.Role != Domain.Users.UserRole.Trainer)
+            {
+                return null;
+            }
+
+            return new TrainerPublicProfileDescriptor(trainer.FullName);
+        }
     }
 }
