@@ -43,5 +43,18 @@ namespace FitLead.Api.Invitations
 
             return result.ToCreated(this);
         }
+
+        [Authorize(Policy = "ClientOnly")]
+        [HttpPost("{token}/accept")]
+        public async Task<IActionResult> Accept(
+            string token,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new AcceptInvitationCommand(token),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
     }
 }

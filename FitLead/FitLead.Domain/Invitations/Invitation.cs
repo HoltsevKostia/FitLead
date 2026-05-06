@@ -74,14 +74,26 @@ namespace FitLead.Domain.Invitations
                     Error.Validation("invitation.accept.client_id_required", "ClientId is required"));
             }
 
-            var pendingResult = EnsurePending();
-            if (pendingResult.IsFailure)
+            if (Status == InvitationStatus.Accepted)
             {
-                if (Status == InvitationStatus.Accepted && AcceptedByClientId == clientId)
+                if (AcceptedByClientId == clientId)
                 {
                     return Result.Success();
                 }
 
+                return Result.Failure(
+                    Error.Conflict("invitation.accept.already_accepted", "Invitation has already been accepted"));
+            }
+
+            if (Status == InvitationStatus.Revoked)
+            {
+                return Result.Failure(
+                    Error.Conflict("invitation.accept.revoked", "Invitation has been revoked"));
+            }
+
+            var pendingResult = EnsurePending();
+            if (pendingResult.IsFailure)
+            {
                 return pendingResult;
             }
 
