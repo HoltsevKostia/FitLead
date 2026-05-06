@@ -69,5 +69,18 @@ namespace FitLead.Api.Invitations
 
             return result.ToActionResult(this);
         }
+
+        [Authorize(Policy = "TrainerOnly")]
+        [HttpPost("{invitationId:guid}/revoke")]
+        public async Task<IActionResult> Revoke(
+            Guid invitationId,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new RevokeInvitationCommand(invitationId),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
     }
 }
