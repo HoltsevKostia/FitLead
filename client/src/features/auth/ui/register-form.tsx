@@ -52,7 +52,11 @@ function RegisterSubmitButton({ isSubmitting }: { isSubmitting: boolean }) {
   );
 }
 
-export function RegisterForm() {
+interface RegisterFormProps {
+  nextHref?: string;
+}
+
+export function RegisterForm({ nextHref = "/dashboard" }: RegisterFormProps) {
   const router = useRouter();
   const [values, setValues] = useState<RegisterFormValues>(initialValues);
   const [fieldErrors, setFieldErrors] = useState<FormFieldErrors<RegisterFormValues>>({});
@@ -101,7 +105,7 @@ export function RegisterForm() {
 
     try {
       await authApi.register(validation.data);
-      router.replace("/dashboard");
+      router.replace(nextHref);
       router.refresh();
     } catch (error) {
       const mappedError = mapRegisterError(error);

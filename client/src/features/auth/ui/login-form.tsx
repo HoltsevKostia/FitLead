@@ -32,7 +32,11 @@ function LoginSubmitButton({ isSubmitting }: { isSubmitting: boolean }) {
   );
 }
 
-export function LoginForm() {
+interface LoginFormProps {
+  nextHref?: string;
+}
+
+export function LoginForm({ nextHref = "/dashboard" }: LoginFormProps) {
   const router = useRouter();
   const [values, setValues] = useState<LoginFormValues>(initialValues);
   const [fieldErrors, setFieldErrors] = useState<FormFieldErrors<LoginFormValues>>({});
@@ -78,7 +82,7 @@ export function LoginForm() {
 
     try {
       await authApi.login(validation.data);
-      router.replace("/dashboard");
+      router.replace(nextHref);
       router.refresh();
     } catch (error) {
       const mappedError = mapLoginError(error);
