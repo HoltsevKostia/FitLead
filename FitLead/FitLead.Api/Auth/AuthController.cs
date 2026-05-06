@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
+using System.Security.Cryptography;
 
 namespace FitLead.Api.Auth
 {
@@ -155,12 +156,18 @@ namespace FitLead.Api.Auth
         [Authorize]
         public IActionResult GetClaims()
         {
-            return Ok(new
+            var domainUserId = User.FindFirstValue(CustomClaimTypes.DomainUserId);
+            var email = User.GetEmail();
+            var role = User.FindFirstValue(ClaimTypes.Role);
+
+            if (string.IsNullOrWhiteSpace(domainUserId) ||
+                string.IsNullOrWhiteSpace(email) ||
+                string.IsNullOrWhiteSpace(role))
             {
-                sub = User.GetSub(),
-                email = User.GetEmail(),
-                jti = User.GetJti()
-            });
+                return Unauthorized();
+            }
+
+            return Ok(new CurrentUserResponse(domainUserId, email, role));
         }
 
         private void AppendAuthCookies(
