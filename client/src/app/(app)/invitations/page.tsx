@@ -26,15 +26,14 @@ export default async function InvitationsPage() {
     return <TrainerOnlyNotice />;
   }
 
+  let invitations = [];
+  let loadError: string | null = null;
+
   try {
-    const invitations = await getTrainerInvitations();
-    return <TrainerInvitationsWorkspace invitations={invitations} />;
+    invitations = await getTrainerInvitations();
   } catch {
-    return (
-      <TrainerInvitationsWorkspace
-        invitations={[]}
-        loadError="Не вдалося завантажити список запрошень. Спробуй оновити сторінку."
-      />
-    );
+    loadError = "Не вдалося завантажити список запрошень. Спробуй оновити сторінку.";
   }
+
+  return <TrainerInvitationsWorkspace invitations={invitations} loadError={loadError} />;
 }
