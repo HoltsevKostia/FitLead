@@ -1,3 +1,4 @@
+import type { TrainerInvitation } from "@/entities/invitation/model/types";
 import { getCurrentUser } from "@/features/auth/server/get-current-user";
 import { getTrainerInvitations } from "@/features/invitations/server/get-trainer-invitations";
 import { TrainerInvitationsWorkspace } from "@/features/invitations/ui/trainer-invitations-workspace";
@@ -26,7 +27,7 @@ export default async function InvitationsPage() {
     return <TrainerOnlyNotice />;
   }
 
-  let invitations = [];
+  let invitations: TrainerInvitation[] = [];
   let loadError: string | null = null;
 
   try {
