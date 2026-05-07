@@ -12,7 +12,7 @@ public sealed class RefreshTokenTests(IntegrationTestFixture fixture) : Integrat
     [Fact]
     public async Task Refresh_WithValidCookie_ShouldRotateAndIssueNewAuthCookies()
     {
-        var authClient = new AuthTestClient(HttpClient);
+        var authClient = new AuthTestClient(Fixture.CreateClient(handleCookies: false));
         var email = UniqueEmail("refresh");
 
         var register = await authClient.RegisterAsync(email, "Str0ngPass!123", "Refresh User", AuthRoles.Trainer);
@@ -36,7 +36,7 @@ public sealed class RefreshTokenTests(IntegrationTestFixture fixture) : Integrat
         refreshCookie.Path.Should().Be("/auth");
         refreshCookie.Value.Should().NotBe(registerRefreshCookie.Value);
 
-        var currentUser = await HttpClient.GetAsync("/auth/current-user");
+        var currentUser = await authClient.GetAsync("/auth/current-user");
         currentUser.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
@@ -44,7 +44,7 @@ public sealed class RefreshTokenTests(IntegrationTestFixture fixture) : Integrat
     public async Task Refresh_WithReusedRefreshCookie_ShouldRevokeTokenFamily()
     {
         var email = UniqueEmail("refresh-reuse");
-        var initialClient = new AuthTestClient(Fixture.CreateClient());
+        var initialClient = new AuthTestClient(Fixture.CreateClient(handleCookies: false));
 
         var register = await initialClient.RegisterAsync(email, "Str0ngPass!123", "Refresh Reuse User", AuthRoles.Trainer);
         register.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -54,7 +54,7 @@ public sealed class RefreshTokenTests(IntegrationTestFixture fixture) : Integrat
         firstRefresh.StatusCode.Should().Be(HttpStatusCode.OK);
         var rotatedRefreshCookie = firstRefresh.GetRequiredCookie(AuthCookieNames.RefreshToken);
 
-        var reuseClient = new AuthTestClient(Fixture.CreateClient());
+        var reuseClient = new AuthTestClient(Fixture.CreateClient(handleCookies: false));
         var secondRefresh = await reuseClient.RefreshWithRefreshTokenAsync(originalRefreshCookie.Value);
         secondRefresh.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
 
@@ -65,7 +65,7 @@ public sealed class RefreshTokenTests(IntegrationTestFixture fixture) : Integrat
     [Fact]
     public async Task Refresh_WithoutRefreshCookie_ShouldReturnUnauthorized()
     {
-        var authClient = new AuthTestClient(HttpClient);
+        var authClient = new AuthTestClient(Fixture.CreateClient(handleCookies: false));
 
         var response = await authClient.RefreshAsync();
 

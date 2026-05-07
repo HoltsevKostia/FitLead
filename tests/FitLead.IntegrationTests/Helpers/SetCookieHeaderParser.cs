@@ -20,7 +20,7 @@ public static class SetCookieHeaderParser
         return Parse(cookieHeader);
     }
 
-    private static SetCookieHeader Parse(string header)
+    public static SetCookieHeader Parse(string header)
     {
         var segments = header.Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         var nameValue = segments[0].Split('=', 2);

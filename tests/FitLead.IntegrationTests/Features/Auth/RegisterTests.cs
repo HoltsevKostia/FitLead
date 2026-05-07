@@ -12,7 +12,7 @@ public sealed class RegisterTests(IntegrationTestFixture fixture) : IntegrationT
     [Fact]
     public async Task Register_WithValidTrainerPayload_ShouldReturnCreatedAndSetAuthCookies()
     {
-        var authClient = new AuthTestClient(HttpClient);
+        var authClient = new AuthTestClient(Fixture.CreateClient(handleCookies: false));
         var email = UniqueEmail("trainer");
 
         var response = await authClient.RegisterAsync(
@@ -39,7 +39,7 @@ public sealed class RegisterTests(IntegrationTestFixture fixture) : IntegrationT
     [Fact]
     public async Task Register_WithDuplicateEmail_ShouldReturnConflictWithAuthEmailExistsErrorCode()
     {
-        var authClient = new AuthTestClient(HttpClient);
+        var authClient = new AuthTestClient(Fixture.CreateClient(handleCookies: false));
         var email = UniqueEmail("duplicate");
 
         var first = await authClient.RegisterAsync(
@@ -65,7 +65,7 @@ public sealed class RegisterTests(IntegrationTestFixture fixture) : IntegrationT
     [Fact]
     public async Task Register_WithInvalidEmail_ShouldReturnBadRequestWithValidationProblem()
     {
-        var authClient = new AuthTestClient(HttpClient);
+        var authClient = new AuthTestClient(Fixture.CreateClient(handleCookies: false));
 
         var response = await authClient.RegisterAsync(
             "not-an-email",
@@ -83,7 +83,7 @@ public sealed class RegisterTests(IntegrationTestFixture fixture) : IntegrationT
     [Fact]
     public async Task Register_WithValidPayload_ShouldAllowAccessToCurrentUserUsingIssuedCookies()
     {
-        var authClient = new AuthTestClient(HttpClient);
+        var authClient = new AuthTestClient(Fixture.CreateClient(handleCookies: false));
         var email = UniqueEmail("register-session");
 
         var register = await authClient.RegisterAsync(
@@ -94,7 +94,7 @@ public sealed class RegisterTests(IntegrationTestFixture fixture) : IntegrationT
 
         register.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var currentUser = await HttpClient.GetAsync("/auth/current-user");
+        var currentUser = await authClient.GetAsync("/auth/current-user");
         currentUser.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 }

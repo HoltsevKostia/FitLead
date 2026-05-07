@@ -12,7 +12,7 @@ public sealed class LoginTests(IntegrationTestFixture fixture) : IntegrationTest
     [Fact]
     public async Task Login_WithValidCredentials_ShouldReturnOkAndSetAuthCookies()
     {
-        var authClient = new AuthTestClient(HttpClient);
+        var authClient = new AuthTestClient(Fixture.CreateClient(handleCookies: false));
         var email = UniqueEmail("login");
         const string password = "Str0ngPass!123";
 
@@ -37,7 +37,7 @@ public sealed class LoginTests(IntegrationTestFixture fixture) : IntegrationTest
     [Fact]
     public async Task Login_WithInvalidPassword_ShouldReturnUnauthorized()
     {
-        var authClient = new AuthTestClient(HttpClient);
+        var authClient = new AuthTestClient(Fixture.CreateClient(handleCookies: false));
         var email = UniqueEmail("invalid-login");
         const string password = "Str0ngPass!123";
 
@@ -52,7 +52,7 @@ public sealed class LoginTests(IntegrationTestFixture fixture) : IntegrationTest
     [Fact]
     public async Task Login_WithNonExistentEmail_ShouldReturnUnauthorized()
     {
-        var authClient = new AuthTestClient(HttpClient);
+        var authClient = new AuthTestClient(Fixture.CreateClient(handleCookies: false));
         var email = UniqueEmail("missing-user");
 
         var login = await authClient.LoginAsync(email, "Str0ngPass!123");
