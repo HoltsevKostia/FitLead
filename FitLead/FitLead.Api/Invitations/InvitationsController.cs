@@ -1,10 +1,10 @@
 using FitLead.Api.Common.Results;
+using FitLead.Api.Invitations.Contracts;
 using FitLead.Application.Invitations.Commands;
 using FitLead.Application.Invitations.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using FitLead.Api.Invitations.Contracts;
 
 namespace FitLead.Api.Invitations
 {
@@ -19,18 +19,6 @@ namespace FitLead.Api.Invitations
             _mediator = mediator;
         }
 
-        [Authorize(Policy = "ClientOnly")]
-        [HttpGet("client")]
-        public async Task<IActionResult> GetPendingForClient(
-            CancellationToken cancellationToken)
-        {
-            var result = await _mediator.Send(
-                new GetPendingInvitationsForClientQuery(),
-                cancellationToken);
-
-            return result.ToActionResult(this);
-        }
-
         [Authorize(Policy = "TrainerOnly")]
         [HttpGet("trainer")]
         public async Task<IActionResult> GetSentByTrainer(
@@ -43,45 +31,53 @@ namespace FitLead.Api.Invitations
             return result.ToActionResult(this);
         }
 
+        [AllowAnonymous]
+        [HttpGet("{token}/preview")]
+        public async Task<IActionResult> Preview(
+            string token,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new GetInvitationPreviewQuery(token),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
+
         [Authorize(Policy = "TrainerOnly")]
         [HttpPost]
         public async Task<IActionResult> Create(
-           [FromBody] CreateInvitationRequest request,
-           CancellationToken cancellationToken)
+            [FromBody] CreateInvitationRequest request,
+            CancellationToken cancellationToken)
         {
             var result = await _mediator.Send(
-                new CreateInvitationCommand(
-                    request.ClientId),
+                new CreateInvitationCommand(request.ExpiresInDays),
                 cancellationToken);
 
             return result.ToCreated(this);
         }
 
         [Authorize(Policy = "ClientOnly")]
-        [HttpPost("{invitationId:guid}/accept")]
+        [HttpPost("{token}/accept")]
         public async Task<IActionResult> Accept(
-            Guid invitationId,
-            [FromBody] AcceptInvitationRequest request,
+            string token,
             CancellationToken cancellationToken)
         {
             var result = await _mediator.Send(
-                new AcceptInvitationCommand(
-                    invitationId),
+                new AcceptInvitationCommand(token),
                 cancellationToken);
 
             return result.ToActionResult(this);
         }
 
-        [Authorize(Policy = "ClientOnly")]
-        [HttpPost("{invitationId:guid}/decline")]
-        public async Task<IActionResult> Decline(
+        [Authorize(Policy = "TrainerOnly")]
+        [HttpPost("{invitationId:guid}/revoke")]
+        public async Task<IActionResult> Revoke(
             Guid invitationId,
-            [FromBody] DeclineInvitationRequest request,
             CancellationToken cancellationToken)
         {
             var result = await _mediator.Send(
-                new DeclineInvitationCommand(
-                    invitationId),
+                new RevokeInvitationCommand(invitationId),
                 cancellationToken);
 
             return result.ToActionResult(this);

@@ -3,13 +3,30 @@ import { redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/features/auth/server/get-current-user";
 import { RegisterForm } from "@/features/auth/ui/register-form";
+import { buildAuthHref } from "@/shared/utils/build-auth-href";
+import { resolveSafeNextHref } from "@/shared/utils/resolve-safe-next-href";
 
-export default async function RegisterPage() {
-  const currentUser = await getCurrentUser();
+type AuthSearchParams = {
+  next?: string | string[];
+};
+
+interface RegisterPageProps {
+  searchParams?: Promise<AuthSearchParams>;
+}
+
+export default async function RegisterPage({ searchParams }: RegisterPageProps) {
+  const [currentUser, resolvedSearchParams] = await Promise.all([
+    getCurrentUser(),
+    searchParams ?? Promise.resolve<AuthSearchParams>({}),
+  ]);
+
+  const nextHref = resolveSafeNextHref(resolvedSearchParams.next, "/dashboard");
 
   if (currentUser) {
-    redirect("/dashboard");
+    redirect(nextHref);
   }
+
+  const loginHref = buildAuthHref("/login", nextHref);
 
   return (
     <div className="space-y-6">
@@ -18,11 +35,11 @@ export default async function RegisterPage() {
         <h1 className="text-3xl font-semibold tracking-tight">Створення акаунта</h1>
       </div>
 
-      <RegisterForm />
+      <RegisterForm nextHref={nextHref} />
 
       <p className="text-sm text-muted">
         Уже маєш акаунт?{" "}
-        <Link href="/login" className="font-medium text-foreground">
+        <Link href={loginHref} className="font-medium text-foreground">
           Увійти
         </Link>
       </p>

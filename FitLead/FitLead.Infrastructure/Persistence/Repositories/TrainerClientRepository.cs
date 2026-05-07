@@ -25,6 +25,16 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                     cancellationToken);
         }
 
+        public async Task<Guid?> GetTrainerIdByClientIdAsync(
+            Guid clientId,
+            CancellationToken cancellationToken)
+        {
+            return await _context.TrainerClients
+                .Where(x => x.ClientId == clientId)
+                .Select(x => (Guid?)x.TrainerId)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
         public async Task AddAsync(
             Guid trainerId,
             Guid clientId,

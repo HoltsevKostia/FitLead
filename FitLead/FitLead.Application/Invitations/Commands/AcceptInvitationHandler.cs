@@ -1,13 +1,13 @@
 using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
+using FitLead.Application.Common.Time;
+using FitLead.Application.Identity;
+using FitLead.Application.Invitations.Services;
+using FitLead.Application.Modules.Users;
 using FitLead.Common.Errors;
 using FitLead.Common.Results;
-using FitLead.Application.Common.Time;
-using FitLead.Application.Invitations.Access;
-using FitLead.Application.Modules.Users;
 using FitLead.Domain.Users;
 using MediatR;
-using FitLead.Application.Identity;
 
 namespace FitLead.Application.Invitations.Commands
 {
@@ -17,45 +17,86 @@ namespace FitLead.Application.Invitations.Commands
         private readonly IUserContext _user;
         private readonly IClock _clock;
         private readonly IUsersModule _usersModule;
-        private readonly IInvitationLoader _invitationLoader;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IInvitationRepository _invitationRepository;
+        private readonly IInvitationLinkService _invitationLinkService;
 
         public AcceptInvitationHandler(
             IUserContext user,
             IClock clock,
             IUsersModule usersModule,
-            IInvitationLoader invitationLoader,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IInvitationRepository invitationRepository,
+            IInvitationLinkService invitationLinkService)
         {
             _user = user;
             _clock = clock;
             _usersModule = usersModule;
             _unitOfWork = unitOfWork;
-            _invitationLoader = invitationLoader;
+            _invitationRepository = invitationRepository;
+            _invitationLinkService = invitationLinkService;
         }
 
-        public async Task<Result> Handle(AcceptInvitationCommand request, CancellationToken cancellationToken)
+        public async Task<Result> Handle(
+            AcceptInvitationCommand request,
+            CancellationToken cancellationToken)
         {
-            var client = await _usersModule.GetByIdAsync(_user.UserId, cancellationToken);
+            if (string.IsNullOrWhiteSpace(request.Token))
+            {
+                return Result.Failure(
+                    Error.Validation("invitation.accept.token_required", "Token is required"));
+            }
 
-            if (client is null)
-                return Result.Failure(Error.NotFound("client.not_found", "Client not found"));
+            var currentUser = await _usersModule.GetByIdAsync(_user.UserId, cancellationToken);
+            if (currentUser is null)
+            {
+                return Result.Failure(
+                    Error.NotFound("client.not_found", "Client not found"));
+            }
 
-            if (client.Role != UserRole.Client)
-                return Result.Failure(Error.Forbidden("client.required", "User is not a client"));
+            if (currentUser.Role != UserRole.Client)
+            {
+                return Result.Failure(
+                    Error.Forbidden("client.required", "User is not a client"));
+            }
 
-            var invitationResult = await _invitationLoader.GetClientOwnedOrNotFoundAsync(
-                request.InvitationId,
+            var currentUserId = currentUser.Id;
+            var tokenHash = _invitationLinkService.ComputeTokenHash(request.Token.Trim());
+            var invitation = await _invitationRepository.GetByTokenHashAsync(
+                tokenHash,
                 cancellationToken);
-            if (invitationResult.IsFailure)
-                return Result.Failure(invitationResult.Error);
 
-            var invitation = invitationResult.Value;
-            var acceptResult = invitation.Accept(_clock.UtcNow);
+            if (invitation is null)
+            {
+                return Result.Failure(
+                    Error.NotFound("invitation.not_found", "Invitation not found"));
+            }
+
+            var activeTrainerId = await _usersModule.GetActiveTrainerIdForClientAsync(
+                currentUserId,
+                cancellationToken);
+
+            if (activeTrainerId.HasValue && activeTrainerId.Value != invitation.TrainerId)
+            {
+                return Result.Failure(
+                    Error.Conflict(
+                        "invitation.accept.client_has_another_trainer",
+                        "Client already has another active trainer"));
+            }
+
+            var acceptResult = invitation.Accept(currentUserId, _clock.UtcNow);
             if (acceptResult.IsFailure)
+            {
                 return acceptResult;
+            }
+
+            await _usersModule.EnsureTrainerClientRelationshipAsync(
+                invitation.TrainerId,
+                currentUserId,
+                cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
             return Result.Success();
         }
     }

@@ -27,30 +27,38 @@ namespace FitLead.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("ClientId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime?>("AcceptedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("ExpiresAt")
+                    b.Property<Guid?>("AcceptedByClientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ExpiresAtUtc")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<Guid>("TrainerId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClientId");
+                    b.HasIndex("AcceptedByClientId");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
 
                     b.HasIndex("TrainerId");
 
-                    b.HasIndex("TrainerId", "ClientId", "Status")
-                        .IsUnique()
-                        .HasFilter("\"Status\" = 0");
+                    b.HasIndex("Status", "ExpiresAtUtc");
 
                     b.ToTable("invitations", (string)null);
                 });
@@ -487,9 +495,8 @@ namespace FitLead.Infrastructure.Migrations
                 {
                     b.HasOne("FitLead.Domain.Users.User", null)
                         .WithMany()
-                        .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .HasForeignKey("AcceptedByClientId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("FitLead.Domain.Users.User", null)
                         .WithMany()
