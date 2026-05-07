@@ -15,6 +15,7 @@ Auth feature responsibilities:
 - access and refresh token issuance
 - access token renewal through refresh flow
 - refresh token misuse/reuse protection
+- CSRF protection for unsafe cookie-auth endpoints
 - authorization for protected resources
 - authenticated user context and claims propagation
 
@@ -26,6 +27,8 @@ In scope:
 - login flow
 - refresh token flow
 - logout flow
+- CSRF token issuance flow
+- CSRF enforcement for auth POST endpoints
 - invalid token / token misuse behavior
 - authorization behavior (`401` / `403`)
 - authenticated user context propagation
@@ -57,6 +60,11 @@ Rationale:
 - AUTH-COND-10: authenticated user context/claims are correctly propagated
 - AUTH-COND-11: auth cookies are issued and rotated correctly
 - AUTH-COND-12: logout clears auth cookies and invalidates session
+- AUTH-COND-13: anonymous CSRF token issuance works for SPA/browser-style clients
+- AUTH-COND-14: login rejects missing CSRF token but preserves existing auth contract when CSRF is valid
+- AUTH-COND-15: register rejects missing CSRF token but preserves existing validation/business behavior when CSRF is valid
+- AUTH-COND-16: refresh rejects missing CSRF token but preserves existing refresh contract when CSRF is valid
+- AUTH-COND-17: logout rejects missing CSRF token but preserves existing logout contract when CSRF is valid
 
 ## Test Cases
 ### Implemented (Phase 1)
@@ -77,8 +85,8 @@ Rationale:
   - automated by `AuthorizationTests.TrainerOnlyEndpoint_WithoutAccessToken_ShouldReturnUnauthorized`
 - AUTH-TC-09: Forbidden access without role permissions -> `403`
   - automated by `AuthorizationTests.TrainerOnlyEndpoint_WithClientRole_ShouldReturnForbidden`
-- AUTH-TC-10: Current user claims propagation (`sub`, `email`, `jti`) -> `200`
-  - automated by `CurrentUserTests.CurrentUser_WithValidAuthCookies_ShouldReturnSubEmailAndJti`
+- AUTH-TC-10: Current user claims propagation (`id`, `email`, `role`) -> `200`
+  - automated by `CurrentUserTests.CurrentUser_WithValidAuthCookies_ShouldReturnIdEmailAndRole`
 
 ### Added Validation Case
 - AUTH-TC-11: Register invalid email -> `400` + validation problem details
@@ -90,10 +98,45 @@ Rationale:
 - AUTH-TC-13: Logout clears auth cookies and invalidates session
   - automated by `LogoutTests.Logout_WithAuthenticatedSession_ShouldClearAuthCookiesAndInvalidateCurrentUser`
 
+### Added CSRF Coverage
+- AUTH-TC-14: Anonymous CSRF token endpoint returns `204`
+  - automated by `CsrfTokenTests.GetCsrfToken_Anonymous_ShouldReturnNoContent`
+- AUTH-TC-15: CSRF token endpoint sets readable `XSRF-TOKEN` cookie
+  - automated by `CsrfTokenTests.GetCsrfToken_ShouldSetReadableXsrfTokenCookie`
+- AUTH-TC-16: CSRF token endpoint sets internal antiforgery cookie
+  - automated by `CsrfTokenTests.GetCsrfToken_ShouldSetInternalAntiforgeryCookie`
+- AUTH-TC-17: CSRF token endpoint does not require authentication
+  - automated by `CsrfTokenTests.GetCsrfToken_ShouldNotRequireAuthentication`
+- AUTH-TC-18: Login without CSRF -> `400`
+  - automated by `LoginCsrfTests.Login_WithoutCsrfToken_ShouldBeRejected`
+- AUTH-TC-19: Login with valid CSRF and valid credentials -> existing success contract
+  - automated by `LoginCsrfTests.Login_WithValidCsrfToken_AndValidCredentials_ShouldReturnOkAndSetAuthCookies`
+- AUTH-TC-20: Login with valid CSRF and invalid credentials -> existing `401` contract
+  - automated by `LoginCsrfTests.Login_WithValidCsrfToken_AndInvalidCredentials_ShouldFollowExistingLoginContract`
+- AUTH-TC-21: Register without CSRF -> `400`
+  - automated by `RegisterCsrfTests.Register_WithoutCsrfToken_ShouldBeRejected`
+- AUTH-TC-22: Register with valid CSRF and valid payload -> existing `201` contract
+  - automated by `RegisterCsrfTests.Register_WithValidCsrfToken_AndValidPayload_ShouldFollowExistingRegisterContract`
+- AUTH-TC-23: Register with valid CSRF and invalid payload -> existing validation/business error
+  - automated by `RegisterCsrfTests.Register_WithValidCsrfToken_AndInvalidPayload_ShouldReturnValidationOrBusinessError`
+- AUTH-TC-24: Refresh without CSRF -> `400`
+  - automated by `RefreshCsrfTests.Refresh_WithoutCsrfToken_ShouldBeRejected`
+- AUTH-TC-25: Refresh with valid CSRF and valid refresh cookie -> existing success contract
+  - automated by `RefreshCsrfTests.Refresh_WithValidCsrf_AndValidRefreshCookie_ShouldSucceed`
+- AUTH-TC-26: Refresh with valid CSRF but missing refresh cookie -> existing `401` contract
+  - automated by `RefreshCsrfTests.Refresh_WithValidCsrf_ButMissingRefreshCookie_ShouldFollowExistingAuthContract`
+- AUTH-TC-27: Logout without CSRF -> `400`
+  - automated by `LogoutCsrfTests.Logout_WithoutCsrfToken_ShouldBeRejected`
+- AUTH-TC-28: Logout with valid CSRF -> existing success contract and cookie clearing
+  - automated by `LogoutCsrfTests.Logout_WithValidCsrf_ShouldSucceedAndClearCookies`
+- AUTH-TC-29: Logout with valid CSRF and no active session -> preserves existing idempotent behavior
+  - automated by `LogoutCsrfTests.Logout_WithValidCsrf_ShouldPreserveExistingIdempotentBehavior`
+
 ## Priority
 Highest priority in this feature:
 - authentication/authorization correctness
 - token security behavior (rotation/reuse detection)
+- CSRF protection for unsafe cookie-auth flows
 - access control enforcement
 
 ## Expected Artifacts
