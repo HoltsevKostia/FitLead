@@ -17,8 +17,9 @@ public sealed class CreateInvitationTests(IntegrationTestFixture fixture) : Inte
     [Fact]
     public async Task Create_WithValidSevenDayPayload_ShouldReturnCreatedAndPersistTokenHashOnly()
     {
-        var authClient = new AuthTestClient(HttpClient);
-        var invitationsClient = new InvitationsTestClient(HttpClient);
+        var trainerHttp = Fixture.CreateClient(handleCookies: false);
+        var authClient = new AuthTestClient(trainerHttp);
+        var invitationsClient = new InvitationsTestClient(Fixture.CreateClient(handleCookies: false));
         var email = UniqueEmail("invitation-trainer");
 
         var register = await authClient.RegisterAsync(
@@ -27,6 +28,8 @@ public sealed class CreateInvitationTests(IntegrationTestFixture fixture) : Inte
             "Invitation Trainer",
             AuthRoles.Trainer);
         register.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        await invitationsClient.CopyAuthStateFromAsync(authClient);
 
         var before = DateTime.UtcNow;
         var response = await invitationsClient.CreateAsync(7);
@@ -60,8 +63,9 @@ public sealed class CreateInvitationTests(IntegrationTestFixture fixture) : Inte
     [Fact]
     public async Task Create_WithInvalidExpiryDays_ShouldReturnBadRequestWithValidationProblem()
     {
-        var authClient = new AuthTestClient(HttpClient);
-        var invitationsClient = new InvitationsTestClient(HttpClient);
+        var trainerHttp = Fixture.CreateClient(handleCookies: false);
+        var authClient = new AuthTestClient(trainerHttp);
+        var invitationsClient = new InvitationsTestClient(Fixture.CreateClient(handleCookies: false));
 
         var register = await authClient.RegisterAsync(
             UniqueEmail("invalid-expiry"),
@@ -69,6 +73,8 @@ public sealed class CreateInvitationTests(IntegrationTestFixture fixture) : Inte
             "Trainer User",
             AuthRoles.Trainer);
         register.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        await invitationsClient.CopyAuthStateFromAsync(authClient);
 
         var response = await invitationsClient.CreateAsync(10);
 
@@ -81,8 +87,9 @@ public sealed class CreateInvitationTests(IntegrationTestFixture fixture) : Inte
     [Fact]
     public async Task Create_WithClientRole_ShouldReturnForbidden()
     {
-        var authClient = new AuthTestClient(HttpClient);
-        var invitationsClient = new InvitationsTestClient(HttpClient);
+        var clientHttp = Fixture.CreateClient(handleCookies: false);
+        var authClient = new AuthTestClient(clientHttp);
+        var invitationsClient = new InvitationsTestClient(Fixture.CreateClient(handleCookies: false));
 
         var register = await authClient.RegisterAsync(
             UniqueEmail("client-create"),
@@ -90,6 +97,8 @@ public sealed class CreateInvitationTests(IntegrationTestFixture fixture) : Inte
             "Client User",
             AuthRoles.Client);
         register.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        await invitationsClient.CopyAuthStateFromAsync(authClient);
 
         var response = await invitationsClient.CreateAsync(7);
 

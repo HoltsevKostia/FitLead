@@ -18,11 +18,11 @@ public sealed class RevokeInvitationTests(IntegrationTestFixture fixture) : Inte
     [Fact]
     public async Task Revoke_WithOwnerTrainer_ShouldReturnNoContentAndMakePreviewRevoked()
     {
-        var trainerHttp = HttpClient;
-        var anonymousHttp = Fixture.CreateClient();
+        var trainerHttp = Fixture.CreateClient(handleCookies: false);
+        var anonymousHttp = Fixture.CreateClient(handleCookies: false);
 
         var trainerAuth = new AuthTestClient(trainerHttp);
-        var trainerInvitations = new InvitationsTestClient(trainerHttp);
+        var trainerInvitations = new InvitationsTestClient(Fixture.CreateClient(handleCookies: false));
         var anonymousInvitations = new InvitationsTestClient(anonymousHttp);
 
         (await trainerAuth.RegisterAsync(
@@ -30,6 +30,8 @@ public sealed class RevokeInvitationTests(IntegrationTestFixture fixture) : Inte
             "Str0ngPass!123",
             "Revoke Trainer",
             AuthRoles.Trainer)).StatusCode.Should().Be(HttpStatusCode.Created);
+
+        await trainerInvitations.CopyAuthStateFromAsync(trainerAuth);
 
         var create = await trainerInvitations.CreateAsync(7);
         var created = await create.ReadRequiredJsonAsync<CreateInvitationResult>();

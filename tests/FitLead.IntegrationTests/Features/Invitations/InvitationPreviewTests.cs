@@ -17,10 +17,10 @@ public sealed class InvitationPreviewTests(IntegrationTestFixture fixture) : Int
     [Fact]
     public async Task Preview_WithValidPendingInvite_ShouldBePublicAndJoinable()
     {
-        var trainerClient = HttpClient;
+        var trainerClient = Fixture.CreateClient(handleCookies: false);
         var authClient = new AuthTestClient(trainerClient);
-        var invitationsClient = new InvitationsTestClient(trainerClient);
-        var anonymousClient = Fixture.CreateClient();
+        var invitationsClient = new InvitationsTestClient(Fixture.CreateClient(handleCookies: false));
+        var anonymousClient = Fixture.CreateClient(handleCookies: false);
         var anonymousInvitationsClient = new InvitationsTestClient(anonymousClient);
 
         var register = await authClient.RegisterAsync(
@@ -29,6 +29,8 @@ public sealed class InvitationPreviewTests(IntegrationTestFixture fixture) : Int
             "Preview Trainer",
             AuthRoles.Trainer);
         register.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        await invitationsClient.CopyAuthStateFromAsync(authClient);
 
         var create = await invitationsClient.CreateAsync(7);
         create.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -58,14 +60,14 @@ public sealed class InvitationPreviewTests(IntegrationTestFixture fixture) : Int
     [Fact]
     public async Task Preview_WithAcceptedInvite_ShouldReturnAcceptedAndNotJoinable()
     {
-        var trainerHttp = Fixture.CreateClient();
-        var clientHttp = Fixture.CreateClient();
-        var anonymousHttp = Fixture.CreateClient();
+        var trainerHttp = Fixture.CreateClient(handleCookies: false);
+        var clientHttp = Fixture.CreateClient(handleCookies: false);
+        var anonymousHttp = Fixture.CreateClient(handleCookies: false);
 
         var trainerAuth = new AuthTestClient(trainerHttp);
-        var trainerInvitations = new InvitationsTestClient(trainerHttp);
+        var trainerInvitations = new InvitationsTestClient(Fixture.CreateClient(handleCookies: false));
         var clientAuth = new AuthTestClient(clientHttp);
-        var clientInvitations = new InvitationsTestClient(clientHttp);
+        var clientInvitations = new InvitationsTestClient(Fixture.CreateClient(handleCookies: false));
         var anonymousInvitations = new InvitationsTestClient(anonymousHttp);
 
         var trainerEmail = UniqueEmail("accepted-preview-trainer");
@@ -75,6 +77,9 @@ public sealed class InvitationPreviewTests(IntegrationTestFixture fixture) : Int
             .StatusCode.Should().Be(HttpStatusCode.Created);
         (await clientAuth.RegisterAsync(clientEmail, "Str0ngPass!123", "Accepted Client", AuthRoles.Client))
             .StatusCode.Should().Be(HttpStatusCode.Created);
+
+        await trainerInvitations.CopyAuthStateFromAsync(trainerAuth);
+        await clientInvitations.CopyAuthStateFromAsync(clientAuth);
 
         var create = await trainerInvitations.CreateAsync(7);
         var created = await create.ReadRequiredJsonAsync<CreateInvitationResult>();
@@ -94,11 +99,11 @@ public sealed class InvitationPreviewTests(IntegrationTestFixture fixture) : Int
     [Fact]
     public async Task Preview_WithRevokedInvite_ShouldReturnRevokedAndNotJoinable()
     {
-        var trainerHttp = Fixture.CreateClient();
-        var anonymousHttp = Fixture.CreateClient();
+        var trainerHttp = Fixture.CreateClient(handleCookies: false);
+        var anonymousHttp = Fixture.CreateClient(handleCookies: false);
 
         var trainerAuth = new AuthTestClient(trainerHttp);
-        var trainerInvitations = new InvitationsTestClient(trainerHttp);
+        var trainerInvitations = new InvitationsTestClient(Fixture.CreateClient(handleCookies: false));
         var anonymousInvitations = new InvitationsTestClient(anonymousHttp);
 
         (await trainerAuth.RegisterAsync(
@@ -106,6 +111,8 @@ public sealed class InvitationPreviewTests(IntegrationTestFixture fixture) : Int
             "Str0ngPass!123",
             "Revoked Trainer",
             AuthRoles.Trainer)).StatusCode.Should().Be(HttpStatusCode.Created);
+
+        await trainerInvitations.CopyAuthStateFromAsync(trainerAuth);
 
         var create = await trainerInvitations.CreateAsync(7);
         var created = await create.ReadRequiredJsonAsync<CreateInvitationResult>();
@@ -125,11 +132,11 @@ public sealed class InvitationPreviewTests(IntegrationTestFixture fixture) : Int
     [Fact]
     public async Task Preview_WithExpiredInvite_ShouldReturnExpiredAndNotJoinable()
     {
-        var trainerHttp = Fixture.CreateClient();
-        var anonymousHttp = Fixture.CreateClient();
+        var trainerHttp = Fixture.CreateClient(handleCookies: false);
+        var anonymousHttp = Fixture.CreateClient(handleCookies: false);
 
         var trainerAuth = new AuthTestClient(trainerHttp);
-        var trainerInvitations = new InvitationsTestClient(trainerHttp);
+        var trainerInvitations = new InvitationsTestClient(Fixture.CreateClient(handleCookies: false));
         var anonymousInvitations = new InvitationsTestClient(anonymousHttp);
 
         (await trainerAuth.RegisterAsync(
@@ -137,6 +144,8 @@ public sealed class InvitationPreviewTests(IntegrationTestFixture fixture) : Int
             "Str0ngPass!123",
             "Expired Trainer",
             AuthRoles.Trainer)).StatusCode.Should().Be(HttpStatusCode.Created);
+
+        await trainerInvitations.CopyAuthStateFromAsync(trainerAuth);
 
         var create = await trainerInvitations.CreateAsync(7);
         var created = await create.ReadRequiredJsonAsync<CreateInvitationResult>();
