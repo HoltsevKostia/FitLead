@@ -13,13 +13,13 @@ public sealed class CurrentUserTests(IntegrationTestFixture fixture) : Integrati
     [Fact]
     public async Task CurrentUser_WithValidAuthCookies_ShouldReturnIdEmailAndRole()
     {
-        var authClient = new AuthTestClient(HttpClient);
+        var authClient = new AuthTestClient(Fixture.CreateClient(handleCookies: false));
         var email = UniqueEmail("claims");
 
         var register = await authClient.RegisterAsync(email, "Str0ngPass!123", "Claims User", AuthRoles.Trainer);
         register.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var response = await HttpClient.GetAsync("/auth/current-user");
+        var response = await authClient.GetAsync("/auth/current-user");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         await using var stream = await response.Content.ReadAsStreamAsync();

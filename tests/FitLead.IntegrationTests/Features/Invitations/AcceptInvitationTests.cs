@@ -16,13 +16,13 @@ public sealed class AcceptInvitationTests(IntegrationTestFixture fixture) : Inte
     [Fact]
     public async Task Accept_WithValidClient_ShouldReturnNoContentAndCreateRelationship()
     {
-        var trainerHttp = Fixture.CreateClient();
-        var clientHttp = Fixture.CreateClient();
+        var trainerHttp = Fixture.CreateClient(handleCookies: false);
+        var clientHttp = Fixture.CreateClient(handleCookies: false);
 
         var trainerAuth = new AuthTestClient(trainerHttp);
-        var trainerInvitations = new InvitationsTestClient(trainerHttp);
+        var trainerInvitations = new InvitationsTestClient(Fixture.CreateClient(handleCookies: false));
         var clientAuth = new AuthTestClient(clientHttp);
-        var clientInvitations = new InvitationsTestClient(clientHttp);
+        var clientInvitations = new InvitationsTestClient(Fixture.CreateClient(handleCookies: false));
 
         (await trainerAuth.RegisterAsync(
             UniqueEmail("accept-trainer"),
@@ -36,6 +36,9 @@ public sealed class AcceptInvitationTests(IntegrationTestFixture fixture) : Inte
             "Str0ngPass!123",
             "Accept Client",
             AuthRoles.Client)).StatusCode.Should().Be(HttpStatusCode.Created);
+
+        await trainerInvitations.CopyAuthStateFromAsync(trainerAuth);
+        await clientInvitations.CopyAuthStateFromAsync(clientAuth);
 
         var create = await trainerInvitations.CreateAsync(7);
         var created = await create.ReadRequiredJsonAsync<CreateInvitationResult>();
@@ -62,13 +65,13 @@ public sealed class AcceptInvitationTests(IntegrationTestFixture fixture) : Inte
     [Fact]
     public async Task Accept_WithSameClientTwice_ShouldBeIdempotentAndNotDuplicateRelationship()
     {
-        var trainerHttp = Fixture.CreateClient();
-        var clientHttp = Fixture.CreateClient();
+        var trainerHttp = Fixture.CreateClient(handleCookies: false);
+        var clientHttp = Fixture.CreateClient(handleCookies: false);
 
         var trainerAuth = new AuthTestClient(trainerHttp);
-        var trainerInvitations = new InvitationsTestClient(trainerHttp);
+        var trainerInvitations = new InvitationsTestClient(Fixture.CreateClient(handleCookies: false));
         var clientAuth = new AuthTestClient(clientHttp);
-        var clientInvitations = new InvitationsTestClient(clientHttp);
+        var clientInvitations = new InvitationsTestClient(Fixture.CreateClient(handleCookies: false));
 
         (await trainerAuth.RegisterAsync(
             UniqueEmail("idempotent-trainer"),
@@ -81,6 +84,9 @@ public sealed class AcceptInvitationTests(IntegrationTestFixture fixture) : Inte
             "Str0ngPass!123",
             "Idempotent Client",
             AuthRoles.Client)).StatusCode.Should().Be(HttpStatusCode.Created);
+
+        await trainerInvitations.CopyAuthStateFromAsync(trainerAuth);
+        await clientInvitations.CopyAuthStateFromAsync(clientAuth);
 
         var create = await trainerInvitations.CreateAsync(7);
         var created = await create.ReadRequiredJsonAsync<CreateInvitationResult>();
@@ -98,16 +104,16 @@ public sealed class AcceptInvitationTests(IntegrationTestFixture fixture) : Inte
     [Fact]
     public async Task Accept_WithClientThatAlreadyHasAnotherTrainer_ShouldReturnConflict()
     {
-        var firstTrainerHttp = Fixture.CreateClient();
-        var secondTrainerHttp = Fixture.CreateClient();
-        var clientHttp = Fixture.CreateClient();
+        var firstTrainerHttp = Fixture.CreateClient(handleCookies: false);
+        var secondTrainerHttp = Fixture.CreateClient(handleCookies: false);
+        var clientHttp = Fixture.CreateClient(handleCookies: false);
 
         var firstTrainerAuth = new AuthTestClient(firstTrainerHttp);
-        var firstTrainerInvitations = new InvitationsTestClient(firstTrainerHttp);
+        var firstTrainerInvitations = new InvitationsTestClient(Fixture.CreateClient(handleCookies: false));
         var secondTrainerAuth = new AuthTestClient(secondTrainerHttp);
-        var secondTrainerInvitations = new InvitationsTestClient(secondTrainerHttp);
+        var secondTrainerInvitations = new InvitationsTestClient(Fixture.CreateClient(handleCookies: false));
         var clientAuth = new AuthTestClient(clientHttp);
-        var clientInvitations = new InvitationsTestClient(clientHttp);
+        var clientInvitations = new InvitationsTestClient(Fixture.CreateClient(handleCookies: false));
 
         (await firstTrainerAuth.RegisterAsync(
             UniqueEmail("first-trainer"),
@@ -124,6 +130,10 @@ public sealed class AcceptInvitationTests(IntegrationTestFixture fixture) : Inte
             "Str0ngPass!123",
             "Conflict Client",
             AuthRoles.Client)).StatusCode.Should().Be(HttpStatusCode.Created);
+
+        await firstTrainerInvitations.CopyAuthStateFromAsync(firstTrainerAuth);
+        await secondTrainerInvitations.CopyAuthStateFromAsync(secondTrainerAuth);
+        await clientInvitations.CopyAuthStateFromAsync(clientAuth);
 
         var firstInvite = await firstTrainerInvitations.CreateAsync(7);
         var firstCreated = await firstInvite.ReadRequiredJsonAsync<CreateInvitationResult>();
@@ -145,15 +155,18 @@ public sealed class AcceptInvitationTests(IntegrationTestFixture fixture) : Inte
     [Fact]
     public async Task Accept_WithoutAuthentication_ShouldReturnUnauthorized()
     {
-        var trainerAuth = new AuthTestClient(HttpClient);
-        var trainerInvitations = new InvitationsTestClient(HttpClient);
-        var anonymousInvitations = new InvitationsTestClient(Fixture.CreateClient());
+        var trainerHttp = Fixture.CreateClient(handleCookies: false);
+        var trainerAuth = new AuthTestClient(trainerHttp);
+        var trainerInvitations = new InvitationsTestClient(Fixture.CreateClient(handleCookies: false));
+        var anonymousInvitations = new InvitationsTestClient(Fixture.CreateClient(handleCookies: false));
 
         (await trainerAuth.RegisterAsync(
             UniqueEmail("unauth-trainer"),
             "Str0ngPass!123",
             "Trainer User",
             AuthRoles.Trainer)).StatusCode.Should().Be(HttpStatusCode.Created);
+
+        await trainerInvitations.CopyAuthStateFromAsync(trainerAuth);
 
         var create = await trainerInvitations.CreateAsync(7);
         var created = await create.ReadRequiredJsonAsync<CreateInvitationResult>();
@@ -166,14 +179,17 @@ public sealed class AcceptInvitationTests(IntegrationTestFixture fixture) : Inte
     [Fact]
     public async Task Accept_WithInvalidToken_ShouldReturnNotFound()
     {
-        var clientAuth = new AuthTestClient(HttpClient);
-        var invitationsClient = new InvitationsTestClient(HttpClient);
+        var clientHttp = Fixture.CreateClient(handleCookies: false);
+        var clientAuth = new AuthTestClient(clientHttp);
+        var invitationsClient = new InvitationsTestClient(Fixture.CreateClient(handleCookies: false));
 
         (await clientAuth.RegisterAsync(
             UniqueEmail("invalid-token-client"),
             "Str0ngPass!123",
             "Invalid Token Client",
             AuthRoles.Client)).StatusCode.Should().Be(HttpStatusCode.Created);
+
+        await invitationsClient.CopyAuthStateFromAsync(clientAuth);
 
         var response = await invitationsClient.AcceptAsync("invalid-token");
 
@@ -185,13 +201,13 @@ public sealed class AcceptInvitationTests(IntegrationTestFixture fixture) : Inte
     [Fact]
     public async Task Accept_WithTrainerRole_ShouldReturnForbidden()
     {
-        var trainerHttp = Fixture.CreateClient();
-        var secondTrainerHttp = Fixture.CreateClient();
+        var trainerHttp = Fixture.CreateClient(handleCookies: false);
+        var secondTrainerHttp = Fixture.CreateClient(handleCookies: false);
 
         var trainerAuth = new AuthTestClient(trainerHttp);
-        var trainerInvitations = new InvitationsTestClient(trainerHttp);
+        var trainerInvitations = new InvitationsTestClient(Fixture.CreateClient(handleCookies: false));
         var secondTrainerAuth = new AuthTestClient(secondTrainerHttp);
-        var secondTrainerInvitations = new InvitationsTestClient(secondTrainerHttp);
+        var secondTrainerInvitations = new InvitationsTestClient(Fixture.CreateClient(handleCookies: false));
 
         (await trainerAuth.RegisterAsync(
             UniqueEmail("source-trainer"),
@@ -203,6 +219,9 @@ public sealed class AcceptInvitationTests(IntegrationTestFixture fixture) : Inte
             "Str0ngPass!123",
             "Wrong Role Trainer",
             AuthRoles.Trainer)).StatusCode.Should().Be(HttpStatusCode.Created);
+
+        await trainerInvitations.CopyAuthStateFromAsync(trainerAuth);
+        await secondTrainerInvitations.CopyAuthStateFromAsync(secondTrainerAuth);
 
         var create = await trainerInvitations.CreateAsync(7);
         var created = await create.ReadRequiredJsonAsync<CreateInvitationResult>();

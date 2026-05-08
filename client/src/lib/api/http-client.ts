@@ -1,4 +1,5 @@
 import { ApiError } from "@/lib/api/api-error";
+import { CSRF_HEADER_NAME, ensureCsrfToken, isUnsafeMethod } from "@/lib/api/csrf";
 import { apiEnv } from "@/lib/api/env";
 
 type ResponseType = "json" | "text" | "void";
@@ -77,6 +78,11 @@ export async function apiRequest<TResponse>(
   const headers = new Headers(initialHeaders);
   if (!headers.has("Accept") && responseType === "json") {
     headers.set("Accept", "application/json, application/problem+json");
+  }
+
+  if (credentials !== "omit" && isUnsafeMethod(method) && !headers.has(CSRF_HEADER_NAME)) {
+    const csrfToken = await ensureCsrfToken();
+    headers.set(CSRF_HEADER_NAME, csrfToken);
   }
 
   const response = await fetch(buildApiUrl(path), {

@@ -4,21 +4,26 @@ import type {
   LoginRequest,
   RegisterRequest,
 } from "@/features/auth/model/types";
+import { refreshCsrfToken } from "@/lib/api/csrf";
 import { apiRequest } from "@/lib/api/http-client";
 
 export const authApi = {
-  register(payload: RegisterRequest): Promise<AuthSession> {
-    return apiRequest<AuthSession>("/auth/register", {
+  async register(payload: RegisterRequest): Promise<AuthSession> {
+    const session = await apiRequest<AuthSession>("/auth/register", {
       method: "POST",
       body: payload,
     });
+    await refreshCsrfToken();
+    return session;
   },
 
-  login(payload: LoginRequest): Promise<AuthSession> {
-    return apiRequest<AuthSession>("/auth/login", {
+  async login(payload: LoginRequest): Promise<AuthSession> {
+    const session = await apiRequest<AuthSession>("/auth/login", {
       method: "POST",
       body: payload,
     });
+    await refreshCsrfToken();
+    return session;
   },
 
   refresh(): Promise<AuthSession> {
@@ -27,11 +32,12 @@ export const authApi = {
     });
   },
 
-  logout(): Promise<void> {
-    return apiRequest<void>("/auth/logout", {
+  async logout(): Promise<void> {
+    await apiRequest<void>("/auth/logout", {
       method: "POST",
       responseType: "void",
     });
+    await refreshCsrfToken();
   },
 
   getCurrentUser(): Promise<CurrentUser> {

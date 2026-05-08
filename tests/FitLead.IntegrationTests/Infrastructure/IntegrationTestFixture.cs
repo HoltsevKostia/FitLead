@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Mvc.Testing;
+
 namespace FitLead.IntegrationTests.Infrastructure;
 
 public sealed class IntegrationTestFixture : IAsyncLifetime
@@ -6,7 +8,11 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
 
     public CustomWebApplicationFactory Factory { get; private set; } = null!;
 
-    public HttpClient CreateClient() => Factory.CreateClient();
+    public HttpClient CreateClient(bool handleCookies = true)
+        => Factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            HandleCookies = handleCookies
+        });
 
     public Task ResetDatabaseAsync() => Factory.ResetDatabaseAsync();
 

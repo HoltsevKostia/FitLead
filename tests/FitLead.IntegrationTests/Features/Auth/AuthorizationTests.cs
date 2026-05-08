@@ -20,13 +20,13 @@ public sealed class AuthorizationTests(IntegrationTestFixture fixture) : Integra
     [Fact]
     public async Task TrainerOnlyEndpoint_WithClientRole_ShouldReturnForbidden()
     {
-        var authClient = new AuthTestClient(HttpClient);
+        var authClient = new AuthTestClient(Fixture.CreateClient(handleCookies: false));
         var email = UniqueEmail("client-role");
 
         var register = await authClient.RegisterAsync(email, "Str0ngPass!123", "Client User", AuthRoles.Client);
         register.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var response = await HttpClient.GetAsync("/api/workouts");
+        var response = await authClient.GetAsync("/api/workouts");
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }

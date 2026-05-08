@@ -46,6 +46,7 @@ namespace FitLead.Api.Invitations
 
         [Authorize(Policy = "TrainerOnly")]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
             [FromBody] CreateInvitationRequest request,
             CancellationToken cancellationToken)
@@ -59,6 +60,7 @@ namespace FitLead.Api.Invitations
 
         [Authorize(Policy = "ClientOnly")]
         [HttpPost("{token}/accept")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Accept(
             string token,
             CancellationToken cancellationToken)
@@ -72,6 +74,7 @@ namespace FitLead.Api.Invitations
 
         [Authorize(Policy = "TrainerOnly")]
         [HttpPost("{invitationId:guid}/revoke")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Revoke(
             Guid invitationId,
             CancellationToken cancellationToken)
