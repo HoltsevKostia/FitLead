@@ -18,15 +18,18 @@ namespace FitLead.Infrastructure.Persistence.Repositories
             Guid trainerId,
             CancellationToken cancellationToken)
         {
-            return await _context.Exercises
+            var exercises = await _context.Exercises
                 .Where(x => x.TrainerId == trainerId)
                 .OrderBy(x => x.Name)
+                .ToListAsync(cancellationToken);
+
+            return exercises
                 .Select(x => new ExerciseDto(
                     x.Id,
                     x.Name,
                     x.Description,
-                    x.MediaUrl))
-                .ToListAsync(cancellationToken);
+                    x.MediaUrl?.Value))
+                .ToList();
         }
 
         public async Task<int> GetUsageCountAsync(

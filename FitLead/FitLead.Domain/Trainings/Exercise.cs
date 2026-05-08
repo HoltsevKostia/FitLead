@@ -10,7 +10,7 @@ namespace FitLead.Domain.Trainings
 
         public string Name { get; private set; } = null!;
         public string Description { get; private set; } = null!;
-        public string? MediaUrl { get; private set; }
+        public MediaUrl? MediaUrl { get; private set; }
 
         private Exercise() { } // EF
 
@@ -19,7 +19,7 @@ namespace FitLead.Domain.Trainings
             Guid trainerId,
             string name,
             string description,
-            string? mediaUrl)
+            MediaUrl? mediaUrl)
         {
             Id = id;
             TrainerId = trainerId;
@@ -42,13 +42,17 @@ namespace FitLead.Domain.Trainings
                 return Result<Exercise>.Failure(
                     Error.Validation("exercise.create.name_required", "Exercise name is required"));
 
+            var mediaUrlResult = TryCreateMediaUrl(mediaUrl, out var parsedMediaUrl);
+            if (mediaUrlResult.IsFailure)
+                return Result<Exercise>.Failure(mediaUrlResult.Error);
+
             return Result<Exercise>.Success(
                 new Exercise(
                     Guid.NewGuid(),
                     trainerId,
                     name.Trim(),
                     description?.Trim() ?? string.Empty,
-                    mediaUrl));
+                    parsedMediaUrl));
         }
 
         private Result Rename(string name)
@@ -68,21 +72,27 @@ namespace FitLead.Domain.Trainings
 
         private Result UpdateMediaUrl(string? mediaUrl)
         {
-            if (!string.IsNullOrWhiteSpace(mediaUrl))
-            {
-                var trimmed = mediaUrl.Trim();
+            var mediaUrlResult = TryCreateMediaUrl(mediaUrl, out var parsedMediaUrl);
+            if (mediaUrlResult.IsFailure)
+                return Result.Failure(mediaUrlResult.Error);
 
-                if (trimmed.Length > 500)
-                    return Result.Failure(
-                        Error.Validation("exercise.update.media_url.too_long", "MediaUrl is too long"));
+            MediaUrl = parsedMediaUrl;
 
-                MediaUrl = trimmed;
-            }
-            else
-            {
-                MediaUrl = null;
-            }
+            return Result.Success();
+        }
 
+        private static Result TryCreateMediaUrl(string? mediaUrl, out MediaUrl? parsedMediaUrl)
+        {
+            parsedMediaUrl = null;
+
+            if (string.IsNullOrWhiteSpace(mediaUrl))
+                return Result.Success();
+
+            var result = MediaUrl.Create(mediaUrl);
+            if (result.IsFailure)
+                return Result.Failure(result.Error);
+
+            parsedMediaUrl = result.Value;
             return Result.Success();
         }
 

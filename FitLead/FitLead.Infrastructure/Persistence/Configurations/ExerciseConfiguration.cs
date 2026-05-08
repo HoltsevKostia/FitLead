@@ -33,7 +33,10 @@ namespace FitLead.Infrastructure.Persistence.Configurations
                 .IsRequired();
 
             builder.Property(x => x.MediaUrl)
-                .HasMaxLength(500);
+                .HasConversion(
+                    mediaUrl => mediaUrl == null ? null : mediaUrl.Value,
+                    value => value == null ? null : MediaUrl.Create(value).Value)
+                .HasMaxLength(MediaUrl.MaxLength);
 
             builder.HasIndex(x => x.TrainerId);
         }

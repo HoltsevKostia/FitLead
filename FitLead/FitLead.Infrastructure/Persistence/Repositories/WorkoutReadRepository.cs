@@ -74,7 +74,7 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                     x.ExerciseId!.Value,
                     x.ExerciseName!,
                     x.ExerciseDescription!,
-                    x.ExerciseMediaUrl,
+                    x.ExerciseMediaUrl?.Value,
                     x.Repetitions!.Value,
                     x.Sets!.Value,
                     x.RestSeconds!.Value
