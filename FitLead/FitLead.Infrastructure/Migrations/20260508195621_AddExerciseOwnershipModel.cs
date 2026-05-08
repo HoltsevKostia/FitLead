@@ -23,6 +23,14 @@ namespace FitLead.Infrastructure.Migrations
                 name: "TrainerId",
                 table: "exercises",
                 newName: "OwnerTrainerId");
+
+            migrationBuilder.AlterColumn<Guid>(
+                name: "OwnerTrainerId",
+                table: "exercises",
+                type: "uuid",
+                nullable: true,
+                oldClrType: typeof(Guid),
+                oldType: "uuid");
             
             migrationBuilder.AddColumn<Guid>(
                 name: "CopiedFromExerciseId",
@@ -140,19 +148,23 @@ namespace FitLead.Infrastructure.Migrations
                 table: "exercises");
 
             migrationBuilder.DropColumn(
-                name: "OwnerTrainerId",
-                table: "exercises");
-
-            migrationBuilder.DropColumn(
                 name: "Source",
                 table: "exercises");
 
-            migrationBuilder.AddColumn<Guid>(
-                name: "TrainerId",
+            migrationBuilder.AlterColumn<Guid>(
+                name: "OwnerTrainerId",
                 table: "exercises",
                 type: "uuid",
                 nullable: false,
+                oldClrType: typeof(Guid),
+                oldType: "uuid",
+                oldNullable: true,
                 defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+
+            migrationBuilder.RenameColumn(
+                name: "OwnerTrainerId",
+                table: "exercises",
+                newName: "TrainerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_exercises_TrainerId",
