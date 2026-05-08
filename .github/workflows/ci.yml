@@ -8,7 +8,6 @@ on:
   push:
     branches:
       - main
-      - dev
   workflow_dispatch:
 
 env:
@@ -78,6 +77,8 @@ jobs:
   frontend-ci:
     name: Frontend CI
     runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:5178
 
     defaults:
       run:
@@ -109,7 +110,7 @@ jobs:
     needs:
       - backend-ci
       - frontend-ci
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev')
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout

@@ -12,7 +12,7 @@ public sealed class LogoutTests(IntegrationTestFixture fixture) : IntegrationTes
     [Fact]
     public async Task Logout_WithAuthenticatedSession_ShouldClearAuthCookiesAndInvalidateCurrentUser()
     {
-        var authClient = new AuthTestClient(HttpClient);
+        var authClient = new AuthTestClient(Fixture.CreateClient(handleCookies: false));
         var email = UniqueEmail("logout");
 
         var register = await authClient.RegisterAsync(email, "Str0ngPass!123", "Logout User", AuthRoles.Trainer);
@@ -29,7 +29,7 @@ public sealed class LogoutTests(IntegrationTestFixture fixture) : IntegrationTes
         refreshCookie.Value.Should().BeEmpty();
         refreshCookie.Path.Should().Be("/auth");
 
-        var currentUser = await HttpClient.GetAsync("/auth/current-user");
+        var currentUser = await authClient.GetAsync("/auth/current-user");
         currentUser.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 }

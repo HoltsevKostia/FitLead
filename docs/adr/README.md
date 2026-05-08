@@ -10,7 +10,7 @@ Each ADR captures one decision: context, decision, consequences.
 | [0001](adr-0001-clean-architecture-layering.md) | Clean Architecture layering (Domain/Application/Infrastructure/API) | Accepted | 2025-12 |
 | [0002](adr-0002-cqrs-with-mediatr.md) | CQRS with MediatR (commands/queries) | Accepted | 2025-12 |
 | [0003](adr-0003-single-user-aggregate-role-as-state.md) | Single `User` aggregate with role as state (Trainer/Client) | Accepted | 2025-12 |
-| [0004](adr-0004-invitations-lifecycle-expiration-anti-spam.md) | Invitations lifecycle + background expiration + anti-spam limits | Accepted | 2025-12 |
+| [0004](adr-0004-invitations-lifecycle-expiration-anti-spam.md) | Invitations lifecycle + background expiration + anti-spam limits | Superseded | 2025-12 |
 | [0005](adr-0005-domain-events-explicit-dispatcher.md) | Domain Events with explicit dispatcher after SaveChanges | Accepted | 2026-01 |
 | [0006](adr-0006-iusercontext-dev-header-fallback.md) | IUserContext + dev header fallback as auth foundation (MVP) | Accepted | 2026-01 |
 | [0007](adr-0007-result-model-initial-version.md) | Initial Result model in Application (without typed Error metadata) | Superseded | 2026-01 |
@@ -23,6 +23,8 @@ Each ADR captures one decision: context, decision, consequences.
 | [0014](adr-0014-identity-first-auth-foundation.md) | Identity-first auth foundation with domain-identity link | Accepted | 2026-02 |
 | [0015](adr-0015-integration-first-testing-strategy.md) | Integration-first testing strategy with feature-scoped specifications | Accepted | 2026-03 |
 | [0016](adr-0016-internal-identity-service-interim-password-flow.md) | Internal Identity Service with interim password-based token flow | Accepted (Interim) | 2026-03 |
+| [0017](adr-0017-cookie-auth-antiforgery-spa-pattern.md) | Cookie-based auth API with antiforgery-protected SPA pattern | Accepted | 2026-05 |
+| [0018](adr-0018-token-based-trainer-invitations.md) | Token-based trainer invitations with public preview and single-use acceptance | Accepted | 2026-05 |
 
 ## ADR status conventions
 

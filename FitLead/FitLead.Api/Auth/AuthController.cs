@@ -5,11 +5,13 @@ using FitLead.Api.Identity;
 using FitLead.Application.Identity;
 using FitLead.Infrastructure.Identity;
 using MediatR;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
+using System.Security.Cryptography;
 
 namespace FitLead.Api.Auth
 {
@@ -23,6 +25,7 @@ namespace FitLead.Api.Auth
         private readonly IRefreshTokenService _refreshTokenService;
         private readonly IMediator _mediator;
         private readonly JwtOptions _jwtOptions;
+        private readonly IAntiforgery _antiforgery;
 
         public AuthController(
             UserManager<AppIdentityUser> userManager,
@@ -30,7 +33,8 @@ namespace FitLead.Api.Auth
             IJwtTokenService jwtTokenService,
             IRefreshTokenService refreshTokenService,
             IMediator mediator,
-            IOptions<JwtOptions> jwtOptions)
+            IOptions<JwtOptions> jwtOptions,
+            IAntiforgery antiforgery)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -38,10 +42,12 @@ namespace FitLead.Api.Auth
             _refreshTokenService = refreshTokenService;
             _mediator = mediator;
             _jwtOptions = jwtOptions.Value;
+            _antiforgery = antiforgery;
         }
 
         [HttpPost("register")]
         [AllowAnonymous]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
             var result = await _mediator.Send(
@@ -63,6 +69,7 @@ namespace FitLead.Api.Auth
 
         [HttpPost("login")]
         [AllowAnonymous]
+        [ValidateAntiForgeryToken]
         public async Task<ActionResult<AuthSessionResponse>> Login([FromBody] LoginRequest request)
         {
             var user = await _userManager.FindByEmailAsync(request.Email);
@@ -99,6 +106,7 @@ namespace FitLead.Api.Auth
 
         [HttpPost("refresh")]
         [AllowAnonymous]
+        [ValidateAntiForgeryToken]
         public async Task<ActionResult<AuthSessionResponse>> Refresh()
         {
             var refreshToken = Request.Cookies[AuthCookieNames.RefreshToken];
@@ -135,6 +143,7 @@ namespace FitLead.Api.Auth
 
         [HttpPost("logout")]
         [AllowAnonymous]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
             var refreshToken = Request.Cookies[AuthCookieNames.RefreshToken];
@@ -151,16 +160,41 @@ namespace FitLead.Api.Auth
             return NoContent();
         }
 
+        [HttpGet("csrf-token")]
+        [AllowAnonymous]
+        public IActionResult GetCsrfToken()
+        {
+            var tokens = _antiforgery.GetAndStoreTokens(HttpContext);
+            if (string.IsNullOrWhiteSpace(tokens.RequestToken))
+            {
+                throw new InvalidOperationException("Antiforgery request token was not generated.");
+            }
+
+            Response.Cookies.Append(
+                CsrfTokenNames.RequestTokenCookie,
+                tokens.RequestToken,
+                CreateReadableCookieOptions("/"));
+
+            Response.Headers.CacheControl = "no-store";
+            return NoContent();
+        }
+
         [HttpGet("current-user")]
         [Authorize]
         public IActionResult GetClaims()
         {
-            return Ok(new
+            var domainUserId = User.FindFirstValue(CustomClaimTypes.DomainUserId);
+            var email = User.GetEmail();
+            var role = User.FindFirstValue(ClaimTypes.Role);
+
+            if (string.IsNullOrWhiteSpace(domainUserId) ||
+                string.IsNullOrWhiteSpace(email) ||
+                string.IsNullOrWhiteSpace(role))
             {
-                sub = User.GetSub(),
-                email = User.GetEmail(),
-                jti = User.GetJti()
-            });
+                return Unauthorized();
+            }
+
+            return Ok(new CurrentUserResponse(domainUserId, email, role));
         }
 
         private void AppendAuthCookies(
@@ -204,6 +238,18 @@ namespace FitLead.Api.Auth
                 Secure = Request.IsHttps,
                 SameSite = SameSiteMode.Lax,
                 Expires = expiresAt,
+                Path = path,
+                IsEssential = true
+            };
+        }
+
+        private CookieOptions CreateReadableCookieOptions(string path)
+        {
+            return new CookieOptions
+            {
+                HttpOnly = false,
+                Secure = Request.IsHttps,
+                SameSite = SameSiteMode.Lax,
                 Path = path,
                 IsEssential = true
             };

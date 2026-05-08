@@ -1,7 +1,7 @@
 ﻿# ADR-0004: Invitations lifecycle + background job
 
 ## Status
-Accepted
+Superseded
 
 ## Date
 2025-12
@@ -29,6 +29,7 @@ Cons:
 
 ## Related
 - [ADR-0005](adr-0005-domain-events-explicit-dispatcher.md)
+- [ADR-0018](adr-0018-token-based-trainer-invitations.md)
 
 ## Key code references
 - [`Invitation.cs`](/Fitlead/Fitlead/FitLead.Domain/Invitations/Invitation.cs)

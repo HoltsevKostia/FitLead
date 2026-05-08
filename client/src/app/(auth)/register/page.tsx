@@ -1,44 +1,45 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
-export default function RegisterPage() {
+import { getCurrentUser } from "@/features/auth/server/get-current-user";
+import { RegisterForm } from "@/features/auth/ui/register-form";
+import { buildAuthHref } from "@/shared/utils/build-auth-href";
+import { resolveSafeNextHref } from "@/shared/utils/resolve-safe-next-href";
+
+type AuthSearchParams = {
+  next?: string | string[];
+};
+
+interface RegisterPageProps {
+  searchParams?: Promise<AuthSearchParams>;
+}
+
+export default async function RegisterPage({ searchParams }: RegisterPageProps) {
+  const [currentUser, resolvedSearchParams] = await Promise.all([
+    getCurrentUser(),
+    searchParams ?? Promise.resolve<AuthSearchParams>({}),
+  ]);
+
+  const nextHref = resolveSafeNextHref(resolvedSearchParams.next, "/dashboard");
+
+  if (currentUser) {
+    redirect(nextHref);
+  }
+
+  const loginHref = buildAuthHref("/login", nextHref);
+
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <p className="text-sm uppercase tracking-[0.2em] text-muted">
-          Авторизація
-        </p>
-        <h1 className="text-3xl font-semibold tracking-tight">
-          Створення акаунта
-        </h1>
+        <p className="text-sm uppercase tracking-[0.2em] text-muted">Авторизація</p>
+        <h1 className="text-3xl font-semibold tracking-tight">Створення акаунта</h1>
       </div>
 
-      <form className="space-y-4">
-        <input
-          className="w-full rounded-2xl border border-border bg-white px-4 py-3 outline-none"
-          placeholder="Повне ім’я"
-          type="text"
-        />
-        <input
-          className="w-full rounded-2xl border border-border bg-white px-4 py-3 outline-none"
-          placeholder="Електронна пошта"
-          type="email"
-        />
-        <input
-          className="w-full rounded-2xl border border-border bg-white px-4 py-3 outline-none"
-          placeholder="Пароль"
-          type="password"
-        />
-        <button
-          type="submit"
-          className="w-full rounded-2xl bg-accent px-4 py-3 font-medium text-white transition hover:bg-accent-strong"
-        >
-          Створити профіль
-        </button>
-      </form>
+      <RegisterForm nextHref={nextHref} />
 
       <p className="text-sm text-muted">
         Уже маєш акаунт?{" "}
-        <Link href="/login" className="font-medium text-foreground">
+        <Link href={loginHref} className="font-medium text-foreground">
           Увійти
         </Link>
       </p>

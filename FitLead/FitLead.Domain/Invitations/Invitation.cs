@@ -1,112 +1,144 @@
 using FitLead.Common.Domain;
 using FitLead.Common.Errors;
 using FitLead.Common.Results;
-using FitLead.Domain.Invitations.Events;
 
 namespace FitLead.Domain.Invitations
 {
     public sealed class Invitation : AggregateRoot<Guid>
     {
         public Guid TrainerId { get; private set; }
-        public Guid ClientId { get; private set; }
+        public string TokenHash { get; private set; } = null!;
         public InvitationStatus Status { get; private set; }
-        public DateTime CreatedAt { get; private set; }
-        public DateTime ExpiresAt { get; private set; }
+        public DateTime CreatedAtUtc { get; private set; }
+        public DateTime ExpiresAtUtc { get; private set; }
+        public Guid? AcceptedByClientId { get; private set; }
+        public DateTime? AcceptedAtUtc { get; private set; }
 
-        private Invitation() { } // EF
+        private Invitation()
+        {
+        }
 
         private Invitation(
             Guid id,
             Guid trainerId,
-            Guid clientId,
-            DateTime createdAt,
-            DateTime expiresAt)
+            string tokenHash,
+            DateTime createdAtUtc,
+            DateTime expiresAtUtc)
         {
             Id = id;
             TrainerId = trainerId;
-            ClientId = clientId;
-            CreatedAt = createdAt;
-            ExpiresAt = expiresAt;
+            TokenHash = tokenHash;
+            CreatedAtUtc = createdAtUtc;
+            ExpiresAtUtc = expiresAtUtc;
             Status = InvitationStatus.Pending;
         }
 
         public static Result<Invitation> Create(
             Guid trainerId,
-            Guid clientId,
-            DateTime now)
+            string tokenHash,
+            DateTime createdAtUtc,
+            DateTime expiresAtUtc)
         {
             if (trainerId == Guid.Empty)
+            {
                 return Result<Invitation>.Failure(
                     Error.Validation("invitation.create.trainer_id_required", "TrainerId is required"));
+            }
 
-            if (clientId == Guid.Empty)
+            if (string.IsNullOrWhiteSpace(tokenHash))
+            {
                 return Result<Invitation>.Failure(
-                    Error.Validation("invitation.create.client_id_required", "ClientId is required"));
+                    Error.Validation("invitation.create.token_hash_required", "TokenHash is required"));
+            }
+
+            if (expiresAtUtc <= createdAtUtc)
+            {
+                return Result<Invitation>.Failure(
+                    Error.Validation("invitation.create.expires_at_invalid", "ExpiresAtUtc must be after CreatedAtUtc"));
+            }
 
             return Result<Invitation>.Success(
                 new Invitation(
                     Guid.NewGuid(),
                     trainerId,
-                    clientId,
-                    now,
-                    now.AddHours(48)));
+                    tokenHash.Trim(),
+                    createdAtUtc,
+                    expiresAtUtc));
         }
 
-        public Result Accept(DateTime now)
+        public Result Accept(Guid clientId, DateTime acceptedAtUtc)
         {
+            if (clientId == Guid.Empty)
+            {
+                return Result.Failure(
+                    Error.Validation("invitation.accept.client_id_required", "ClientId is required"));
+            }
+
+            if (Status == InvitationStatus.Accepted)
+            {
+                if (AcceptedByClientId == clientId)
+                {
+                    return Result.Success();
+                }
+
+                return Result.Failure(
+                    Error.Conflict("invitation.accept.already_accepted", "Invitation has already been accepted"));
+            }
+
+            if (Status == InvitationStatus.Revoked)
+            {
+                return Result.Failure(
+                    Error.Conflict("invitation.accept.revoked", "Invitation has been revoked"));
+            }
+
             var pendingResult = EnsurePending();
             if (pendingResult.IsFailure)
+            {
                 return pendingResult;
+            }
 
-            if (now > ExpiresAt)
+            if (IsExpired(acceptedAtUtc))
+            {
                 return Result.Failure(
                     Error.Conflict("invitation.accept.expired", "Invitation has expired"));
+            }
 
             Status = InvitationStatus.Accepted;
-
-            RaiseDomainEvent(new InvitationAcceptedDomainEvent(
-            Id,
-            TrainerId,
-            ClientId));
+            AcceptedByClientId = clientId;
+            AcceptedAtUtc = acceptedAtUtc;
 
             return Result.Success();
         }
 
-        public Result Decline(DateTime now)
+        public Result Revoke(DateTime revokedAtUtc)
         {
             var pendingResult = EnsurePending();
             if (pendingResult.IsFailure)
+            {
                 return pendingResult;
+            }
 
-            if (now > ExpiresAt)
+            if (IsExpired(revokedAtUtc))
+            {
                 return Result.Failure(
-                    Error.Conflict("invitation.decline.expired", "Invitation has expired"));
+                    Error.Conflict("invitation.revoke.expired", "Invitation has expired"));
+            }
 
-            Status = InvitationStatus.Declined;
-
-            RaiseDomainEvent(new InvitationDeclinedDomainEvent(Id, TrainerId, ClientId));
+            Status = InvitationStatus.Revoked;
 
             return Result.Success();
         }
 
-        public void Expire(DateTime now)
-        {
-            if (Status != InvitationStatus.Pending)
-                return;
-
-            if (now <= ExpiresAt)
-                return;
-
-            Status = InvitationStatus.Expired;
-
-            RaiseDomainEvent(new InvitationExpiredDomainEvent(Id, TrainerId, ClientId));
-        }
+        public bool IsExpired(DateTime utcNow)
+            => Status == InvitationStatus.Pending && ExpiresAtUtc <= utcNow;
 
         private Result EnsurePending()
         {
             if (Status != InvitationStatus.Pending)
+            {
                 return Result.Failure(
                     Error.Conflict("invitation.status.invalid_transition", $"Invitation is already {Status}"));
+            }
 
             return Result.Success();
         }

@@ -5,11 +5,12 @@ using FitLead.Application.Common.Deletion;
 using FitLead.Application.Common.Results;
 using FitLead.Application.Common.Time;
 using FitLead.Application.Identity;
-using FitLead.Application.Invitations.Access;
+using FitLead.Application.Invitations.Services;
 using FitLead.Application.Modules.Exercises;
 using FitLead.Application.Modules.TrainingPrograms;
 using FitLead.Application.Modules.Users;
 using FitLead.Application.Modules.Workouts;
+using FitLead.Infrastructure.Invitations;
 using FitLead.Application.Trainings.Exercises.Access;
 using FitLead.Application.Trainings.TrainingPrograms.Access;
 using FitLead.Application.Trainings.Workouts.Access;
@@ -55,6 +56,7 @@ namespace FitLead.Infrastructure
             services.AddScoped<IWorkoutReadRepository, WorkoutReadRepository>();
             services.AddScoped<IInvitationRepository, InvitationRepository>();
             services.AddScoped<IInvitationReadRepository, InvitationReadRepository>();
+            services.AddScoped<IInvitationLinkService, InvitationLinkService>();
             services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
             services.AddScoped(typeof(IPipelineBehavior<,>), typeof(DomainExceptionToResultBehavior<,>));
             services.AddSingleton(TimeProvider.System);
@@ -75,7 +77,6 @@ namespace FitLead.Infrastructure
             services.AddScoped<IWorkoutLoader, WorkoutLoader>();
             services.AddScoped<IExerciseLoader, ExerciseLoader>();
             services.AddScoped<ITrainingProgramLoader, TrainingProgramLoader>();
-            services.AddScoped<IInvitationLoader, InvitationLoader>();
             services.AddScoped<ICurrentUserLoader, CurrentUserLoader>();
 
             return services;

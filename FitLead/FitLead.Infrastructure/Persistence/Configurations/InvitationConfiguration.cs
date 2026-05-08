@@ -1,8 +1,7 @@
-﻿using FitLead.Domain.Invitations;
+using FitLead.Domain.Invitations;
 using FitLead.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
 
 namespace FitLead.Infrastructure.Persistence.Configurations
 {
@@ -17,22 +16,27 @@ namespace FitLead.Infrastructure.Persistence.Configurations
             builder.Property(x => x.Id)
                 .ValueGeneratedNever();
 
-            // Status (enum)
+            builder.Property(x => x.TrainerId)
+                .IsRequired();
+
+            builder.Property(x => x.TokenHash)
+                .IsRequired();
+
             builder.Property(x => x.Status)
                 .IsRequired()
                 .HasConversion<int>();
 
-            builder.Property(x => x.CreatedAt)
+            builder.Property(x => x.CreatedAtUtc)
                 .IsRequired();
 
-            builder.Property(x => x.ExpiresAt)
+            builder.Property(x => x.ExpiresAtUtc)
                 .IsRequired();
 
-            builder.Property(x => x.TrainerId)
-                .IsRequired();
+            builder.Property(x => x.AcceptedByClientId)
+                .IsRequired(false);
 
-            builder.Property(x => x.ClientId)
-                .IsRequired();
+            builder.Property(x => x.AcceptedAtUtc)
+                .IsRequired(false);
 
             builder.HasOne<User>()
                 .WithMany()
@@ -41,16 +45,15 @@ namespace FitLead.Infrastructure.Persistence.Configurations
 
             builder.HasOne<User>()
                 .WithMany()
-                .HasForeignKey(x => x.ClientId)
+                .HasForeignKey(x => x.AcceptedByClientId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasIndex(x => x.ClientId);
+            builder.HasIndex(x => x.TokenHash)
+                .IsUnique();
+
             builder.HasIndex(x => x.TrainerId);
 
-            // only one pending invitation between trainer and client
-            builder.HasIndex(x => new { x.TrainerId, x.ClientId, x.Status })
-                .IsUnique()
-                .HasFilter("\"Status\" = 0"); // Pending
+            builder.HasIndex(x => new { x.Status, x.ExpiresAtUtc });
         }
     }
 }

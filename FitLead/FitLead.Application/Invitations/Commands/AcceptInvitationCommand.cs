@@ -4,6 +4,6 @@ using MediatR;
 namespace FitLead.Application.Invitations.Commands
 {
     public sealed record AcceptInvitationCommand(
-        Guid InvitationId
+        string Token
     ) : IRequest<Result>;
 }

@@ -1,4 +1,7 @@
+import { redirect } from "next/navigation";
 import Link from "next/link";
+
+import { getCurrentUser } from "@/features/auth/server/get-current-user";
 
 const highlights = [
   "Бібліотека вправ, яку веде тренер",
@@ -6,7 +9,13 @@ const highlights = [
   "Програми тренувань і сценарій запрошення клієнтів",
 ];
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const currentUser = await getCurrentUser();
+
+  if (currentUser) {
+    redirect("/dashboard");
+  }
+
   return (
     <div className="container py-12 md:py-20">
       <section className="grid gap-10 md:grid-cols-[1.2fr_0.8fr] md:items-center">

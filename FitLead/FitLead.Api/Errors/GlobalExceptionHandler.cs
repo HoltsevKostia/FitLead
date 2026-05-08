@@ -1,4 +1,5 @@
 using EntityFramework.Exceptions.Common;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -37,7 +38,9 @@ namespace FitLead.Api.Errors
                 Title = title
             };
 
-            if (_env.IsDevelopment())
+            var antiforgeryException = FindException<AntiforgeryValidationException>(exception);
+
+            if (_env.IsDevelopment() && antiforgeryException is null)
             {
                 problem.Detail = exception.Message;
             }
@@ -59,6 +62,14 @@ namespace FitLead.Api.Errors
 
         private static (int StatusCode, string ErrorCode, string Title) MapException(Exception exception)
         {
+            if (FindException<AntiforgeryValidationException>(exception) is not null)
+            {
+                return (
+                    StatusCodes.Status400BadRequest,
+                    "security.csrf_validation_failed",
+                    "CSRF validation failed");
+            }
+
             if (exception is DbUpdateConcurrencyException)
             {
                 return (
@@ -116,11 +127,17 @@ namespace FitLead.Api.Errors
 
         private static PostgresException? FindPostgresException(Exception exception)
         {
+            return FindException<PostgresException>(exception);
+        }
+
+        private static TException? FindException<TException>(Exception exception)
+            where TException : Exception
+        {
             Exception? current = exception;
             while (current is not null)
             {
-                if (current is PostgresException postgresException)
-                    return postgresException;
+                if (current is TException typedException)
+                    return typedException;
 
                 current = current.InnerException;
             }

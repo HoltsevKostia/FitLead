@@ -1,4 +1,4 @@
-﻿using FitLead.Domain.Invitations;
+using FitLead.Domain.Invitations;
 
 namespace FitLead.Application.Abstractions.Persistence
 {
@@ -12,18 +12,8 @@ namespace FitLead.Application.Abstractions.Persistence
             Guid invitationId,
             CancellationToken cancellationToken);
 
-        Task<bool> ExistsPendingAsync(
-            Guid trainerId,
-            Guid clientId,
-            CancellationToken cancellationToken);
-
-        Task<int> CountSentByTrainerForDateAsync(
-            Guid trainerId,
-            DateTime dateUtc,
-            CancellationToken cancellationToken);
-
-        Task<IReadOnlyList<Invitation>> GetExpiredPendingAsync(
-            DateTime now,
+        Task<Invitation?> GetByTokenHashAsync(
+            string tokenHash,
             CancellationToken cancellationToken);
     }
 }
