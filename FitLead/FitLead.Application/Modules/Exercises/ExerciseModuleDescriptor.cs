@@ -1,6 +1,9 @@
+using FitLead.Domain.Trainings;
+
 namespace FitLead.Application.Modules.Exercises
 {
     public sealed record ExerciseModuleDescriptor(
         Guid Id,
-        Guid TrainerId);
+        Guid? OwnerTrainerId,
+        ExerciseSource Source);
 }

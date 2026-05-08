@@ -44,7 +44,7 @@ namespace FitLead.Application.Trainings.Exercises.Commands
             if (trainer.Role != UserRole.Trainer)
                 return Result<Guid>.Failure(Error.Forbidden("trainer.required", "User is not a trainer"));
 
-            var exerciseResult = Exercise.Create(
+            var exerciseResult = Exercise.CreateTrainerExercise(
                 _user.UserId,
                 request.Name,
                 request.Description,

@@ -19,7 +19,7 @@ namespace FitLead.Infrastructure.Persistence.Repositories
             CancellationToken cancellationToken)
         {
             var exercises = await _context.Exercises
-                .Where(x => x.TrainerId == trainerId)
+                .Where(x => x.OwnerTrainerId == trainerId)
                 .OrderBy(x => x.Name)
                 .ToListAsync(cancellationToken);
 

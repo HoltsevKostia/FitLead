@@ -1,5 +1,6 @@
 using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
+using FitLead.Application.Identity;
 using FitLead.Application.Trainings.Exercises.Access;
 using FitLead.Common.Results;
 using MediatR;
@@ -10,13 +11,16 @@ namespace FitLead.Application.Trainings.Exercises.Commands
     : IRequestHandler<UpdateExerciseCommand, Result>
     {
         private readonly IExerciseLoader _exerciseLoader;
+        private readonly IUserContext _userContext;
         private readonly IUnitOfWork _unitOfWork;
 
         public UpdateExerciseHandler(
             IExerciseLoader exerciseLoader,
+            IUserContext userContext,
             IUnitOfWork unitOfWork)
         {
             _exerciseLoader = exerciseLoader;
+            _userContext = userContext;
             _unitOfWork = unitOfWork;
         }
 
@@ -30,7 +34,11 @@ namespace FitLead.Application.Trainings.Exercises.Commands
                 return Result.Failure(exerciseResult.Error);
 
             var exercise = exerciseResult.Value;
-            var updateResult = exercise.Update(request.Name, request.Description, request.MediaUrl);
+            var updateResult = exercise.UpdateByTrainer(
+                _userContext.UserId,
+                request.Name,
+                request.Description,
+                request.MediaUrl);
             if (updateResult.IsFailure)
                 return updateResult;
 
