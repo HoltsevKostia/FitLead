@@ -37,6 +37,20 @@ namespace FitLead.Api.Exercises
 
             return result.ToCreated(this);
         }
+
+        [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
+        [HttpPost("{exerciseId:guid}/copy-to-my-library")]
+        public async Task<IActionResult> CopyToMyLibrary(
+            Guid exerciseId,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new CopyExerciseToMyLibraryCommand(exerciseId),
+                cancellationToken);
+
+            return result.ToCreated(this);
+        }
        
         [Authorize(Policy = "TrainerOnly")]
         [HttpGet]

@@ -36,6 +36,17 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                 .AnyAsync(x => x.Id == id, cancellationToken);
         }
 
+        public async Task<bool> TrainerCopyExistsAsync(
+            Guid ownerTrainerId,
+            Guid copiedFromExerciseId,
+            CancellationToken cancellationToken)
+        {
+            return await _context.Exercises.AnyAsync(
+                x => x.OwnerTrainerId == ownerTrainerId &&
+                    x.CopiedFromExerciseId == copiedFromExerciseId,
+                cancellationToken);
+        }
+
         public async Task DeleteWorkoutExercisesByExerciseIdAsync(
             Guid exerciseId,
             CancellationToken cancellationToken)

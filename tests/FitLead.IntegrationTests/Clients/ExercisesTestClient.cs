@@ -32,6 +32,14 @@ public sealed class ExercisesTestClient(HttpClient httpClient)
         return await SendAsync(request, includeCsrfHeader: true, cancellationToken);
     }
 
+    public async Task<HttpResponseMessage> CopyToMyLibraryAsync(
+        Guid exerciseId,
+        CancellationToken cancellationToken = default)
+    {
+        var request = CreateRequest(HttpMethod.Post, $"/api/exercises/{exerciseId:D}/copy-to-my-library");
+        return await SendAsync(request, includeCsrfHeader: true, cancellationToken);
+    }
+
     public async Task<HttpResponseMessage> DeleteAsync(
         Guid exerciseId,
         CancellationToken cancellationToken = default)
