@@ -8,6 +8,8 @@ namespace FitLead.Application.Trainings.Exercises.Queries
         string Description,
         string? MediaUrl,
         MuscleGroup? MuscleGroup,
-        Equipment? Equipment
+        Equipment? Equipment,
+        ExerciseSource Source,
+        bool IsEditable
     );
 }

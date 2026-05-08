@@ -1,5 +1,6 @@
 ﻿using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Trainings.Exercises.Queries;
+using FitLead.Domain.Trainings;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -14,13 +15,35 @@ namespace FitLead.Infrastructure.Persistence.Repositories
             _context = context;
         }
 
-        public async Task<IReadOnlyList<ExerciseDto>> GetByTrainerIdAsync(
+        public async Task<IReadOnlyList<ExerciseDto>> GetVisibleForTrainerAsync(
             Guid trainerId,
+            ExerciseListSource source,
             CancellationToken cancellationToken)
         {
-            var exercises = await _context.Exercises
-                .Where(x => x.OwnerTrainerId == trainerId)
-                .OrderBy(x => x.Name)
+            var query = _context.Exercises.AsNoTracking();
+
+            query = source switch
+            {
+                ExerciseListSource.Platform => query
+                    .Where(x => x.Source == ExerciseSource.Platform),
+
+                ExerciseListSource.My => query
+                    .Where(x =>
+                        x.Source == ExerciseSource.Trainer &&
+                        x.OwnerTrainerId == trainerId),
+
+                ExerciseListSource.All => query
+                    .Where(x =>
+                        x.Source == ExerciseSource.Platform ||
+                        (x.Source == ExerciseSource.Trainer &&
+                         x.OwnerTrainerId == trainerId)),
+
+                _ => throw new ArgumentOutOfRangeException(nameof(source), source, null)
+            };
+
+            var exercises = await query
+                .OrderBy(x => x.Source)
+                .ThenBy(x => x.Name)
                 .ToListAsync(cancellationToken);
 
             return exercises
@@ -30,7 +53,10 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                     x.Description,
                     x.MediaUrl?.Value,
                     x.MuscleGroup,
-                    x.Equipment))
+                    x.Equipment,
+                    x.Source,
+                    x.Source == ExerciseSource.Trainer &&
+                    x.OwnerTrainerId == trainerId))
                 .ToList();
         }
 

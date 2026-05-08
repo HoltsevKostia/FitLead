@@ -4,8 +4,9 @@ namespace FitLead.Application.Abstractions.Persistence
 {
     public interface IExerciseReadRepository
     {
-        Task<IReadOnlyList<ExerciseDto>> GetByTrainerIdAsync(
+        Task<IReadOnlyList<ExerciseDto>> GetVisibleForTrainerAsync(
             Guid trainerId,
+            ExerciseListSource source,
             CancellationToken cancellationToken);
 
         Task<int> GetUsageCountAsync(
