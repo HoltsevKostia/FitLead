@@ -13,6 +13,8 @@ namespace FitLead.Domain.Trainings
         public string Name { get; private set; } = null!;
         public string Description { get; private set; } = null!;
         public MediaUrl? MediaUrl { get; private set; }
+        public MuscleGroup? MuscleGroup { get; private set; }
+        public Equipment? Equipment { get; private set; }
 
         private Exercise() { } // EF
 
@@ -23,6 +25,8 @@ namespace FitLead.Domain.Trainings
             string name,
             string description,
             MediaUrl? mediaUrl,
+            MuscleGroup? muscleGroup,
+            Equipment? equipment,
             Guid? copiedFromExerciseId)
         {
             Id = id;
@@ -31,6 +35,8 @@ namespace FitLead.Domain.Trainings
             Name = name;
             Description = description;
             MediaUrl = mediaUrl;
+            MuscleGroup = muscleGroup;
+            Equipment = equipment;
             CopiedFromExerciseId = copiedFromExerciseId;
         }
 
@@ -38,7 +44,9 @@ namespace FitLead.Domain.Trainings
             Guid ownerTrainerId,
             string name,
             string description,
-            string? mediaUrl = null)
+            string? mediaUrl = null,
+            MuscleGroup? muscleGroup = null,
+            Equipment? equipment = null)
         {
             return Create(
                 ownerTrainerId,
@@ -46,6 +54,8 @@ namespace FitLead.Domain.Trainings
                 name,
                 description,
                 mediaUrl,
+                muscleGroup,
+                equipment,
                 copiedFromExerciseId: null);
         }
 
@@ -67,13 +77,17 @@ namespace FitLead.Domain.Trainings
                 platformExercise.Name,
                 platformExercise.Description,
                 platformExercise.MediaUrl?.Value,
+                platformExercise.MuscleGroup,
+                platformExercise.Equipment,
                 copiedFromExerciseId: platformExercise.Id);
         }
 
         public static Result<Exercise> CreatePlatformExercise(
             string name,
             string description,
-            string? mediaUrl = null)
+            string? mediaUrl = null,
+            MuscleGroup? muscleGroup = null,
+            Equipment? equipment = null)
         {
             return Create(
                 ownerTrainerId: null,
@@ -81,6 +95,8 @@ namespace FitLead.Domain.Trainings
                 name,
                 description,
                 mediaUrl,
+                muscleGroup,
+                equipment,
                 copiedFromExerciseId: null);
         }
 
@@ -90,6 +106,8 @@ namespace FitLead.Domain.Trainings
             string name,
             string description,
             string? mediaUrl,
+            MuscleGroup? muscleGroup,
+            Equipment? equipment,
             Guid? copiedFromExerciseId)
         {
             var ownershipResult = ValidateOwnership(source, ownerTrainerId);
@@ -120,6 +138,8 @@ namespace FitLead.Domain.Trainings
                     name.Trim(),
                     description?.Trim() ?? string.Empty,
                     parsedMediaUrl,
+                    muscleGroup,
+                    equipment,
                     copiedFromExerciseId));
         }
 
@@ -186,7 +206,13 @@ namespace FitLead.Domain.Trainings
             };
         }
 
-        public Result UpdateByTrainer(Guid trainerId, string name, string description, string? mediaUrl)
+        public Result UpdateByTrainer(
+            Guid trainerId,
+            string name,
+            string description,
+            string? mediaUrl,
+            MuscleGroup? muscleGroup,
+            Equipment? equipment)
         {
             if (Source != ExerciseSource.Trainer || OwnerTrainerId != trainerId)
             {
@@ -196,10 +222,15 @@ namespace FitLead.Domain.Trainings
                         "Only own trainer exercises can be updated"));
             }
 
-            return Update(name, description, mediaUrl);
+            return Update(name, description, mediaUrl, muscleGroup, equipment);
         }
 
-        private Result Update(string name, string description, string? mediaUrl)
+        private Result Update(
+            string name,
+            string description,
+            string? mediaUrl,
+            MuscleGroup? muscleGroup,
+            Equipment? equipment)
         {
             var renameResult = Rename(name);
             if (renameResult.IsFailure)
@@ -210,6 +241,9 @@ namespace FitLead.Domain.Trainings
             var mediaResult = UpdateMediaUrl(mediaUrl);
             if (mediaResult.IsFailure)
                 return mediaResult;
+
+            MuscleGroup = muscleGroup;
+            Equipment = equipment;
 
             return Result.Success();
         }

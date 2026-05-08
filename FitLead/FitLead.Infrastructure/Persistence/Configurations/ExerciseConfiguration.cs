@@ -38,6 +38,12 @@ namespace FitLead.Infrastructure.Persistence.Configurations
 
             builder.Property(x => x.CopiedFromExerciseId);
 
+            builder.Property(x => x.MuscleGroup)
+                .HasConversion<int?>();
+
+            builder.Property(x => x.Equipment)
+                .HasConversion<int?>();
+
             builder.HasOne<User>()
                 .WithMany()
                 .HasForeignKey(x => x.OwnerTrainerId)
@@ -64,6 +70,8 @@ namespace FitLead.Infrastructure.Persistence.Configurations
             builder.HasIndex(x => x.OwnerTrainerId);
             builder.HasIndex(x => x.Source);
             builder.HasIndex(x => x.CopiedFromExerciseId);
+            builder.HasIndex(x => x.MuscleGroup);
+            builder.HasIndex(x => x.Equipment);
 
             builder.HasIndex(x => new { x.OwnerTrainerId, x.CopiedFromExerciseId })
                 .IsUnique()

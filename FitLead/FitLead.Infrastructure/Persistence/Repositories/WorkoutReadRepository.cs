@@ -55,6 +55,8 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                 ExerciseName = e != null ? e.Name : null,
                 ExerciseDescription = e != null ? e.Description : null,
                 ExerciseMediaUrl = e != null ? e.MediaUrl : null,
+                ExerciseMuscleGroup = e != null ? e.MuscleGroup : null,
+                ExerciseEquipment = e != null ? e.Equipment : null,
 
                 Repetitions = (int?)we.Repetitions,
                 Sets = (int?)we.Sets,
@@ -75,6 +77,8 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                     x.ExerciseName!,
                     x.ExerciseDescription!,
                     x.ExerciseMediaUrl?.Value,
+                    x.ExerciseMuscleGroup,
+                    x.ExerciseEquipment,
                     x.Repetitions!.Value,
                     x.Sets!.Value,
                     x.RestSeconds!.Value

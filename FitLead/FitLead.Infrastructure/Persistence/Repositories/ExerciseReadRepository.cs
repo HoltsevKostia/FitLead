@@ -28,7 +28,9 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                     x.Id,
                     x.Name,
                     x.Description,
-                    x.MediaUrl?.Value))
+                    x.MediaUrl?.Value,
+                    x.MuscleGroup,
+                    x.Equipment))
                 .ToList();
         }
 

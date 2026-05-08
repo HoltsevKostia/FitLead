@@ -1,4 +1,6 @@
-﻿namespace FitLead.Application.Trainings.Workouts.Queries
+using FitLead.Domain.Trainings;
+
+namespace FitLead.Application.Trainings.Workouts.Queries
 {
     public sealed record WorkoutExerciseDetailsDto(
         Guid WorkoutExerciseId,
@@ -6,6 +8,8 @@
         string ExerciseName,
         string ExerciseDescription,
         string? ExerciseMediaUrl,
+        MuscleGroup? ExerciseMuscleGroup,
+        Equipment? ExerciseEquipment,
         int Repetitions,
         int Sets,
         int RestSeconds

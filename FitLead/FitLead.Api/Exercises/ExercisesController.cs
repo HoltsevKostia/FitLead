@@ -29,7 +29,9 @@ namespace FitLead.Api.Exercises
                 new CreateExerciseCommand(
                     request.Name,
                     request.Description,
-                    request.MediaUrl),
+                    request.MediaUrl,
+                    request.MuscleGroup,
+                    request.Equipment),
                 cancellationToken);
 
             return result.ToCreated(this);
@@ -59,7 +61,9 @@ namespace FitLead.Api.Exercises
                     exerciseId,
                     request.Name,
                     request.Description,
-                    request.MediaUrl),
+                    request.MediaUrl,
+                    request.MuscleGroup,
+                    request.Equipment),
                 cancellationToken);
 
             return result.ToActionResult(this);

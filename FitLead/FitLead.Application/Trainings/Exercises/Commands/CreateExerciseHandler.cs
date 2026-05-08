@@ -48,7 +48,9 @@ namespace FitLead.Application.Trainings.Exercises.Commands
                 _user.UserId,
                 request.Name,
                 request.Description,
-                request.MediaUrl);
+                request.MediaUrl,
+                request.MuscleGroup,
+                request.Equipment);
             if (exerciseResult.IsFailure)
                 return Result<Guid>.Failure(exerciseResult.Error);
 
