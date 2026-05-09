@@ -1,6 +1,6 @@
 import { apiEnv } from "@/lib/api/env";
 
-export const CSRF_COOKIE_NAME = "XSRF-TOKEN";
+export const CSRF_COOKIE_NAME = "FitLead.XSRF-TOKEN";
 export const CSRF_HEADER_NAME = "X-CSRF-TOKEN";
 
 const safeMethods = new Set(["GET", "HEAD", "OPTIONS", "TRACE"]);
