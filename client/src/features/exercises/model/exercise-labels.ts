@@ -1,12 +1,12 @@
 import { Equipment, ExerciseSource, MuscleGroup } from "@/entities/exercise/model/types";
 
 export const exerciseSourceLabels: Record<ExerciseSource, string> = {
-  [ExerciseSource.Platform]: "Загальна бібліотека",
-  [ExerciseSource.Trainer]: "Мої вправи",
+  [ExerciseSource.Platform]: "Бібліотека",
+  [ExerciseSource.Trainer]: "Моя вправа",
 };
 
 export const exerciseSourceDescriptions: Record<ExerciseSource, string> = {
-  [ExerciseSource.Platform]: "Загальна бібліотека вправ платформи",
+  [ExerciseSource.Platform]: "Бібліотека вправ платформи",
   [ExerciseSource.Trainer]: "Власна вправа",
 };
 

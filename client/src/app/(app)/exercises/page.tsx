@@ -1,7 +1,7 @@
 import type { Exercise } from "@/entities/exercise/model/types";
 import { getCurrentUser } from "@/features/auth/server/get-current-user";
 import { getExercises } from "@/features/exercises/server/get-exercises";
-import { ExerciseList } from "@/features/exercises/ui/exercise-list";
+import { ExerciseLibraryWorkspace } from "@/features/exercises/ui/exercise-library-workspace";
 
 function TrainerOnlyNotice() {
   return (
@@ -31,10 +31,10 @@ export default async function ExercisesPage() {
   let loadError: string | null = null;
 
   try {
-    exercises = await getExercises();
+    exercises = await getExercises("all");
   } catch {
     loadError = "Не вдалося завантажити список вправ. Спробуй оновити сторінку.";
   }
 
-  return <ExerciseList exercises={exercises} loadError={loadError} />;
+  return <ExerciseLibraryWorkspace exercises={exercises} loadError={loadError} />;
 }

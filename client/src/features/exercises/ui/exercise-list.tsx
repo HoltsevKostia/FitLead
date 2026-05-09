@@ -11,6 +11,8 @@ import { ExerciseActions } from "@/features/exercises/ui/exercise-actions";
 interface ExerciseListProps {
   exercises: Exercise[];
   loadError?: string | null;
+  emptyMessage?: string;
+  emptyDescription?: string;
 }
 
 function getSourceBadgeClass(source: ExerciseSource): string {
@@ -21,16 +23,14 @@ function getSourceBadgeClass(source: ExerciseSource): string {
   return "border-emerald-200 bg-emerald-50 text-emerald-800";
 }
 
-export function ExerciseList({ exercises, loadError }: ExerciseListProps) {
+export function ExerciseList({
+  exercises,
+  loadError,
+  emptyMessage = "Вправ ще немає.",
+  emptyDescription = "Після додавання власних вправ або seed бібліотеки вони з'являться тут.",
+}: ExerciseListProps) {
   return (
-    <section className="space-y-6">
-      <div className="space-y-3">
-        <h1 className="text-3xl font-semibold tracking-tight">Вправи</h1>
-        <p className="max-w-3xl text-muted">
-          Бібліотека містить готові вправи платформи та ваші власні вправи.
-        </p>
-      </div>
-
+    <div className="space-y-6">
       {loadError ? (
         <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-800">
           {loadError}
@@ -39,10 +39,8 @@ export function ExerciseList({ exercises, loadError }: ExerciseListProps) {
 
       {!loadError && exercises.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border px-6 py-8 text-center">
-          <p className="text-lg font-medium text-foreground">Вправ ще немає.</p>
-          <p className="mt-2 text-sm text-muted">
-            Після додавання власних вправ або seed бібліотеки вони з&apos;являться тут.
-          </p>
+          <p className="text-lg font-medium text-foreground">{emptyMessage}</p>
+          <p className="mt-2 text-sm text-muted">{emptyDescription}</p>
         </div>
       ) : null}
 
@@ -96,6 +94,6 @@ export function ExerciseList({ exercises, loadError }: ExerciseListProps) {
           ))}
         </div>
       ) : null}
-    </section>
+    </div>
   );
 }
