@@ -24,4 +24,13 @@ export const exercisesApi = {
       responseType: "void",
     });
   },
+
+  copyToMyLibrary(exerciseId: string): Promise<string> {
+    return apiRequest<string>(
+      `/api/exercises/${encodeURIComponent(exerciseId)}/copy-to-my-library`,
+      {
+        method: "POST",
+      },
+    );
+  },
 };

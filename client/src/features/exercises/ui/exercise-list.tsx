@@ -5,6 +5,7 @@ import {
   exerciseSourceLabels,
   muscleGroupLabels,
 } from "@/features/exercises/model/exercise-labels";
+import { CopyExerciseAction } from "@/features/exercises/ui/copy-exercise-action";
 import { ExerciseActions } from "@/features/exercises/ui/exercise-actions";
 
 interface ExerciseListProps {
@@ -88,6 +89,7 @@ export function ExerciseList({ exercises, loadError }: ExerciseListProps) {
                     {exercise.isEditable ? "Можна редагувати" : "Тільки перегляд"}
                   </span>
                   <ExerciseActions exercise={exercise} />
+                  <CopyExerciseAction exercise={exercise} />
                 </div>
               </div>
             </article>
