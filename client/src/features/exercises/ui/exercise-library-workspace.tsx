@@ -65,7 +65,8 @@ export function ExerciseLibraryWorkspace({
         <div className="space-y-3">
           <h1 className="text-3xl font-semibold tracking-tight">Вправи</h1>
           <p className="max-w-3xl text-muted">
-            Переглядайте власну бібліотеку та готові вправи платформи без додаткових запитів.
+            Переглядайте та формуйте власну бібліотеку. Готові вправи платформи
+            допоможуть швидше розпочати роботу з клієнтами.
           </p>
         </div>
 

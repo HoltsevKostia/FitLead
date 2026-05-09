@@ -1,12 +1,11 @@
-import { ExerciseSource, type Exercise } from "@/entities/exercise/model/types";
+import type { Exercise } from "@/entities/exercise/model/types";
 import {
   equipmentLabels,
-  exerciseSourceDescriptions,
-  exerciseSourceLabels,
   muscleGroupLabels,
 } from "@/features/exercises/model/exercise-labels";
 import { CopyExerciseAction } from "@/features/exercises/ui/copy-exercise-action";
 import { ExerciseActions } from "@/features/exercises/ui/exercise-actions";
+import { ExerciseMediaPreview } from "@/features/exercises/ui/exercise-media-preview";
 
 interface ExerciseListProps {
   exercises: Exercise[];
@@ -14,14 +13,6 @@ interface ExerciseListProps {
   loadError?: string | null;
   emptyMessage?: string;
   emptyDescription?: string;
-}
-
-function getSourceBadgeClass(source: ExerciseSource): string {
-  if (source === ExerciseSource.Platform) {
-    return "border-sky-200 bg-sky-50 text-sky-800";
-  }
-
-  return "border-emerald-200 bg-emerald-50 text-emerald-800";
 }
 
 export function ExerciseList({
@@ -56,13 +47,6 @@ export function ExerciseList({
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div className="min-w-0 space-y-3">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span
-                      className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${getSourceBadgeClass(exercise.source)}`}
-                      title={exerciseSourceDescriptions[exercise.source]}
-                    >
-                      {exerciseSourceLabels[exercise.source]}
-                    </span>
-
                     {exercise.muscleGroup ? (
                       <span className="inline-flex rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-muted">
                         {muscleGroupLabels[exercise.muscleGroup]}
@@ -81,13 +65,11 @@ export function ExerciseList({
                     <p className="max-w-3xl text-sm leading-6 text-muted">
                       {exercise.description || "Опис поки не додано."}
                     </p>
+                    <ExerciseMediaPreview mediaUrl={exercise.mediaUrl} />
                   </div>
                 </div>
 
                 <div className="flex shrink-0 flex-col items-start gap-3 md:items-end">
-                  <span className="text-sm text-muted">
-                    {exercise.isEditable ? "Можна редагувати" : "Тільки перегляд"}
-                  </span>
                   <ExerciseActions exercise={exercise} />
                   <CopyExerciseAction
                     exercise={exercise}
