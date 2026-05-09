@@ -4,6 +4,7 @@ using FitLead.Application.Modules.Exercises;
 using FitLead.Application.Trainings.Workouts.Access;
 using FitLead.Common.Errors;
 using FitLead.Common.Results;
+using FitLead.Domain.Trainings;
 using MediatR;
 
 namespace FitLead.Application.Trainings.Workouts.Commands
@@ -36,11 +37,11 @@ namespace FitLead.Application.Trainings.Workouts.Commands
             if (workoutResult.IsFailure)
                 return Result<Guid>.Failure(workoutResult.Error);
 
-            var exerciseExists = await _exercisesModule.ExistsAsync(
+            var exercise = await _exercisesModule.GetByIdAsync(
                 request.ExerciseId,
                 cancellationToken);
 
-            if (!exerciseExists)
+            if (exercise is null || !IsExerciseAvailableForWorkout(exercise, workoutResult.Value.TrainerId))
                 return Result<Guid>.Failure(Error.NotFound("exercise.not_found", "Exercise not found"));
 
             var workout = workoutResult.Value;
@@ -55,6 +56,14 @@ namespace FitLead.Application.Trainings.Workouts.Commands
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Result<Guid>.Success(addResult.Value);
+        }
+
+        private static bool IsExerciseAvailableForWorkout(
+            ExerciseModuleDescriptor exercise,
+            Guid trainerId)
+        {
+            return exercise.Source == ExerciseSource.Platform
+                || (exercise.Source == ExerciseSource.Trainer && exercise.OwnerTrainerId == trainerId);
         }
     }
 }
