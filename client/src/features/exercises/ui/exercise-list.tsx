@@ -5,6 +5,7 @@ import {
   exerciseSourceLabels,
   muscleGroupLabels,
 } from "@/features/exercises/model/exercise-labels";
+import { ExerciseActions } from "@/features/exercises/ui/exercise-actions";
 
 interface ExerciseListProps {
   exercises: Exercise[];
@@ -82,8 +83,11 @@ export function ExerciseList({ exercises, loadError }: ExerciseListProps) {
                   </div>
                 </div>
 
-                <div className="shrink-0 text-sm text-muted">
-                  {exercise.isEditable ? "Можна редагувати" : "Тільки перегляд"}
+                <div className="flex shrink-0 flex-col items-start gap-3 md:items-end">
+                  <span className="text-sm text-muted">
+                    {exercise.isEditable ? "Можна редагувати" : "Тільки перегляд"}
+                  </span>
+                  <ExerciseActions exercise={exercise} />
                 </div>
               </div>
             </article>

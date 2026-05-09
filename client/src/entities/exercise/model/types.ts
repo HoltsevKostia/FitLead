@@ -41,3 +41,11 @@ export interface Exercise {
 }
 
 export type ExerciseListSource = "all" | "platform" | "my";
+
+export interface UpdateExerciseRequest {
+  name: string;
+  description: string;
+  mediaUrl: string | null;
+  muscleGroup: MuscleGroup | null;
+  equipment: Equipment | null;
+}
