@@ -29,6 +29,16 @@ function filterExercises(
   return exercises.filter((exercise) => exercise.source === ExerciseSource.Platform);
 }
 
+function getCopiedPlatformExerciseIds(exercises: Exercise[]): ReadonlySet<string> {
+  const exerciseIds = exercises.flatMap((exercise) =>
+    exercise.source === ExerciseSource.Trainer && exercise.copiedFromExerciseId
+      ? [exercise.copiedFromExerciseId]
+      : [],
+  );
+
+  return new Set(exerciseIds);
+}
+
 export function ExerciseLibraryWorkspace({
   exercises,
   loadError,
@@ -38,6 +48,10 @@ export function ExerciseLibraryWorkspace({
   const visibleExercises = useMemo(
     () => filterExercises(exercises, activeTab),
     [exercises, activeTab],
+  );
+  const copiedPlatformExerciseIds = useMemo(
+    () => getCopiedPlatformExerciseIds(exercises),
+    [exercises],
   );
 
   function handleCreated() {
@@ -94,6 +108,7 @@ export function ExerciseLibraryWorkspace({
 
       <ExerciseList
         exercises={visibleExercises}
+        copiedPlatformExerciseIds={copiedPlatformExerciseIds}
         loadError={loadError}
         emptyMessage={
           activeTab === "my"

@@ -10,6 +10,7 @@ namespace FitLead.Application.Trainings.Exercises.Queries
         MuscleGroup? MuscleGroup,
         Equipment? Equipment,
         ExerciseSource Source,
+        Guid? CopiedFromExerciseId,
         bool IsEditable
     );
 }

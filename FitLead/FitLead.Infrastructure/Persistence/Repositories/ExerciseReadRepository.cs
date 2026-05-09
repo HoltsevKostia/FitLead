@@ -55,6 +55,7 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                     x.MuscleGroup,
                     x.Equipment,
                     x.Source,
+                    x.CopiedFromExerciseId,
                     x.Source == ExerciseSource.Trainer &&
                     x.OwnerTrainerId == trainerId))
                 .ToList();

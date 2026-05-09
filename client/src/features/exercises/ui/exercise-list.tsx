@@ -10,6 +10,7 @@ import { ExerciseActions } from "@/features/exercises/ui/exercise-actions";
 
 interface ExerciseListProps {
   exercises: Exercise[];
+  copiedPlatformExerciseIds?: ReadonlySet<string>;
   loadError?: string | null;
   emptyMessage?: string;
   emptyDescription?: string;
@@ -25,6 +26,7 @@ function getSourceBadgeClass(source: ExerciseSource): string {
 
 export function ExerciseList({
   exercises,
+  copiedPlatformExerciseIds,
   loadError,
   emptyMessage = "Вправ ще немає.",
   emptyDescription = "Після додавання власних вправ або seed бібліотеки вони з'являться тут.",
@@ -87,7 +89,10 @@ export function ExerciseList({
                     {exercise.isEditable ? "Можна редагувати" : "Тільки перегляд"}
                   </span>
                   <ExerciseActions exercise={exercise} />
-                  <CopyExerciseAction exercise={exercise} />
+                  <CopyExerciseAction
+                    exercise={exercise}
+                    isAlreadyCopied={copiedPlatformExerciseIds?.has(exercise.id) ?? false}
+                  />
                 </div>
               </div>
             </article>

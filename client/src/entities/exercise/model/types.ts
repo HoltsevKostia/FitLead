@@ -37,6 +37,7 @@ export interface Exercise {
   muscleGroup: MuscleGroup | null;
   equipment: Equipment | null;
   source: ExerciseSource;
+  copiedFromExerciseId: string | null;
   isEditable: boolean;
 }
 
