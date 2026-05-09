@@ -1,71 +1,51 @@
 using System.Net;
 using FitLead.Application.Trainings.Exercises.Queries;
 using FitLead.Domain.Trainings;
-using FitLead.Infrastructure.Persistence;
 using FitLead.Infrastructure.Persistence.Seeding;
-using FitLead.IntegrationTests.Clients;
 using FitLead.IntegrationTests.Helpers;
 using FitLead.IntegrationTests.Infrastructure;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace FitLead.IntegrationTests.Features.Exercises;
 
 [Collection(IntegrationTestCollectionNames.Default)]
-public sealed class GetExercisesTests(IntegrationTestFixture fixture) : IntegrationTestBase(fixture)
+public sealed class GetExercisesTests : IntegrationTestBase
 {
+    private readonly TestDb _db;
+    private readonly TestUsers _users;
+    private readonly TestExercises _exercises;
+
+    public GetExercisesTests(IntegrationTestFixture fixture) : base(fixture)
+    {
+        _db = new TestDb(fixture);
+        _users = new TestUsers(fixture, _db);
+        _exercises = new TestExercises(_db);
+    }
+
     [Fact]
     public async Task GetExercises_WithSourceFilters_ShouldReturnOnlyPlatformAndOwnExercises()
     {
-        var trainerAuth = new AuthTestClient(Fixture.CreateClient(handleCookies: false));
-        var otherTrainerAuth = new AuthTestClient(Fixture.CreateClient(handleCookies: false));
-        var trainerEmail = UniqueEmail("exercise-list-trainer");
-        var otherTrainerEmail = UniqueEmail("exercise-list-other");
+        var trainer = await _users.RegisterTrainerAsync("exercise-list-trainer");
+        var otherTrainer = await _users.RegisterTrainerAsync("exercise-list-other");
 
-        var trainerRegister = await trainerAuth.RegisterAsync(
-            trainerEmail,
-            "Str0ngPass!123",
-            "Exercise List Trainer",
-            AuthRoles.Trainer);
-        trainerRegister.StatusCode.Should().Be(HttpStatusCode.Created);
+        await _db.ExecuteAsync(context => PlatformExerciseSeeder.SeedAsync(context));
+        await _exercises.CreateTrainerExerciseAsync(
+            trainer.Id,
+            "Моя тестова вправа",
+            "Опис власної вправи",
+            MuscleGroup.Core,
+            Equipment.Bodyweight);
+        await _exercises.CreateTrainerExerciseAsync(
+            otherTrainer.Id,
+            "Чужа тестова вправа",
+            "Опис чужої вправи",
+            MuscleGroup.Back,
+            Equipment.Dumbbells);
 
-        var otherTrainerRegister = await otherTrainerAuth.RegisterAsync(
-            otherTrainerEmail,
-            "Str0ngPass!123",
-            "Other Exercise Trainer",
-            AuthRoles.Trainer);
-        otherTrainerRegister.StatusCode.Should().Be(HttpStatusCode.Created);
-
-        await using (var scope = Fixture.Factory.Services.CreateAsyncScope())
-        {
-            var dbContext = scope.ServiceProvider.GetRequiredService<FitLeadDbContext>();
-            await PlatformExerciseSeeder.SeedAsync(dbContext);
-
-            var trainerId = await GetDomainUserIdAsync(dbContext, trainerEmail);
-            var otherTrainerId = await GetDomainUserIdAsync(dbContext, otherTrainerEmail);
-
-            dbContext.Exercises.Add(Exercise.CreateTrainerExercise(
-                trainerId,
-                "Моя тестова вправа",
-                "Опис власної вправи",
-                muscleGroup: MuscleGroup.Core,
-                equipment: Equipment.Bodyweight).Value);
-
-            dbContext.Exercises.Add(Exercise.CreateTrainerExercise(
-                otherTrainerId,
-                "Чужа тестова вправа",
-                "Опис чужої вправи",
-                muscleGroup: MuscleGroup.Back,
-                equipment: Equipment.Dumbbells).Value);
-
-            await dbContext.SaveChangesAsync();
-        }
-
-        var allResponse = await trainerAuth.GetAsync("/api/exercises");
-        var explicitAllResponse = await trainerAuth.GetAsync("/api/exercises?source=all");
-        var platformResponse = await trainerAuth.GetAsync("/api/exercises?source=platform");
-        var myResponse = await trainerAuth.GetAsync("/api/exercises?source=my");
+        var allResponse = await trainer.Auth.GetAsync("/api/exercises");
+        var explicitAllResponse = await trainer.Auth.GetAsync("/api/exercises?source=all");
+        var platformResponse = await trainer.Auth.GetAsync("/api/exercises?source=platform");
+        var myResponse = await trainer.Auth.GetAsync("/api/exercises?source=my");
 
         allResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         explicitAllResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -96,15 +76,5 @@ public sealed class GetExercisesTests(IntegrationTestFixture fixture) : Integrat
             x.Source == ExerciseSource.Trainer &&
             x.IsEditable);
         my.Should().OnlyContain(x => x.Source == ExerciseSource.Trainer);
-    }
-
-    private static async Task<Guid> GetDomainUserIdAsync(
-        FitLeadDbContext dbContext,
-        string email)
-    {
-        return await dbContext.DomainUsers
-            .Where(x => x.Email == email)
-            .Select(x => x.Id)
-            .SingleAsync();
     }
 }

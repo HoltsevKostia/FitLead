@@ -25,13 +25,19 @@ public abstract class AuthenticatedApiTestClient
         var authStateResponse = await authClient.GetAsync("/auth/current-user", cancellationToken);
         authStateResponse.EnsureSuccessStatusCode();
 
-        if (authStateResponse.RequestMessage?.Headers.TryGetValues("Cookie", out var cookieValues) != true)
+        var requestMessage = authStateResponse.RequestMessage
+            ?? throw new InvalidOperationException("Auth current-user response did not include a request message.");
+
+        if (!requestMessage.Headers.TryGetValues("Cookie", out var cookieValues))
         {
             throw new InvalidOperationException("Auth test client did not send cookies on authenticated request.");
         }
 
         foreach (var cookieHeader in cookieValues)
         {
+            if (string.IsNullOrWhiteSpace(cookieHeader))
+                continue;
+
             ApplyCookieHeader(cookieHeader);
         }
 

@@ -1,35 +1,32 @@
 using FitLead.Domain.Trainings;
-using FitLead.Infrastructure.Persistence;
 using FitLead.Infrastructure.Persistence.Seeding;
+using FitLead.IntegrationTests.Helpers;
 using FitLead.IntegrationTests.Infrastructure;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace FitLead.IntegrationTests.Features.Exercises;
 
 [Collection(IntegrationTestCollectionNames.Default)]
-public sealed class PlatformExerciseSeederTests(IntegrationTestFixture fixture) : IntegrationTestBase(fixture)
+public sealed class PlatformExerciseSeederTests : IntegrationTestBase
 {
+    private readonly TestDb _db;
+
+    public PlatformExerciseSeederTests(IntegrationTestFixture fixture) : base(fixture)
+    {
+        _db = new TestDb(fixture);
+    }
+
     [Fact]
     public async Task SeedAsync_WhenRunTwice_ShouldCreatePlatformExercisesWithoutDuplicates()
     {
-        await using var scope = Fixture.Factory.Services.CreateAsyncScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<FitLeadDbContext>();
+        await _db.ExecuteAsync(context => PlatformExerciseSeeder.SeedAsync(context));
 
-        await PlatformExerciseSeeder.SeedAsync(dbContext);
+        var firstRunExercises = await GetPlatformExercisesAsync();
 
-        var firstRunExercises = await dbContext.Exercises
-            .AsNoTracking()
-            .Where(x => x.Source == ExerciseSource.Platform)
-            .ToListAsync();
+        await _db.ExecuteAsync(context => PlatformExerciseSeeder.SeedAsync(context));
 
-        await PlatformExerciseSeeder.SeedAsync(dbContext);
-
-        var secondRunExercises = await dbContext.Exercises
-            .AsNoTracking()
-            .Where(x => x.Source == ExerciseSource.Platform)
-            .ToListAsync();
+        var secondRunExercises = await GetPlatformExercisesAsync();
 
         firstRunExercises.Should().HaveCount(PlatformExerciseSeeder.Exercises.Count);
         secondRunExercises.Should().HaveCount(firstRunExercises.Count);
@@ -40,5 +37,14 @@ public sealed class PlatformExerciseSeederTests(IntegrationTestFixture fixture) 
             x.CopiedFromExerciseId == null &&
             x.MuscleGroup != null &&
             x.Equipment != null);
+    }
+
+    private Task<List<Exercise>> GetPlatformExercisesAsync()
+    {
+        return _db.QueryAsync(context =>
+            context.Exercises
+                .AsNoTracking()
+                .Where(x => x.Source == ExerciseSource.Platform)
+                .ToListAsync());
     }
 }
