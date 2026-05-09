@@ -3,7 +3,17 @@
 import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import type { Exercise } from "@/entities/exercise/model/types";
+import { Equipment, MuscleGroup, type Exercise } from "@/entities/exercise/model/types";
+import {
+  equipmentOptions,
+  formatOptionalNumber,
+  muscleGroupOptions,
+  parseOptionalNumber,
+} from "@/features/exercises/model/exercise-form-options";
+import {
+  equipmentLabels,
+  muscleGroupLabels,
+} from "@/features/exercises/model/exercise-labels";
 import { mapExerciseMutationError } from "@/features/exercises/model/error-mapping";
 import { exercisesApi } from "@/lib/api/clients/exercises-api";
 import { FormAlert } from "@/shared/forms/form-alert";
@@ -18,6 +28,9 @@ export function ExerciseActions({ exercise }: ExerciseActionsProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(exercise.name);
   const [description, setDescription] = useState(exercise.description);
+  const [mediaUrl, setMediaUrl] = useState(exercise.mediaUrl ?? "");
+  const [muscleGroup, setMuscleGroup] = useState(formatOptionalNumber(exercise.muscleGroup));
+  const [equipment, setEquipment] = useState(formatOptionalNumber(exercise.equipment));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -33,9 +46,9 @@ export function ExerciseActions({ exercise }: ExerciseActionsProps) {
       await exercisesApi.updateExercise(exercise.id, {
         name,
         description,
-        mediaUrl: exercise.mediaUrl,
-        muscleGroup: exercise.muscleGroup,
-        equipment: exercise.equipment,
+        mediaUrl: mediaUrl.trim() || null,
+        muscleGroup: parseOptionalNumber<MuscleGroup>(muscleGroup),
+        equipment: parseOptionalNumber<Equipment>(equipment),
       });
       setIsEditing(false);
       router.refresh();
@@ -67,6 +80,9 @@ export function ExerciseActions({ exercise }: ExerciseActionsProps) {
       if (!next) {
         setName(exercise.name);
         setDescription(exercise.description);
+        setMediaUrl(exercise.mediaUrl ?? "");
+        setMuscleGroup(formatOptionalNumber(exercise.muscleGroup));
+        setEquipment(formatOptionalNumber(exercise.equipment));
       }
 
       return next;
@@ -132,6 +148,64 @@ export function ExerciseActions({ exercise }: ExerciseActionsProps) {
               rows={4}
               className={`${fieldInputClassName} resize-y`}
             />
+          </div>
+
+          <div className="space-y-2">
+            <label className={fieldLabelClassName} htmlFor={`exercise-media-url-${exercise.id}`}>
+              Медіа-посилання
+            </label>
+            <input
+              id={`exercise-media-url-${exercise.id}`}
+              value={mediaUrl}
+              onChange={(event) => setMediaUrl(event.target.value)}
+              disabled={isSubmitting}
+              type="url"
+              maxLength={2048}
+              placeholder="https://..."
+              className={fieldInputClassName}
+            />
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="space-y-2">
+              <label className={fieldLabelClassName} htmlFor={`exercise-muscle-group-${exercise.id}`}>
+                Група м&apos;язів
+              </label>
+              <select
+                id={`exercise-muscle-group-${exercise.id}`}
+                value={muscleGroup}
+                onChange={(event) => setMuscleGroup(event.target.value)}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              >
+                <option value="">Не вказано</option>
+                {muscleGroupOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {muscleGroupLabels[option]}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className={fieldLabelClassName} htmlFor={`exercise-equipment-${exercise.id}`}>
+                Обладнання
+              </label>
+              <select
+                id={`exercise-equipment-${exercise.id}`}
+                value={equipment}
+                onChange={(event) => setEquipment(event.target.value)}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              >
+                <option value="">Не вказано</option>
+                {equipmentOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {equipmentLabels[option]}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <button

@@ -5,6 +5,11 @@ import { useRouter } from "next/navigation";
 
 import { Equipment, MuscleGroup } from "@/entities/exercise/model/types";
 import {
+  equipmentOptions,
+  muscleGroupOptions,
+  parseOptionalNumber,
+} from "@/features/exercises/model/exercise-form-options";
+import {
   equipmentLabels,
   muscleGroupLabels,
 } from "@/features/exercises/model/exercise-labels";
@@ -16,23 +21,6 @@ import { fieldInputClassName, fieldLabelClassName } from "@/shared/forms/field-s
 interface CreateExerciseFormProps {
   onCreated: () => void;
   onCancel: () => void;
-}
-
-const muscleGroupOptions = Object.values(MuscleGroup).filter(
-  (value): value is MuscleGroup => typeof value === "number",
-);
-
-const equipmentOptions = Object.values(Equipment).filter(
-  (value): value is Equipment => typeof value === "number",
-);
-
-function parseOptionalNumber<TValue extends number>(value: string): TValue | null {
-  if (!value) {
-    return null;
-  }
-
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? (parsed as TValue) : null;
 }
 
 export function CreateExerciseForm({ onCreated, onCancel }: CreateExerciseFormProps) {
