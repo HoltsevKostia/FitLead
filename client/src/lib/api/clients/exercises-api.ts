@@ -1,4 +1,5 @@
 import type {
+  CreateExerciseRequest,
   Exercise,
   ExerciseListSource,
   UpdateExerciseRequest,
@@ -8,6 +9,13 @@ import { apiRequest } from "@/lib/api/http-client";
 export const exercisesApi = {
   getExercises(source: ExerciseListSource = "all"): Promise<Exercise[]> {
     return apiRequest<Exercise[]>(`/api/exercises?source=${source}`);
+  },
+
+  createExercise(request: CreateExerciseRequest): Promise<string> {
+    return apiRequest<string>("/api/exercises", {
+      method: "POST",
+      body: request,
+    });
   },
 
   updateExercise(exerciseId: string, request: UpdateExerciseRequest): Promise<void> {
