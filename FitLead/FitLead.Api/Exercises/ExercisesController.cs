@@ -66,6 +66,19 @@ namespace FitLead.Api.Exercises
         }
 
         [Authorize(Policy = "TrainerOnly")]
+        [HttpGet("{exerciseId:guid}")]
+        public async Task<IActionResult> GetById(
+            Guid exerciseId,
+            CancellationToken cancellationToken)
+        {
+            var exercise = await _mediator.Send(
+                new GetExerciseByIdQuery(exerciseId),
+                cancellationToken);
+
+            return exercise.ToActionResult(this);
+        }
+
+        [Authorize(Policy = "TrainerOnly")]
         [ValidateAntiForgeryToken]
         [HttpPut("{exerciseId:guid}")]
         public async Task<IActionResult> Update(

@@ -61,6 +61,38 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                 .ToList();
         }
 
+        public async Task<ExerciseDto?> GetVisibleByIdForTrainerAsync(
+            Guid exerciseId,
+            Guid trainerId,
+            CancellationToken cancellationToken)
+        {
+            var exercise = await _context.Exercises
+                .AsNoTracking()
+                .Where(x =>
+                    x.Id == exerciseId &&
+                    (x.Source == ExerciseSource.Platform ||
+                     (x.Source == ExerciseSource.Trainer &&
+                      x.OwnerTrainerId == trainerId)))
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (exercise is null)
+            {
+                return null;
+            }
+
+            return new ExerciseDto(
+                exercise.Id,
+                exercise.Name,
+                exercise.Description,
+                exercise.MediaUrl?.Value,
+                exercise.MuscleGroup,
+                exercise.Equipment,
+                exercise.Source,
+                exercise.CopiedFromExerciseId,
+                exercise.Source == ExerciseSource.Trainer &&
+                exercise.OwnerTrainerId == trainerId);
+        }
+
         public async Task<int> GetUsageCountAsync(
             Guid exerciseId,
             CancellationToken cancellationToken)

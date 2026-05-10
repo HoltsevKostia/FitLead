@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import type { Exercise } from "@/entities/exercise/model/types";
 import {
   equipmentLabels,
@@ -70,6 +72,12 @@ export function ExerciseList({
                 </div>
 
                 <div className="flex shrink-0 flex-col items-start gap-3 md:items-end">
+                  <Link
+                    href={`/exercises/${exercise.id}`}
+                    className="rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground transition hover:bg-surface-strong"
+                  >
+                    Переглянути
+                  </Link>
                   <ExerciseActions exercise={exercise} />
                   <CopyExerciseAction
                     exercise={exercise}
