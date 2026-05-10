@@ -3,6 +3,8 @@
     public sealed record UpdateWorkoutExerciseRequest(
         int Repetitions,
         int Sets,
-        int RestSeconds
+        decimal? LoadKg,
+        int RestSeconds,
+        string? TrainerNote
     );
 }

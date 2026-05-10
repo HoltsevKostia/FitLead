@@ -4,5 +4,7 @@
     Guid ExerciseId,
     int Repetitions,
     int Sets,
-    int RestSeconds);
+    decimal? LoadKg,
+    int RestSeconds,
+    string? TrainerNote);
 }

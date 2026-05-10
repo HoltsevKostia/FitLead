@@ -27,7 +27,7 @@ namespace FitLead.Infrastructure.Persistence.Configurations
 
             builder.HasMany(x => x.Exercises)
                 .WithOne()
-                .HasForeignKey("workout_id")
+                .HasForeignKey(x => x.WorkoutId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne<User>()

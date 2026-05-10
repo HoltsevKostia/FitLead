@@ -8,6 +8,8 @@ namespace FitLead.Application.Trainings.Workouts.Commands
         Guid WorkoutExerciseId,
         int Repetitions,
         int Sets,
-        int RestSeconds
+        decimal? LoadKg,
+        int RestSeconds,
+        string? TrainerNote
     ) : IRequest<Result>;
 }

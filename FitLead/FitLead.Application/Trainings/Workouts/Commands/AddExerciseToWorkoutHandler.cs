@@ -49,7 +49,9 @@ namespace FitLead.Application.Trainings.Workouts.Commands
                 request.ExerciseId,
                 request.Repetitions,
                 request.Sets,
-                request.RestSeconds);
+                request.LoadKg,
+                request.RestSeconds,
+                request.TrainerNote);
             if (addResult.IsFailure)
                 return addResult;
 
