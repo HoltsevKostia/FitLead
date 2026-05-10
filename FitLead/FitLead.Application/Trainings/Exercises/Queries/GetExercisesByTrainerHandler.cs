@@ -1,5 +1,6 @@
 using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Identity;
+using FitLead.Common.Errors;
 using FitLead.Common.Results;
 using MediatR;
 
@@ -21,10 +22,26 @@ namespace FitLead.Application.Trainings.Exercises.Queries
             GetExercisesByTrainerQuery request,
             CancellationToken cancellationToken)
         {
-            var exercises = await _repository.GetByTrainerIdAsync(
+            if (!IsValidSource(request.Source))
+            {
+                return Result<IReadOnlyList<ExerciseDto>>.Failure(
+                    Error.Validation(
+                        "exercise.list.source_invalid",
+                        "Exercise list source is invalid."));
+            }
+
+            var exercises = await _repository.GetVisibleForTrainerAsync(
                 _user.UserId,
+                request.Source,
                 cancellationToken);
             return Result<IReadOnlyList<ExerciseDto>>.Success(exercises);
+        }
+        private static bool IsValidSource(ExerciseListSource source)
+        {
+            return source is
+                ExerciseListSource.All or
+                ExerciseListSource.Platform or
+                ExerciseListSource.My;
         }
     }
 }

@@ -20,7 +20,10 @@ namespace FitLead.Infrastructure.Modules.Exercises
             if (exercise is null)
                 return null;
 
-            return new ExerciseModuleDescriptor(exercise.Id, exercise.TrainerId);
+            return new ExerciseModuleDescriptor(
+                exercise.Id,
+                exercise.OwnerTrainerId,
+                exercise.Source);
         }
 
         public Task<bool> ExistsAsync(

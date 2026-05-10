@@ -8,7 +8,7 @@ public abstract class IntegrationTestBase(IntegrationTestFixture fixture) : IAsy
     protected static string UniqueEmail(string prefix = "user")
         => $"{prefix}-{Guid.NewGuid():N}@test.local";
 
-    public virtual Task InitializeAsync() => fixture.ResetDatabaseAsync();
+    public virtual Task InitializeAsync() => Fixture.ResetDatabaseAsync();
 
     public virtual Task DisposeAsync() => Task.CompletedTask;
 }

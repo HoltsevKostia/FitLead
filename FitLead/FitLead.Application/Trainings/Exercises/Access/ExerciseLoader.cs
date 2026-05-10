@@ -31,7 +31,7 @@ namespace FitLead.Application.Trainings.Exercises.Access
             }
 
             var exercise = await _exerciseRepository.GetByIdAsync(exerciseId, cancellationToken);
-            if (exercise is null || exercise.TrainerId != currentUserId.Value)
+            if (exercise is null || exercise.OwnerTrainerId != currentUserId.Value)
             {
                 return Result<Exercise>.Failure(
                     Error.NotFound("exercise.not_found", "Exercise not found"));

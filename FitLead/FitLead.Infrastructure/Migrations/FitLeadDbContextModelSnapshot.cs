@@ -68,27 +68,58 @@ namespace FitLead.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("CopiedFromExerciseId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int?>("Equipment")
+                        .HasColumnType("integer");
+
                     b.Property<string>("MediaUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<int?>("MuscleGroup")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<Guid>("TrainerId")
+                    b.Property<Guid?>("OwnerTrainerId")
                         .HasColumnType("uuid");
+
+                    b.Property<int>("Source")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TrainerId");
+                    b.HasIndex("CopiedFromExerciseId");
 
-                    b.ToTable("exercises", (string)null);
+                    b.HasIndex("Equipment");
+
+                    b.HasIndex("MuscleGroup");
+
+                    b.HasIndex("OwnerTrainerId");
+
+                    b.HasIndex("Source");
+
+                    b.HasIndex("OwnerTrainerId", "CopiedFromExerciseId")
+                        .IsUnique()
+                        .HasFilter("\"CopiedFromExerciseId\" IS NOT NULL");
+
+                    b.ToTable("exercises", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_exercises_copied_from_trainer_only", "\"CopiedFromExerciseId\" IS NULL OR \"Source\" = 2");
+
+                            t.HasCheckConstraint("CK_exercises_platform_owner_null", "\"Source\" <> 1 OR \"OwnerTrainerId\" IS NULL");
+
+                            t.HasCheckConstraint("CK_exercises_trainer_owner_required", "\"Source\" <> 2 OR \"OwnerTrainerId\" IS NOT NULL");
+                        });
                 });
 
             modelBuilder.Entity("FitLead.Domain.Trainings.TrainingProgram", b =>
@@ -507,11 +538,15 @@ namespace FitLead.Infrastructure.Migrations
 
             modelBuilder.Entity("FitLead.Domain.Trainings.Exercise", b =>
                 {
+                    b.HasOne("FitLead.Domain.Trainings.Exercise", null)
+                        .WithMany()
+                        .HasForeignKey("CopiedFromExerciseId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("FitLead.Domain.Users.User", null)
                         .WithMany()
-                        .HasForeignKey("TrainerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .HasForeignKey("OwnerTrainerId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("FitLead.Domain.Trainings.TrainingProgram", b =>

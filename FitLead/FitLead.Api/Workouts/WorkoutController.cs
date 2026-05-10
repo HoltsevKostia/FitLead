@@ -21,6 +21,7 @@ namespace FitLead.Api.Workouts
         }
 
         [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> Create(
             [FromBody] CreateWorkoutRequest request,
@@ -35,6 +36,7 @@ namespace FitLead.Api.Workouts
         }
 
         [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
         [HttpPost("{workoutId:guid}/exercises")]
         public async Task<IActionResult> AddExercise(
             Guid workoutId,
@@ -54,6 +56,7 @@ namespace FitLead.Api.Workouts
         }
 
         [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
         [HttpDelete("{workoutId:guid}/exercises/{workoutExerciseId:guid}")]
         public async Task<IActionResult> RemoveExercise(
             Guid workoutId,
@@ -94,6 +97,7 @@ namespace FitLead.Api.Workouts
         }
 
         [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
         [HttpPut("{workoutId:guid}/exercises/{workoutExerciseId:guid}")]
         public async Task<IActionResult> UpdateExercise(
             Guid workoutId,
@@ -114,6 +118,7 @@ namespace FitLead.Api.Workouts
         }
 
         [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
         [HttpPut("{workoutId:guid}/name")]
         public async Task<IActionResult> Rename(
             Guid workoutId,
@@ -128,6 +133,7 @@ namespace FitLead.Api.Workouts
         }
 
         [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
         [HttpDelete("{workoutId:guid}")]
         public async Task<IActionResult> Delete(
             Guid workoutId,
@@ -141,6 +147,7 @@ namespace FitLead.Api.Workouts
         }
 
         [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
         [HttpPost("{workoutId:guid}/deletion-confirmations")]
         public async Task<IActionResult> ConfirmDelete(
             Guid workoutId,
