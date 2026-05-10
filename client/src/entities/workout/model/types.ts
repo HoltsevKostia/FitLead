@@ -29,3 +29,12 @@ export interface WorkoutDetails extends Workout {
 export interface CreateWorkoutRequest {
   name: string;
 }
+
+export interface AddWorkoutExerciseRequest {
+  exerciseId: string;
+  repetitions: number;
+  sets: number;
+  loadKg: number | null;
+  restSeconds: number;
+  trainerNote: string | null;
+}

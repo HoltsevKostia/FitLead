@@ -6,6 +6,7 @@ import {
   muscleGroupLabels,
 } from "@/features/exercises/model/exercise-labels";
 import { ExerciseMediaPreview } from "@/features/exercises/ui/exercise-media-preview";
+import { AddExerciseToWorkoutForm } from "@/features/workouts/ui/add-exercise-to-workout-form";
 
 interface WorkoutDetailViewProps {
   workout: WorkoutDetails;
@@ -114,6 +115,8 @@ export function WorkoutDetailView({ workout }: WorkoutDetailViewProps) {
           тренування.
         </p>
       </div>
+
+      <AddExerciseToWorkoutForm workoutId={workout.id} />
 
       {exercises.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border px-6 py-8 text-center">
