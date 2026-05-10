@@ -1,4 +1,5 @@
-﻿using FitLead.Domain.Trainings;
+﻿using FitLead.Domain.Trainings.Exercises;
+using FitLead.Domain.Trainings.Workouts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

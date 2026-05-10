@@ -2,7 +2,7 @@ using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Identity;
 using FitLead.Common.Errors;
 using FitLead.Common.Results;
-using FitLead.Domain.Trainings;
+using FitLead.Domain.Trainings.TrainingPrograms;
 
 namespace FitLead.Application.Trainings.TrainingPrograms.Access
 {

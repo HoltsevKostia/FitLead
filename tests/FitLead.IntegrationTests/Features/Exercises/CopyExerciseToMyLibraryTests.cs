@@ -1,5 +1,5 @@
 using System.Net;
-using FitLead.Domain.Trainings;
+using FitLead.Domain.Trainings.Exercises;
 using FitLead.IntegrationTests.Helpers;
 using FitLead.IntegrationTests.Infrastructure;
 using FluentAssertions;

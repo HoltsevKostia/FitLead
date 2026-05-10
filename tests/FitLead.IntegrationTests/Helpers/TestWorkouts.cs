@@ -1,4 +1,4 @@
-using FitLead.Domain.Trainings;
+using FitLead.Domain.Trainings.Workouts;
 using Microsoft.EntityFrameworkCore;
 
 namespace FitLead.IntegrationTests.Helpers;

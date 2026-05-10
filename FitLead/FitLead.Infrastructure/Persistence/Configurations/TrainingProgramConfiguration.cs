@@ -1,4 +1,4 @@
-﻿using FitLead.Domain.Trainings;
+﻿using FitLead.Domain.Trainings.TrainingPrograms;
 using FitLead.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
