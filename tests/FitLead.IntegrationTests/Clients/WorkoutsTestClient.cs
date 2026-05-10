@@ -10,13 +10,21 @@ public sealed class WorkoutsTestClient(HttpClient httpClient)
         Guid exerciseId,
         int repetitions = 10,
         int sets = 3,
+        decimal? loadKg = null,
         int restSeconds = 60,
+        string? trainerNote = null,
         CancellationToken cancellationToken = default)
     {
         return SendUnsafeJsonAsync(
             HttpMethod.Post,
             $"/api/workouts/{workoutId:D}/exercises",
-            new AddExerciseToWorkoutRequest(exerciseId, repetitions, sets, restSeconds),
+            new AddExerciseToWorkoutRequest(
+                exerciseId,
+                repetitions,
+                sets,
+                loadKg,
+                restSeconds,
+                trainerNote),
             cancellationToken);
     }
 }

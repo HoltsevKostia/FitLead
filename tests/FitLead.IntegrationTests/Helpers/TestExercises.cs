@@ -58,7 +58,13 @@ public sealed class TestExercises(TestDb db)
             "Опис використаної вправи").Value;
 
         var workout = Workout.Create("Тренування з використаною вправою", trainerId).Value;
-        workout.AddExercise(exercise.Id, repetitions: 10, sets: 3, restSeconds: 60);
+        workout.AddExercise(
+            exercise.Id,
+            repetitions: 10,
+            sets: 3,
+            loadKg: null,
+            restSeconds: 60,
+            trainerNote: null);
 
         await db.ExecuteAsync(async context =>
         {
