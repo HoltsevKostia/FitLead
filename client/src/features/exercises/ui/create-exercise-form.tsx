@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useState } from "react";
+import { type SubmitEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Equipment, MuscleGroup } from "@/entities/exercise/model/types";
@@ -49,7 +49,7 @@ export function CreateExerciseForm({ onCreated, onCancel }: CreateExerciseFormPr
     onCancel();
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const trimmedName = name.trim();

@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useState } from "react";
+import { type SubmitEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Equipment, MuscleGroup, type Exercise } from "@/entities/exercise/model/types";
@@ -90,7 +90,7 @@ export function ExerciseActions({ exercise }: ExerciseActionsProps) {
     setSubmitError(null);
   }
 
-  function handleEditSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleEditSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     void handleUpdate();
   }
