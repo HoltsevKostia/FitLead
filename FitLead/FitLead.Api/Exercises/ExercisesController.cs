@@ -20,6 +20,7 @@ namespace FitLead.Api.Exercises
         }
 
         [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> Create(
             [FromBody] CreateExerciseRequest request,
@@ -29,7 +30,23 @@ namespace FitLead.Api.Exercises
                 new CreateExerciseCommand(
                     request.Name,
                     request.Description,
-                    request.MediaUrl),
+                    request.MediaUrl,
+                    request.MuscleGroup,
+                    request.Equipment),
+                cancellationToken);
+
+            return result.ToCreated(this);
+        }
+
+        [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
+        [HttpPost("{exerciseId:guid}/copy-to-my-library")]
+        public async Task<IActionResult> CopyToMyLibrary(
+            Guid exerciseId,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new CopyExerciseToMyLibraryCommand(exerciseId),
                 cancellationToken);
 
             return result.ToCreated(this);
@@ -38,16 +55,31 @@ namespace FitLead.Api.Exercises
         [Authorize(Policy = "TrainerOnly")]
         [HttpGet]
         public async Task<IActionResult> GetByTrainer(
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            [FromQuery] ExerciseListSource source = ExerciseListSource.All)
         {
             var exercises = await _mediator.Send(
-                new GetExercisesByTrainerQuery(),
+                new GetExercisesByTrainerQuery(source),
                 cancellationToken);
 
             return exercises.ToActionResult(this);
         }
 
         [Authorize(Policy = "TrainerOnly")]
+        [HttpGet("{exerciseId:guid}")]
+        public async Task<IActionResult> GetById(
+            Guid exerciseId,
+            CancellationToken cancellationToken)
+        {
+            var exercise = await _mediator.Send(
+                new GetExerciseByIdQuery(exerciseId),
+                cancellationToken);
+
+            return exercise.ToActionResult(this);
+        }
+
+        [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
         [HttpPut("{exerciseId:guid}")]
         public async Task<IActionResult> Update(
             Guid exerciseId,
@@ -59,13 +91,16 @@ namespace FitLead.Api.Exercises
                     exerciseId,
                     request.Name,
                     request.Description,
-                    request.MediaUrl),
+                    request.MediaUrl,
+                    request.MuscleGroup,
+                    request.Equipment),
                 cancellationToken);
 
             return result.ToActionResult(this);
         }
 
         [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
         [HttpDelete("{exerciseId:guid}")]
         public async Task<IActionResult> Delete(
             Guid exerciseId,
@@ -79,6 +114,7 @@ namespace FitLead.Api.Exercises
         }
 
         [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
         [HttpPost("{exerciseId:guid}/deletion-confirmations")]
         public async Task<IActionResult> ConfirmDelete(
             Guid exerciseId,

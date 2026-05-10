@@ -2,7 +2,7 @@ using FitLead.Common.Domain;
 using FitLead.Common.Errors;
 using FitLead.Common.Results;
 
-namespace FitLead.Domain.Trainings
+namespace FitLead.Domain.Trainings.TrainingPrograms
 {
     public sealed class TrainingProgramWorkout : Entity<Guid>
     {

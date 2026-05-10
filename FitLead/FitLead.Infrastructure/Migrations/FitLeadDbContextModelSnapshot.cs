@@ -63,35 +63,66 @@ namespace FitLead.Infrastructure.Migrations
                     b.ToTable("invitations", (string)null);
                 });
 
-            modelBuilder.Entity("FitLead.Domain.Trainings.Exercise", b =>
+            modelBuilder.Entity("FitLead.Domain.Trainings.Exercises.Exercise", b =>
                 {
                     b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CopiedFromExerciseId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int?>("Equipment")
+                        .HasColumnType("integer");
+
                     b.Property<string>("MediaUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<int?>("MuscleGroup")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<Guid>("TrainerId")
+                    b.Property<Guid?>("OwnerTrainerId")
                         .HasColumnType("uuid");
+
+                    b.Property<int>("Source")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TrainerId");
+                    b.HasIndex("CopiedFromExerciseId");
 
-                    b.ToTable("exercises", (string)null);
+                    b.HasIndex("Equipment");
+
+                    b.HasIndex("MuscleGroup");
+
+                    b.HasIndex("OwnerTrainerId");
+
+                    b.HasIndex("Source");
+
+                    b.HasIndex("OwnerTrainerId", "CopiedFromExerciseId")
+                        .IsUnique()
+                        .HasFilter("\"CopiedFromExerciseId\" IS NOT NULL");
+
+                    b.ToTable("exercises", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_exercises_copied_from_trainer_only", "\"CopiedFromExerciseId\" IS NULL OR \"Source\" = 2");
+
+                            t.HasCheckConstraint("CK_exercises_platform_owner_null", "\"Source\" <> 1 OR \"OwnerTrainerId\" IS NULL");
+
+                            t.HasCheckConstraint("CK_exercises_trainer_owner_required", "\"Source\" <> 2 OR \"OwnerTrainerId\" IS NOT NULL");
+                        });
                 });
 
-            modelBuilder.Entity("FitLead.Domain.Trainings.TrainingProgram", b =>
+            modelBuilder.Entity("FitLead.Domain.Trainings.TrainingPrograms.TrainingProgram", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -111,7 +142,7 @@ namespace FitLead.Infrastructure.Migrations
                     b.ToTable("training_programs", (string)null);
                 });
 
-            modelBuilder.Entity("FitLead.Domain.Trainings.TrainingProgramWorkout", b =>
+            modelBuilder.Entity("FitLead.Domain.Trainings.TrainingPrograms.TrainingProgramWorkout", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -134,7 +165,7 @@ namespace FitLead.Infrastructure.Migrations
                     b.ToTable("training_program_workouts", (string)null);
                 });
 
-            modelBuilder.Entity("FitLead.Domain.Trainings.Workout", b =>
+            modelBuilder.Entity("FitLead.Domain.Trainings.Workouts.Workout", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -154,13 +185,19 @@ namespace FitLead.Infrastructure.Migrations
                     b.ToTable("workouts", (string)null);
                 });
 
-            modelBuilder.Entity("FitLead.Domain.Trainings.WorkoutExercise", b =>
+            modelBuilder.Entity("FitLead.Domain.Trainings.Workouts.WorkoutExercise", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("ExerciseId")
                         .HasColumnType("uuid");
+
+                    b.Property<decimal?>("LoadKg")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
 
                     b.Property<int>("Repetitions")
                         .HasColumnType("integer");
@@ -171,14 +208,21 @@ namespace FitLead.Infrastructure.Migrations
                     b.Property<int>("Sets")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("workout_id")
-                        .HasColumnType("uuid");
+                    b.Property<string>("TrainerNote")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<Guid>("WorkoutId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("workout_id");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ExerciseId");
 
-                    b.HasIndex("workout_id");
+                    b.HasIndex("WorkoutId");
+
+                    b.HasIndex("WorkoutId", "Order");
 
                     b.ToTable("workout_exercises", (string)null);
                 });
@@ -505,7 +549,20 @@ namespace FitLead.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("FitLead.Domain.Trainings.Exercise", b =>
+            modelBuilder.Entity("FitLead.Domain.Trainings.Exercises.Exercise", b =>
+                {
+                    b.HasOne("FitLead.Domain.Trainings.Exercises.Exercise", null)
+                        .WithMany()
+                        .HasForeignKey("CopiedFromExerciseId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("FitLead.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("OwnerTrainerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("FitLead.Domain.Trainings.TrainingPrograms.TrainingProgram", b =>
                 {
                     b.HasOne("FitLead.Domain.Users.User", null)
                         .WithMany()
@@ -514,31 +571,22 @@ namespace FitLead.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("FitLead.Domain.Trainings.TrainingProgram", b =>
+            modelBuilder.Entity("FitLead.Domain.Trainings.TrainingPrograms.TrainingProgramWorkout", b =>
                 {
-                    b.HasOne("FitLead.Domain.Users.User", null)
-                        .WithMany()
-                        .HasForeignKey("TrainerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("FitLead.Domain.Trainings.TrainingProgramWorkout", b =>
-                {
-                    b.HasOne("FitLead.Domain.Trainings.TrainingProgram", null)
+                    b.HasOne("FitLead.Domain.Trainings.TrainingPrograms.TrainingProgram", null)
                         .WithMany("Workouts")
                         .HasForeignKey("TrainingProgramId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("FitLead.Domain.Trainings.Workout", null)
+                    b.HasOne("FitLead.Domain.Trainings.Workouts.Workout", null)
                         .WithMany()
                         .HasForeignKey("WorkoutId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("FitLead.Domain.Trainings.Workout", b =>
+            modelBuilder.Entity("FitLead.Domain.Trainings.Workouts.Workout", b =>
                 {
                     b.HasOne("FitLead.Domain.Users.User", null)
                         .WithMany()
@@ -547,17 +595,17 @@ namespace FitLead.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("FitLead.Domain.Trainings.WorkoutExercise", b =>
+            modelBuilder.Entity("FitLead.Domain.Trainings.Workouts.WorkoutExercise", b =>
                 {
-                    b.HasOne("FitLead.Domain.Trainings.Exercise", null)
+                    b.HasOne("FitLead.Domain.Trainings.Exercises.Exercise", null)
                         .WithMany()
                         .HasForeignKey("ExerciseId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("FitLead.Domain.Trainings.Workout", null)
+                    b.HasOne("FitLead.Domain.Trainings.Workouts.Workout", null)
                         .WithMany("Exercises")
-                        .HasForeignKey("workout_id")
+                        .HasForeignKey("WorkoutId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -657,12 +705,12 @@ namespace FitLead.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("FitLead.Domain.Trainings.TrainingProgram", b =>
+            modelBuilder.Entity("FitLead.Domain.Trainings.TrainingPrograms.TrainingProgram", b =>
                 {
                     b.Navigation("Workouts");
                 });
 
-            modelBuilder.Entity("FitLead.Domain.Trainings.Workout", b =>
+            modelBuilder.Entity("FitLead.Domain.Trainings.Workouts.Workout", b =>
                 {
                     b.Navigation("Exercises");
                 });

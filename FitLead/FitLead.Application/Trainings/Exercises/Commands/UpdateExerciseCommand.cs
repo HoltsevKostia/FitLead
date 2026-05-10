@@ -1,4 +1,5 @@
 using FitLead.Common.Results;
+using FitLead.Domain.Trainings.Exercises;
 using MediatR;
 
 namespace FitLead.Application.Trainings.Exercises.Commands
@@ -7,6 +8,8 @@ namespace FitLead.Application.Trainings.Exercises.Commands
         Guid ExerciseId,
         string Name,
         string Description,
-        string? MediaUrl
+        string? MediaUrl,
+        MuscleGroup? MuscleGroup,
+        Equipment? Equipment
     ) : IRequest<Result>;
 }

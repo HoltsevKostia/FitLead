@@ -1,4 +1,5 @@
-﻿using FitLead.Domain.Trainings;
+﻿using FitLead.Domain.Trainings.Exercises;
+using FitLead.Domain.Trainings.Workouts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -20,14 +21,26 @@ namespace FitLead.Infrastructure.Persistence.Configurations
             builder.Property(x => x.ExerciseId)
                 .IsRequired();
 
+            builder.Property(x => x.WorkoutId)
+                .HasColumnName("workout_id")
+                .IsRequired();
+
+            builder.Property(x => x.Order)
+                .IsRequired();
+
             builder.Property(x => x.Repetitions)
                 .IsRequired();
 
             builder.Property(x => x.Sets)
                 .IsRequired();
 
+            builder.Property(x => x.LoadKg);
+
             builder.Property(x => x.RestSeconds)
                 .IsRequired();
+
+            builder.Property(x => x.TrainerNote)
+                .HasMaxLength(WorkoutExercise.MaxTrainerNoteLength);
 
             builder.HasIndex(x => x.ExerciseId);
 
@@ -36,14 +49,12 @@ namespace FitLead.Infrastructure.Persistence.Configurations
                 .HasForeignKey(x => x.ExerciseId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Property<Guid>("workout_id")
-                .IsRequired();
-
-            builder.HasIndex("workout_id");
+            builder.HasIndex(x => x.WorkoutId);
+            builder.HasIndex(x => new { x.WorkoutId, x.Order });
 
             builder.HasOne<Workout>()
                 .WithMany(x => x.Exercises)
-                .HasForeignKey("workout_id")
+                .HasForeignKey(x => x.WorkoutId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

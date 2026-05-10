@@ -2,7 +2,7 @@ using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Identity;
 using FitLead.Common.Errors;
 using FitLead.Common.Results;
-using FitLead.Domain.Trainings;
+using FitLead.Domain.Trainings.Exercises;
 
 namespace FitLead.Application.Trainings.Exercises.Access
 {
@@ -31,7 +31,7 @@ namespace FitLead.Application.Trainings.Exercises.Access
             }
 
             var exercise = await _exerciseRepository.GetByIdAsync(exerciseId, cancellationToken);
-            if (exercise is null || exercise.TrainerId != currentUserId.Value)
+            if (exercise is null || exercise.OwnerTrainerId != currentUserId.Value)
             {
                 return Result<Exercise>.Failure(
                     Error.NotFound("exercise.not_found", "Exercise not found"));

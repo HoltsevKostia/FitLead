@@ -2,11 +2,11 @@ using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
 using FitLead.Common.Errors;
 using FitLead.Common.Results;
-using FitLead.Domain.Trainings;
 using FitLead.Application.Modules.Users;
 using FitLead.Domain.Users;
 using MediatR;
 using FitLead.Application.Identity;
+using FitLead.Domain.Trainings.Exercises;
 
 namespace FitLead.Application.Trainings.Exercises.Commands
 {
@@ -44,11 +44,13 @@ namespace FitLead.Application.Trainings.Exercises.Commands
             if (trainer.Role != UserRole.Trainer)
                 return Result<Guid>.Failure(Error.Forbidden("trainer.required", "User is not a trainer"));
 
-            var exerciseResult = Exercise.Create(
+            var exerciseResult = Exercise.CreateTrainerExercise(
                 _user.UserId,
                 request.Name,
                 request.Description,
-                request.MediaUrl);
+                request.MediaUrl,
+                request.MuscleGroup,
+                request.Equipment);
             if (exerciseResult.IsFailure)
                 return Result<Guid>.Failure(exerciseResult.Error);
 

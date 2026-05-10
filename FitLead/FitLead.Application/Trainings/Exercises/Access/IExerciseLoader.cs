@@ -1,5 +1,5 @@
 using FitLead.Common.Results;
-using FitLead.Domain.Trainings;
+using FitLead.Domain.Trainings.Exercises;
 
 namespace FitLead.Application.Trainings.Exercises.Access
 {

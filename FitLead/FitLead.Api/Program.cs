@@ -6,6 +6,7 @@ using FitLead.Application.Trainings.TrainingPrograms.Commands;
 using FitLead.Infrastructure;
 using FitLead.Infrastructure.Identity;
 using FitLead.Infrastructure.Persistence;
+using FitLead.Infrastructure.Persistence.Seeding;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
@@ -194,6 +195,12 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     await DevIdentitySeeder.SeedAsync(app.Services);
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<FitLeadDbContext>();
+        await PlatformExerciseSeeder.SeedAsync(dbContext);
+    }
+
     app.UseSwagger();
     app.UseSwaggerUI();
 }
