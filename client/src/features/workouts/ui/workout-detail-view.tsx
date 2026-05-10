@@ -7,6 +7,7 @@ import {
 } from "@/features/exercises/model/exercise-labels";
 import { ExerciseMediaPreview } from "@/features/exercises/ui/exercise-media-preview";
 import { AddExerciseToWorkoutForm } from "@/features/workouts/ui/add-exercise-to-workout-form";
+import { WorkoutExerciseActions } from "@/features/workouts/ui/workout-exercise-actions";
 
 interface WorkoutDetailViewProps {
   workout: WorkoutDetails;
@@ -20,7 +21,13 @@ function formatLoad(loadKg: number | null): string {
   return `${loadKg} кг`;
 }
 
-function WorkoutExerciseCard({ exercise }: { exercise: WorkoutExerciseDetails }) {
+function WorkoutExerciseCard({
+  workoutId,
+  exercise,
+}: {
+  workoutId: string;
+  exercise: WorkoutExerciseDetails;
+}) {
   return (
     <article className="rounded-2xl border border-border bg-white px-5 py-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -95,6 +102,8 @@ function WorkoutExerciseCard({ exercise }: { exercise: WorkoutExerciseDetails })
           Переглянути вправу
         </Link>
       </div>
+
+      <WorkoutExerciseActions workoutId={workoutId} exercise={exercise} />
     </article>
   );
 }
@@ -125,7 +134,11 @@ export function WorkoutDetailView({ workout }: WorkoutDetailViewProps) {
       ) : (
         <div className="grid gap-4">
           {exercises.map((exercise) => (
-            <WorkoutExerciseCard key={exercise.workoutExerciseId} exercise={exercise} />
+            <WorkoutExerciseCard
+              key={exercise.workoutExerciseId}
+              workoutId={workout.id}
+              exercise={exercise}
+            />
           ))}
         </div>
       )}

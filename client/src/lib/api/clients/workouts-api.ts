@@ -1,6 +1,7 @@
 import type {
   AddWorkoutExerciseRequest,
   CreateWorkoutRequest,
+  UpdateWorkoutExerciseRequest,
   Workout,
 } from "@/entities/workout/model/types";
 import { apiRequest } from "@/lib/api/http-client";
@@ -22,5 +23,30 @@ export const workoutsApi = {
       method: "POST",
       body: request,
     });
+  },
+
+  updateExercise(
+    workoutId: string,
+    workoutExerciseId: string,
+    request: UpdateWorkoutExerciseRequest,
+  ): Promise<void> {
+    return apiRequest<void>(
+      `/api/workouts/${encodeURIComponent(workoutId)}/exercises/${encodeURIComponent(workoutExerciseId)}`,
+      {
+        method: "PUT",
+        body: request,
+        responseType: "void",
+      },
+    );
+  },
+
+  removeExercise(workoutId: string, workoutExerciseId: string): Promise<void> {
+    return apiRequest<void>(
+      `/api/workouts/${encodeURIComponent(workoutId)}/exercises/${encodeURIComponent(workoutExerciseId)}`,
+      {
+        method: "DELETE",
+        responseType: "void",
+      },
+    );
   },
 };

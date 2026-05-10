@@ -1,6 +1,7 @@
 import { fieldInputClassName, fieldLabelClassName } from "@/shared/forms/field-styles";
 
 interface WorkoutExercisePrescriptionFieldsProps {
+  idPrefix: string;
   sets: string;
   repetitions: string;
   loadKg: string;
@@ -15,6 +16,7 @@ interface WorkoutExercisePrescriptionFieldsProps {
 }
 
 export function WorkoutExercisePrescriptionFields({
+  idPrefix,
   sets,
   repetitions,
   loadKg,
@@ -31,11 +33,11 @@ export function WorkoutExercisePrescriptionFields({
     <>
       <div className="grid gap-4 md:grid-cols-4">
         <div className="space-y-2">
-          <label className={fieldLabelClassName} htmlFor="workout-exercise-sets">
+          <label className={fieldLabelClassName} htmlFor={`${idPrefix}-sets`}>
             Підходи
           </label>
           <input
-            id="workout-exercise-sets"
+            id={`${idPrefix}-sets`}
             type="number"
             min={1}
             step={1}
@@ -48,11 +50,11 @@ export function WorkoutExercisePrescriptionFields({
         </div>
 
         <div className="space-y-2">
-          <label className={fieldLabelClassName} htmlFor="workout-exercise-repetitions">
+          <label className={fieldLabelClassName} htmlFor={`${idPrefix}-repetitions`}>
             Повторення
           </label>
           <input
-            id="workout-exercise-repetitions"
+            id={`${idPrefix}-repetitions`}
             type="number"
             min={1}
             step={1}
@@ -65,11 +67,11 @@ export function WorkoutExercisePrescriptionFields({
         </div>
 
         <div className="space-y-2">
-          <label className={fieldLabelClassName} htmlFor="workout-exercise-load">
+          <label className={fieldLabelClassName} htmlFor={`${idPrefix}-load`}>
             Вага, кг
           </label>
           <input
-            id="workout-exercise-load"
+            id={`${idPrefix}-load`}
             type="number"
             min={0}
             step="0.5"
@@ -81,11 +83,11 @@ export function WorkoutExercisePrescriptionFields({
         </div>
 
         <div className="space-y-2">
-          <label className={fieldLabelClassName} htmlFor="workout-exercise-rest">
+          <label className={fieldLabelClassName} htmlFor={`${idPrefix}-rest`}>
             Відпочинок, сек
           </label>
           <input
-            id="workout-exercise-rest"
+            id={`${idPrefix}-rest`}
             type="number"
             min={0}
             step={1}
@@ -99,11 +101,11 @@ export function WorkoutExercisePrescriptionFields({
       </div>
 
       <div className="space-y-2">
-        <label className={fieldLabelClassName} htmlFor="workout-exercise-note">
+        <label className={fieldLabelClassName} htmlFor={`${idPrefix}-note`}>
           Нотатка тренера
         </label>
         <textarea
-          id="workout-exercise-note"
+          id={`${idPrefix}-note`}
           value={trainerNote}
           onChange={(event) => onTrainerNoteChange(event.target.value)}
           disabled={isSubmitting}

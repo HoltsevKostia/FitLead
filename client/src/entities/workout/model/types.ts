@@ -38,3 +38,11 @@ export interface AddWorkoutExerciseRequest {
   restSeconds: number;
   trainerNote: string | null;
 }
+
+export interface UpdateWorkoutExerciseRequest {
+  repetitions: number;
+  sets: number;
+  loadKg: number | null;
+  restSeconds: number;
+  trainerNote: string | null;
+}

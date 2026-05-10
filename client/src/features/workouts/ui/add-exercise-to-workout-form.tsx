@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import type { Exercise } from "@/entities/exercise/model/types";
 import { mapExerciseMutationError } from "@/features/exercises/model/error-mapping";
+import { parseWorkoutExercisePrescription } from "@/features/workouts/model/workout-exercise-prescription";
 import {
   ExercisePickerList,
   type ExercisePickerSource,
@@ -17,42 +18,6 @@ import { FormAlert } from "@/shared/forms/form-alert";
 
 interface AddExerciseToWorkoutFormProps {
   workoutId: string;
-}
-
-function parseRequiredPositiveInt(value: string): number | null {
-  const parsed = Number(value);
-
-  if (!Number.isInteger(parsed) || parsed <= 0) {
-    return null;
-  }
-
-  return parsed;
-}
-
-function parseNonNegativeInt(value: string): number | null {
-  const parsed = Number(value);
-
-  if (!Number.isInteger(parsed) || parsed < 0) {
-    return null;
-  }
-
-  return parsed;
-}
-
-function parseOptionalNonNegativeNumber(value: string): number | null | undefined {
-  const trimmed = value.trim();
-
-  if (!trimmed) {
-    return null;
-  }
-
-  const parsed = Number(trimmed);
-
-  if (!Number.isFinite(parsed) || parsed < 0) {
-    return undefined;
-  }
-
-  return parsed;
 }
 
 export function AddExerciseToWorkoutForm({ workoutId }: AddExerciseToWorkoutFormProps) {
@@ -114,18 +79,16 @@ export function AddExerciseToWorkoutForm({ workoutId }: AddExerciseToWorkoutForm
       return;
     }
 
-    const parsedSets = parseRequiredPositiveInt(sets);
-    const parsedRepetitions = parseRequiredPositiveInt(repetitions);
-    const parsedRestSeconds = parseNonNegativeInt(restSeconds);
-    const parsedLoadKg = parseOptionalNonNegativeNumber(loadKg);
+    const prescription = parseWorkoutExercisePrescription({
+      sets,
+      repetitions,
+      loadKg,
+      restSeconds,
+      trainerNote,
+    });
 
-    if (!parsedSets || !parsedRepetitions || parsedRestSeconds === null) {
-      setFormError("Перевірте підходи, повторення та відпочинок.");
-      return;
-    }
-
-    if (parsedLoadKg === undefined) {
-      setFormError("Вага має бути невід’ємним числом.");
+    if (!prescription.payload) {
+      setFormError(prescription.error);
       return;
     }
 
@@ -135,11 +98,7 @@ export function AddExerciseToWorkoutForm({ workoutId }: AddExerciseToWorkoutForm
     try {
       await workoutsApi.addExercise(workoutId, {
         exerciseId: selectedExerciseId,
-        repetitions: parsedRepetitions,
-        sets: parsedSets,
-        loadKg: parsedLoadKg,
-        restSeconds: parsedRestSeconds,
-        trainerNote: trainerNote.trim() || null,
+        ...prescription.payload,
       });
       resetPrescriptionFields();
       setIsOpen(false);
@@ -180,6 +139,7 @@ export function AddExerciseToWorkoutForm({ workoutId }: AddExerciseToWorkoutForm
           />
 
           <WorkoutExercisePrescriptionFields
+            idPrefix="add-workout-exercise"
             sets={sets}
             repetitions={repetitions}
             loadKg={loadKg}
