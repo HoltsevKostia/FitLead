@@ -11,12 +11,14 @@ public sealed class TestExercises(TestDb db)
         string? name = null,
         string description = "Опис вправи",
         MuscleGroup? muscleGroup = MuscleGroup.Core,
-        Equipment? equipment = Equipment.Bodyweight)
+        Equipment? equipment = Equipment.Bodyweight,
+        string? mediaUrl = null)
     {
         var exercise = Exercise.CreateTrainerExercise(
             trainerId,
             name ?? $"Власна вправа {Guid.NewGuid():N}",
             description,
+            mediaUrl: mediaUrl,
             muscleGroup: muscleGroup,
             equipment: equipment).Value;
 
@@ -33,11 +35,13 @@ public sealed class TestExercises(TestDb db)
         string? name = null,
         string description = "Опис платформної вправи",
         MuscleGroup? muscleGroup = MuscleGroup.FullBody,
-        Equipment? equipment = Equipment.Bodyweight)
+        Equipment? equipment = Equipment.Bodyweight,
+        string? mediaUrl = null)
     {
         var exercise = Exercise.CreatePlatformExercise(
             name ?? $"Платформна вправа {Guid.NewGuid():N}",
             description,
+            mediaUrl: mediaUrl,
             muscleGroup: muscleGroup,
             equipment: equipment).Value;
 
