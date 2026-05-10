@@ -3,6 +3,7 @@ export interface ApiProblemDetails {
   detail: string | null;
   errorCode: string | null;
   errors: Record<string, string[]> | null;
+  extensions: Record<string, unknown>;
 }
 
 interface ApiErrorOptions extends ApiProblemDetails {
@@ -35,17 +36,32 @@ async function readProblemDetails(response: Response): Promise<ApiProblemDetails
       detail: null,
       errorCode: null,
       errors: null,
+      extensions: {},
     };
   }
 
   try {
     const payload = (await response.json()) as Record<string, unknown>;
 
+    const knownKeys = new Set([
+      "type",
+      "title",
+      "status",
+      "detail",
+      "instance",
+      "errorCode",
+      "errors",
+    ]);
+    const extensions = Object.fromEntries(
+      Object.entries(payload).filter(([key]) => !knownKeys.has(key)),
+    );
+
     return {
       title: typeof payload.title === "string" ? payload.title : response.statusText || null,
       detail: typeof payload.detail === "string" ? payload.detail : null,
       errorCode: typeof payload.errorCode === "string" ? payload.errorCode : null,
       errors: isValidationErrors(payload.errors) ? payload.errors : null,
+      extensions,
     };
   } catch {
     return {
@@ -53,6 +69,7 @@ async function readProblemDetails(response: Response): Promise<ApiProblemDetails
       detail: null,
       errorCode: null,
       errors: null,
+      extensions: {},
     };
   }
 }
@@ -63,6 +80,7 @@ export class ApiError extends Error {
   readonly detail: string | null;
   readonly errorCode: string | null;
   readonly errors: Record<string, string[]> | null;
+  readonly extensions: Record<string, unknown>;
 
   constructor(options: ApiErrorOptions) {
     super(options.detail ?? options.title ?? "API request failed.");
@@ -72,6 +90,7 @@ export class ApiError extends Error {
     this.detail = options.detail;
     this.errorCode = options.errorCode;
     this.errors = options.errors;
+    this.extensions = options.extensions;
   }
 
   static async fromResponse(response: Response): Promise<ApiError> {
@@ -83,6 +102,7 @@ export class ApiError extends Error {
       detail: problem.detail,
       errorCode: problem.errorCode,
       errors: problem.errors,
+      extensions: problem.extensions,
     });
   }
 }

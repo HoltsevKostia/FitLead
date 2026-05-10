@@ -1,4 +1,4 @@
-namespace FitLead.Domain.Trainings
+namespace FitLead.Domain.Trainings.Exercises
 {
     public enum MuscleGroup
     {

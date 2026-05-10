@@ -32,64 +32,67 @@ namespace FitLead.Infrastructure.Persistence.Repositories
             Guid trainerId,
             CancellationToken ct)
         {
-                var rows = await (
-            from w in _context.Workouts.AsNoTracking()
-            where w.Id == workoutId && w.TrainerId == trainerId
+            var workout = await _context.Workouts
+                .AsNoTracking()
+                .Where(x => x.Id == workoutId && x.TrainerId == trainerId)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.TrainerId,
+                    x.Name
+                })
+                .FirstOrDefaultAsync(ct);
 
-            join we0 in _context.WorkoutExercises.AsNoTracking()
-                on w.Id equals EF.Property<Guid>(we0, "workout_id") into weGroup
-            from we in weGroup.DefaultIfEmpty()
-
-            join e0 in _context.Exercises.AsNoTracking()
-                on we.ExerciseId equals e0.Id into eGroup
-            from e in eGroup.DefaultIfEmpty()
-
-            select new
-            {
-                WorkoutId = w.Id,
-                w.TrainerId,
-                WorkoutName = w.Name,
-
-                WorkoutExerciseId = (Guid?)we.Id,
-                ExerciseId = (Guid?)e.Id,
-                ExerciseName = e != null ? e.Name : null,
-                ExerciseDescription = e != null ? e.Description : null,
-                ExerciseMediaUrl = e != null ? e.MediaUrl : null,
-                ExerciseMuscleGroup = e != null ? e.MuscleGroup : null,
-                ExerciseEquipment = e != null ? e.Equipment : null,
-
-                Repetitions = (int?)we.Repetitions,
-                Sets = (int?)we.Sets,
-                RestSeconds = (int?)we.RestSeconds
-            }
-            ).ToListAsync(ct);
-
-            if (rows.Count == 0)
+            if (workout is null)
                 return null;
 
-            var header = rows[0];
+            var exercises = await (
+                from we in _context.WorkoutExercises.AsNoTracking()
+                where we.WorkoutId == workoutId
+                join e in _context.Exercises.AsNoTracking()
+                    on we.ExerciseId equals e.Id
+                orderby we.Order
+                select new
+                {
+                    WorkoutExerciseId = we.Id,
+                    we.ExerciseId,
+                    we.Order,
+                    ExerciseName = e.Name,
+                    ExerciseDescription = e.Description,
+                    ExerciseMediaUrl = e.MediaUrl,
+                    ExerciseMuscleGroup = e.MuscleGroup,
+                    ExerciseEquipment = e.Equipment,
+                    we.Repetitions,
+                    we.Sets,
+                    we.LoadKg,
+                    we.RestSeconds,
+                    we.TrainerNote
+                })
+                .ToListAsync(ct);
 
-            var exercises = rows
-                .Where(x => x.WorkoutExerciseId.HasValue)
+            var exerciseDtos = exercises
                 .Select(x => new WorkoutExerciseDetailsDto(
-                    x.WorkoutExerciseId!.Value,
-                    x.ExerciseId!.Value,
-                    x.ExerciseName!,
-                    x.ExerciseDescription!,
+                    x.WorkoutExerciseId,
+                    x.ExerciseId,
+                    x.Order,
+                    x.ExerciseName,
+                    x.ExerciseDescription,
                     x.ExerciseMediaUrl?.Value,
                     x.ExerciseMuscleGroup,
                     x.ExerciseEquipment,
-                    x.Repetitions!.Value,
-                    x.Sets!.Value,
-                    x.RestSeconds!.Value
+                    x.Repetitions,
+                    x.Sets,
+                    x.LoadKg,
+                    x.RestSeconds,
+                    x.TrainerNote
                 ))
                 .ToList();
 
             return new WorkoutDetailsDto(
-                header.WorkoutId,
-                header.TrainerId,
-                header.WorkoutName,
-                exercises
+                workout.Id,
+                workout.TrainerId,
+                workout.Name,
+                exerciseDtos
             );
         }
 

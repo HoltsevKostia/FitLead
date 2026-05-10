@@ -33,6 +33,17 @@ export const exercisesApi = {
     });
   },
 
+  confirmDeleteExercise(exerciseId: string, confirmationToken: string): Promise<void> {
+    return apiRequest<void>(
+      `/api/exercises/${encodeURIComponent(exerciseId)}/deletion-confirmations`,
+      {
+        method: "POST",
+        body: { token: confirmationToken },
+        responseType: "void",
+      },
+    );
+  },
+
   copyToMyLibrary(exerciseId: string): Promise<string> {
     return apiRequest<string>(
       `/api/exercises/${encodeURIComponent(exerciseId)}/copy-to-my-library`,

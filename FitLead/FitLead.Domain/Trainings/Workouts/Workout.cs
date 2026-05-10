@@ -2,7 +2,7 @@ using FitLead.Common.Domain;
 using FitLead.Common.Errors;
 using FitLead.Common.Results;
 
-namespace FitLead.Domain.Trainings
+namespace FitLead.Domain.Trainings.Workouts
 {
     public sealed class Workout : AggregateRoot<Guid>
     {
@@ -51,16 +51,25 @@ namespace FitLead.Domain.Trainings
             Guid exerciseId,
             int repetitions,
             int sets,
-            int restSeconds)
+            decimal? loadKg,
+            int restSeconds,
+            string? trainerNote)
         {
             var entryId = Guid.NewGuid();
+            var nextOrder = _exercises.Count == 0
+                ? 1
+                : _exercises.Max(x => x.Order) + 1;
 
             var entryResult = WorkoutExercise.Create(
                 entryId,
+                Id,
                 exerciseId,
+                nextOrder,
                 repetitions,
                 sets,
-                restSeconds);
+                loadKg,
+                restSeconds,
+                trainerNote);
 
             if (entryResult.IsFailure)
                 return Result<Guid>.Failure(entryResult.Error);
@@ -82,14 +91,25 @@ namespace FitLead.Domain.Trainings
             return Result.Success();
         }
 
-        public Result UpdateExercise(Guid workoutExerciseId, int repetitions, int sets, int restSeconds)
+        public Result UpdateExercise(
+            Guid workoutExerciseId,
+            int repetitions,
+            int sets,
+            decimal? loadKg,
+            int restSeconds,
+            string? trainerNote)
         {
             var entry = _exercises.FirstOrDefault(x => x.Id == workoutExerciseId);
             if (entry is null)
                 return Result.Failure(
                     Error.Validation("workout.exercise.update.not_found", "Exercise not found in workout"));
 
-            var updateResult = entry.Update(repetitions, sets, restSeconds);
+            var updateResult = entry.Update(
+                repetitions,
+                sets,
+                loadKg,
+                restSeconds,
+                trainerNote);
             if (updateResult.IsFailure)
                 return updateResult;
 

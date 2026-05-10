@@ -1,4 +1,4 @@
-using FitLead.Domain.Trainings;
+using FitLead.Domain.Trainings.Exercises;
 using FluentAssertions;
 
 namespace FitLead.IntegrationTests.Unit.Trainings;

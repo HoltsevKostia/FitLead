@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useState } from "react";
+import { type SubmitEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Equipment, MuscleGroup, type Exercise } from "@/entities/exercise/model/types";
@@ -15,6 +15,12 @@ import {
   muscleGroupLabels,
 } from "@/features/exercises/model/exercise-labels";
 import { mapExerciseMutationError } from "@/features/exercises/model/error-mapping";
+import {
+  type ExerciseDeleteConflict,
+  readExerciseDeleteConflict,
+} from "@/features/exercises/model/delete-conflict";
+import { ExerciseDeleteConfirmation } from "@/features/exercises/ui/exercise-delete-confirmation";
+import { isApiError } from "@/lib/api/api-error";
 import { exercisesApi } from "@/lib/api/clients/exercises-api";
 import { FormAlert } from "@/shared/forms/form-alert";
 import { fieldInputClassName, fieldLabelClassName } from "@/shared/forms/field-styles";
@@ -33,19 +39,30 @@ export function ExerciseActions({ exercise }: ExerciseActionsProps) {
   const [equipment, setEquipment] = useState(formatOptionalNumber(exercise.equipment));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [deleteConflict, setDeleteConflict] = useState<ExerciseDeleteConflict | null>(null);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
 
   if (!exercise.isEditable) {
     return null;
   }
 
   async function handleUpdate() {
+    const trimmedName = name.trim();
+
+    if (!trimmedName) {
+      setSubmitError("Вкажіть назву вправи.");
+      setDeleteConflict(null);
+      return;
+    }
+
     setIsSubmitting(true);
     setSubmitError(null);
+    setDeleteConflict(null);
 
     try {
       await exercisesApi.updateExercise(exercise.id, {
-        name,
-        description,
+        name: trimmedName,
+        description: description.trim(),
         mediaUrl: mediaUrl.trim() || null,
         muscleGroup: parseOptionalNumber<MuscleGroup>(muscleGroup),
         equipment: parseOptionalNumber<Equipment>(equipment),
@@ -62,15 +79,62 @@ export function ExerciseActions({ exercise }: ExerciseActionsProps) {
   async function handleDelete() {
     setIsSubmitting(true);
     setSubmitError(null);
+    setDeleteConflict(null);
 
     try {
       await exercisesApi.deleteExercise(exercise.id);
       router.refresh();
     } catch (error) {
+      const conflict = readExerciseDeleteConflict(error);
+      if (conflict) {
+        setDeleteConflict(conflict);
+        return;
+      }
+
       setSubmitError(mapExerciseMutationError(error));
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  async function handleConfirmDelete() {
+    if (!deleteConflict) {
+      return;
+    }
+
+    setIsConfirmingDelete(true);
+    setSubmitError(null);
+
+    try {
+      await exercisesApi.confirmDeleteExercise(exercise.id, deleteConflict.confirmationToken);
+      setDeleteConflict(null);
+      router.refresh();
+    } catch (error) {
+      const conflict = readExerciseDeleteConflict(error);
+      if (conflict) {
+        setDeleteConflict(conflict);
+        return;
+      }
+
+      if (
+        isApiError(error) &&
+        error.status === 400 &&
+        error.errorCode === "exercise.delete.token_invalid"
+      ) {
+        setDeleteConflict(null);
+        setSubmitError("Підтвердження застаріло. Повторіть видалення вправи.");
+        return;
+      }
+
+      setSubmitError(mapExerciseMutationError(error));
+    } finally {
+      setIsConfirmingDelete(false);
+    }
+  }
+
+  function handleCancelDeleteConfirmation() {
+    setDeleteConflict(null);
+    setSubmitError(null);
   }
 
   function handleEditToggle() {
@@ -88,20 +152,21 @@ export function ExerciseActions({ exercise }: ExerciseActionsProps) {
       return next;
     });
     setSubmitError(null);
+    setDeleteConflict(null);
   }
 
-  function handleEditSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleEditSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     void handleUpdate();
   }
 
   return (
-    <div className="w-full space-y-3 md:w-auto">
+    <div className="relative w-full space-y-3 md:w-auto">
       <div className="flex shrink-0 flex-wrap gap-2 md:justify-end">
         <button
           type="button"
           onClick={handleEditToggle}
-          disabled={isSubmitting}
+          disabled={isSubmitting || isConfirmingDelete}
           className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:bg-surface-strong disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isEditing ? "Скасувати" : "Редагувати"}
@@ -109,7 +174,7 @@ export function ExerciseActions({ exercise }: ExerciseActionsProps) {
         <button
           type="button"
           onClick={handleDelete}
-          disabled={isSubmitting}
+          disabled={isSubmitting || isConfirmingDelete}
           className="rounded-full border border-red-200 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isSubmitting ? "Обробка..." : "Видалити"}
@@ -117,6 +182,15 @@ export function ExerciseActions({ exercise }: ExerciseActionsProps) {
       </div>
 
       <FormAlert message={submitError} />
+
+      {deleteConflict ? (
+        <ExerciseDeleteConfirmation
+          conflict={deleteConflict}
+          isConfirming={isConfirmingDelete}
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDeleteConfirmation}
+        />
+      ) : null}
 
       {isEditing ? (
         <form

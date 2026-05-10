@@ -3,7 +3,7 @@ using FitLead.Application.Common;
 using FitLead.Application.Identity;
 using FitLead.Common.Errors;
 using FitLead.Common.Results;
-using FitLead.Domain.Trainings;
+using FitLead.Domain.Trainings.Exercises;
 using MediatR;
 
 namespace FitLead.Application.Trainings.Exercises.Commands

@@ -1,6 +1,6 @@
 using System.Net;
 using FitLead.Application.Trainings.Exercises.Queries;
-using FitLead.Domain.Trainings;
+using FitLead.Domain.Trainings.Exercises;
 using FitLead.Infrastructure.Persistence.Seeding;
 using FitLead.IntegrationTests.Helpers;
 using FitLead.IntegrationTests.Infrastructure;

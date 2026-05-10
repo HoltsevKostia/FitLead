@@ -49,7 +49,9 @@ namespace FitLead.Api.Workouts
                     request.ExerciseId,
                     request.Repetitions,
                     request.Sets,
-                    request.RestSeconds),
+                    request.LoadKg,
+                    request.RestSeconds,
+                    request.TrainerNote),
                 cancellationToken);
 
             return result.ToCreated(this);
@@ -111,7 +113,9 @@ namespace FitLead.Api.Workouts
                     workoutExerciseId,
                     request.Repetitions,
                     request.Sets,
-                    request.RestSeconds),
+                    request.LoadKg,
+                    request.RestSeconds,
+                    request.TrainerNote),
                 cancellationToken);
 
             return result.ToActionResult(this);

@@ -1,5 +1,5 @@
 using FitLead.Api.Exercises.Contracts;
-using FitLead.Domain.Trainings;
+using FitLead.Domain.Trainings.Exercises;
 
 namespace FitLead.IntegrationTests.Clients;
 

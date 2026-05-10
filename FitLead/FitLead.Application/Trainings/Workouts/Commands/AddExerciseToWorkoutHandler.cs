@@ -4,7 +4,7 @@ using FitLead.Application.Modules.Exercises;
 using FitLead.Application.Trainings.Workouts.Access;
 using FitLead.Common.Errors;
 using FitLead.Common.Results;
-using FitLead.Domain.Trainings;
+using FitLead.Domain.Trainings.Exercises;
 using MediatR;
 
 namespace FitLead.Application.Trainings.Workouts.Commands
@@ -49,7 +49,9 @@ namespace FitLead.Application.Trainings.Workouts.Commands
                 request.ExerciseId,
                 request.Repetitions,
                 request.Sets,
-                request.RestSeconds);
+                request.LoadKg,
+                request.RestSeconds,
+                request.TrainerNote);
             if (addResult.IsFailure)
                 return addResult;
 

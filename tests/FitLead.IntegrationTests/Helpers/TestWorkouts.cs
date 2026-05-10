@@ -1,4 +1,4 @@
-using FitLead.Domain.Trainings;
+using FitLead.Domain.Trainings.Workouts;
 using Microsoft.EntityFrameworkCore;
 
 namespace FitLead.IntegrationTests.Helpers;
@@ -28,7 +28,7 @@ public sealed class TestWorkouts(TestDb db)
     {
         return db.QueryAsync(context =>
             context.WorkoutExercises.AnyAsync(x =>
-                EF.Property<Guid>(x, "workout_id") == workoutId &&
+                x.WorkoutId == workoutId &&
                 x.ExerciseId == exerciseId));
     }
 

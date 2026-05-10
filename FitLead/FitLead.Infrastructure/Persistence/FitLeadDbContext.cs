@@ -1,5 +1,7 @@
 using FitLead.Domain.Invitations;
-using FitLead.Domain.Trainings;
+using FitLead.Domain.Trainings.Exercises;
+using FitLead.Domain.Trainings.TrainingPrograms;
+using FitLead.Domain.Trainings.Workouts;
 using FitLead.Domain.Users;
 using FitLead.Infrastructure.Identity;
 using FitLead.Infrastructure.Persistence.Models;

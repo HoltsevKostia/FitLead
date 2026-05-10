@@ -1,4 +1,5 @@
-using FitLead.Domain.Trainings;
+using FitLead.Domain.Trainings.Exercises;
+using FitLead.Domain.Trainings.Workouts;
 using Microsoft.EntityFrameworkCore;
 
 namespace FitLead.IntegrationTests.Helpers;
@@ -10,12 +11,14 @@ public sealed class TestExercises(TestDb db)
         string? name = null,
         string description = "Опис вправи",
         MuscleGroup? muscleGroup = MuscleGroup.Core,
-        Equipment? equipment = Equipment.Bodyweight)
+        Equipment? equipment = Equipment.Bodyweight,
+        string? mediaUrl = null)
     {
         var exercise = Exercise.CreateTrainerExercise(
             trainerId,
             name ?? $"Власна вправа {Guid.NewGuid():N}",
             description,
+            mediaUrl: mediaUrl,
             muscleGroup: muscleGroup,
             equipment: equipment).Value;
 
@@ -32,11 +35,13 @@ public sealed class TestExercises(TestDb db)
         string? name = null,
         string description = "Опис платформної вправи",
         MuscleGroup? muscleGroup = MuscleGroup.FullBody,
-        Equipment? equipment = Equipment.Bodyweight)
+        Equipment? equipment = Equipment.Bodyweight,
+        string? mediaUrl = null)
     {
         var exercise = Exercise.CreatePlatformExercise(
             name ?? $"Платформна вправа {Guid.NewGuid():N}",
             description,
+            mediaUrl: mediaUrl,
             muscleGroup: muscleGroup,
             equipment: equipment).Value;
 
@@ -57,7 +62,13 @@ public sealed class TestExercises(TestDb db)
             "Опис використаної вправи").Value;
 
         var workout = Workout.Create("Тренування з використаною вправою", trainerId).Value;
-        workout.AddExercise(exercise.Id, repetitions: 10, sets: 3, restSeconds: 60);
+        workout.AddExercise(
+            exercise.Id,
+            repetitions: 10,
+            sets: 3,
+            loadKg: null,
+            restSeconds: 60,
+            trainerNote: null);
 
         await db.ExecuteAsync(async context =>
         {
