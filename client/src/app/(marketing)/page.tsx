@@ -26,8 +26,7 @@ export default async function LandingPage() {
             </h1>
             <p className="max-w-2xl text-lg leading-8 text-muted md:text-xl">
               FitLead дає тренеру єдине місце для керування вправами,
-              тренуваннями, програмами та запрошеннями клієнтів у швидкому
-              server-first вебзастосунку.
+              тренуваннями, програмами та спілкуванням з кілєнтами.
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
