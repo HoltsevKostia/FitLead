@@ -1,5 +1,5 @@
 using FitLead.Api.Common.Results;
-using FitLead.Api.Contracts.Trainings;
+using FitLead.Api.TrainingPrograms.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using FitLead.Application.Trainings.TrainingPrograms.Commands;
 using FitLead.Application.Trainings.TrainingPrograms.Queries;
@@ -20,11 +20,15 @@ namespace FitLead.Api.TrainingPrograms
         }
 
         [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> Create(
-        CreateTrainingProgramCommand command)
+            [FromBody] CreateTrainingProgramRequest request,
+            CancellationToken cancellationToken)
         {
-            var result = await _mediator.Send(command);
+            var result = await _mediator.Send(
+                new CreateTrainingProgramCommand(request.Title),
+                cancellationToken);
 
             return result.ToCreated(this);
         }
@@ -54,6 +58,7 @@ namespace FitLead.Api.TrainingPrograms
         }
 
         [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
         [HttpPost("{programId:guid}/workouts")]
         public async Task<IActionResult> AddWorkout(
             Guid programId,
@@ -70,6 +75,7 @@ namespace FitLead.Api.TrainingPrograms
         }
 
         [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
         [HttpDelete("{programId:guid}/workouts/{workoutId:guid}")]
         public async Task<IActionResult> RemoveWorkout(
             Guid programId,
@@ -86,6 +92,7 @@ namespace FitLead.Api.TrainingPrograms
         }
 
         [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
         [HttpPut("{programId:guid}/workouts/order")]
         public async Task<IActionResult> ReorderWorkouts(
             Guid programId,
@@ -100,6 +107,7 @@ namespace FitLead.Api.TrainingPrograms
         }
 
         [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
         [HttpDelete("{programId:guid}")]
         public async Task<IActionResult> Delete(
             Guid programId,
@@ -113,6 +121,7 @@ namespace FitLead.Api.TrainingPrograms
         }
 
         [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
         [HttpPost("{programId:guid}/deletion-confirmations")]
         public async Task<IActionResult> ConfirmDelete(
             Guid programId,

@@ -94,6 +94,10 @@ namespace FitLead.Domain.Trainings.TrainingPrograms
                 return Result.Failure(
                     Error.Validation("training_program.workouts.order.invalid_count", "Workout order list must include all workouts from the program"));
 
+            if (orderedWorkoutIds.Distinct().Count() != orderedWorkoutIds.Count)
+                return Result.Failure(
+                    Error.Validation("training_program.workouts.order.contains_duplicates", "Workout order list must not contain duplicates"));
+
             foreach (var id in orderedWorkoutIds)
             {
                 if (!existingIds.Contains(id))
