@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import type { TrainingProgram } from "@/entities/training-program/model/types";
 
 interface TrainingProgramListProps {
@@ -37,6 +39,13 @@ export function TrainingProgramList({ programs, loadError }: TrainingProgramList
                     {program.weeksCount} тиж. · {program.daysPerWeek} дн./тиждень
                   </p>
                 </div>
+
+                <Link
+                  href={`/training-programs/${program.id}`}
+                  className="w-fit rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground transition hover:bg-surface-strong"
+                >
+                  Переглянути
+                </Link>
               </div>
             </article>
           ))}

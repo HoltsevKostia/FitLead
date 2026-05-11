@@ -30,6 +30,23 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                 .ToListAsync(cancellationToken);
         }
 
+        public Task<TrainingProgramDto?> GetByIdAsync(
+            Guid programId,
+            Guid trainerId,
+            CancellationToken cancellationToken)
+        {
+            return _context.TrainingPrograms
+                .Where(x => x.Id == programId && x.TrainerId == trainerId)
+                .Select(x => new TrainingProgramDto
+                {
+                    Id = x.Id,
+                    Title = x.Title,
+                    WeeksCount = x.WeeksCount,
+                    DaysPerWeek = x.DaysPerWeek
+                })
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
         public async Task<IReadOnlyList<TrainingProgramWorkoutDto>> GetWorkoutsByProgramIdAsync(
             Guid programId,
             CancellationToken cancellationToken)

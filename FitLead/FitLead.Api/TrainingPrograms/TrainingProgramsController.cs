@@ -47,6 +47,19 @@ namespace FitLead.Api.TrainingPrograms
         }
 
         [Authorize(Policy = "TrainerOnly")]
+        [HttpGet("{programId:guid}")]
+        public async Task<IActionResult> GetById(
+            Guid programId,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new GetTrainingProgramByIdQuery(programId),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
+
+        [Authorize(Policy = "TrainerOnly")]
         [HttpGet("{programId:guid}/workouts")]
         public async Task<IActionResult> GetWorkouts(
         Guid programId,

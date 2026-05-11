@@ -8,6 +8,11 @@ namespace FitLead.Application.Abstractions.Persistence
             Guid trainerId,
             CancellationToken cancellationToken);
 
+        Task<TrainingProgramDto?> GetByIdAsync(
+            Guid programId,
+            Guid trainerId,
+            CancellationToken cancellationToken);
+
         Task<bool> IsOwnedByTrainerAsync(
             Guid programId,
             Guid trainerId,

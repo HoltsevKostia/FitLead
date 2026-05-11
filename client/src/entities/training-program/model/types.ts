@@ -10,3 +10,13 @@ export interface CreateTrainingProgramRequest {
   weeksCount: number;
   daysPerWeek: number;
 }
+
+export interface TrainingProgramWorkout {
+  id: string;
+  workoutId: string;
+  workoutName: string;
+  trainerId: string;
+  weekNumber: number;
+  dayNumber: number;
+  orderInDay: number;
+}
