@@ -1,12 +1,11 @@
-﻿using FitLead.Application.Abstractions.Persistence;
+using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Trainings.TrainingPrograms.Queries;
-using FitLead.Application.Trainings.Workouts.Queries;
 using Microsoft.EntityFrameworkCore;
 
 namespace FitLead.Infrastructure.Persistence.Repositories
 {
     public sealed class TrainingProgramReadRepository
-    : ITrainingProgramReadRepository
+        : ITrainingProgramReadRepository
     {
         private readonly FitLeadDbContext _context;
 
@@ -31,23 +30,31 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<IReadOnlyList<WorkoutDto>> GetWorkoutsByProgramIdAsync(Guid programId, CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<TrainingProgramWorkoutDto>> GetWorkoutsByProgramIdAsync(
+            Guid programId,
+            CancellationToken cancellationToken)
         {
             return await (
                 from tpw in _context.TrainingProgramWorkouts
                 join w in _context.Workouts
                     on tpw.WorkoutId equals w.Id
-                where EF.Property<Guid>(tpw, "TrainingProgramId") == programId
+                where tpw.TrainingProgramId == programId
                 orderby tpw.WeekNumber, tpw.DayNumber, tpw.OrderInDay
-                select new WorkoutDto(
+                select new TrainingProgramWorkoutDto(
+                    tpw.Id,
                     w.Id,
                     w.Name,
-                    w.TrainerId
-                ))
+                    w.TrainerId,
+                    tpw.WeekNumber,
+                    tpw.DayNumber,
+                    tpw.OrderInDay))
                 .ToListAsync(cancellationToken);
         }
 
-        public Task<bool> IsOwnedByTrainerAsync(Guid programId, Guid trainerId, CancellationToken cancellationToken)
+        public Task<bool> IsOwnedByTrainerAsync(
+            Guid programId,
+            Guid trainerId,
+            CancellationToken cancellationToken)
         {
             return _context.TrainingPrograms
                 .AnyAsync(x => x.Id == programId && x.TrainerId == trainerId, cancellationToken);

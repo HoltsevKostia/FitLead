@@ -1,5 +1,4 @@
-﻿using FitLead.Application.Trainings.TrainingPrograms.Queries;
-using FitLead.Application.Trainings.Workouts.Queries;
+using FitLead.Application.Trainings.TrainingPrograms.Queries;
 
 namespace FitLead.Application.Abstractions.Persistence
 {
@@ -10,11 +9,11 @@ namespace FitLead.Application.Abstractions.Persistence
             CancellationToken cancellationToken);
 
         Task<bool> IsOwnedByTrainerAsync(
-        Guid programId,
-        Guid trainerId,
-        CancellationToken cancellationToken);
+            Guid programId,
+            Guid trainerId,
+            CancellationToken cancellationToken);
 
-        Task<IReadOnlyList<WorkoutDto>> GetWorkoutsByProgramIdAsync(
+        Task<IReadOnlyList<TrainingProgramWorkoutDto>> GetWorkoutsByProgramIdAsync(
             Guid programId,
             CancellationToken cancellationToken);
 

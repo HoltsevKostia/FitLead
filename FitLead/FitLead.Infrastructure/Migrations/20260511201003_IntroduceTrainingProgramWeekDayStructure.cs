@@ -24,7 +24,7 @@ namespace FitLead.Infrastructure.Migrations
                 table: "training_programs",
                 type: "integer",
                 nullable: false,
-                defaultValue: 1);
+                defaultValue: 7);
 
             migrationBuilder.AddColumn<int>(
                 name: "WeeksCount",
