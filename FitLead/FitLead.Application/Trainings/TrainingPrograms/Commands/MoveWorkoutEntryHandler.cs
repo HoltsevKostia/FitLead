@@ -1,4 +1,3 @@
-using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
 using FitLead.Application.Trainings.TrainingPrograms.Access;
 using FitLead.Common.Results;
@@ -6,13 +5,13 @@ using MediatR;
 
 namespace FitLead.Application.Trainings.TrainingPrograms.Commands
 {
-    public sealed class ReorderProgramWorkoutsHandler
-    : IRequestHandler<ReorderProgramWorkoutsCommand, Result>
+    public sealed class MoveWorkoutEntryHandler
+        : IRequestHandler<MoveWorkoutEntryCommand, Result>
     {
         private readonly ITrainingProgramLoader _programLoader;
         private readonly IUnitOfWork _unitOfWork;
 
-        public ReorderProgramWorkoutsHandler(
+        public MoveWorkoutEntryHandler(
             ITrainingProgramLoader programLoader,
             IUnitOfWork unitOfWork)
         {
@@ -20,25 +19,30 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Commands
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Result> Handle(ReorderProgramWorkoutsCommand request, CancellationToken cancellationToken)
+        public async Task<Result> Handle(
+            MoveWorkoutEntryCommand request,
+            CancellationToken cancellationToken)
         {
             var programResult = await _programLoader.GetOwnedOrNotFoundAsync(
                 request.ProgramId,
                 cancellationToken);
+
             if (programResult.IsFailure)
                 return Result.Failure(programResult.Error);
 
             var program = programResult.Value;
-            var reorderResult = program.ReorderDay(
-                request.WeekNumber,
-                request.DayNumber,
-                request.OrderedEntryIds);
-            if (reorderResult.IsFailure)
-                return reorderResult;
+            var moveResult = program.MoveWorkoutEntry(
+                request.TrainingProgramWorkoutId,
+                request.TargetWeekNumber,
+                request.TargetDayNumber,
+                request.TargetOrderInDay);
+
+            if (moveResult.IsFailure)
+                return moveResult;
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
             return Result.Success();
         }
     }
-
 }

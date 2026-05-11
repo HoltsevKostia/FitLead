@@ -27,7 +27,10 @@ namespace FitLead.Api.TrainingPrograms
             CancellationToken cancellationToken)
         {
             var result = await _mediator.Send(
-                new CreateTrainingProgramCommand(request.Title),
+                new CreateTrainingProgramCommand(
+                    request.Title,
+                    request.WeeksCount,
+                    request.DaysPerWeek),
                 cancellationToken);
 
             return result.ToCreated(this);
@@ -68,7 +71,9 @@ namespace FitLead.Api.TrainingPrograms
             var result = await _mediator.Send(
                 new AddWorkoutToProgramCommand(
                     programId,
-                    request.WorkoutId),
+                    request.WorkoutId,
+                    request.WeekNumber,
+                    request.DayNumber),
                 cancellationToken);
 
             return result.ToActionResult(this);
@@ -76,16 +81,16 @@ namespace FitLead.Api.TrainingPrograms
 
         [Authorize(Policy = "TrainerOnly")]
         [ValidateAntiForgeryToken]
-        [HttpDelete("{programId:guid}/workouts/{workoutId:guid}")]
+        [HttpDelete("{programId:guid}/workouts/{trainingProgramWorkoutId:guid}")]
         public async Task<IActionResult> RemoveWorkout(
             Guid programId,
-            Guid workoutId,
+            Guid trainingProgramWorkoutId,
             CancellationToken cancellationToken)
         {
             var result = await _mediator.Send(
                 new RemoveWorkoutFromProgramCommand(
                     programId,
-                    workoutId),
+                    trainingProgramWorkoutId),
                 cancellationToken);
 
             return result.ToActionResult(this);
@@ -100,7 +105,32 @@ namespace FitLead.Api.TrainingPrograms
             CancellationToken cancellationToken)
         {
             var result = await _mediator.Send(
-                new ReorderProgramWorkoutsCommand(programId, request.WorkoutIds),
+                new ReorderProgramWorkoutsCommand(
+                    programId,
+                    request.WeekNumber,
+                    request.DayNumber,
+                    request.EntryIds),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
+
+        [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
+        [HttpPut("{programId:guid}/workouts/{trainingProgramWorkoutId:guid}/position")]
+        public async Task<IActionResult> MoveWorkout(
+            Guid programId,
+            Guid trainingProgramWorkoutId,
+            [FromBody] MoveWorkoutEntryRequest request,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new MoveWorkoutEntryCommand(
+                    programId,
+                    trainingProgramWorkoutId,
+                    request.TargetWeekNumber,
+                    request.TargetDayNumber,
+                    request.TargetOrderInDay),
                 cancellationToken);
 
             return result.ToActionResult(this);

@@ -24,7 +24,9 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                 .Select(x => new TrainingProgramDto
                 {
                     Id = x.Id,
-                    Title = x.Title
+                    Title = x.Title,
+                    WeeksCount = x.WeeksCount,
+                    DaysPerWeek = x.DaysPerWeek
                 })
                 .ToListAsync(cancellationToken);
         }
@@ -36,7 +38,7 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                 join w in _context.Workouts
                     on tpw.WorkoutId equals w.Id
                 where EF.Property<Guid>(tpw, "TrainingProgramId") == programId
-                orderby tpw.Order
+                orderby tpw.WeekNumber, tpw.DayNumber, tpw.OrderInDay
                 select new WorkoutDto(
                     w.Id,
                     w.Name,

@@ -1,5 +1,7 @@
 namespace FitLead.Api.TrainingPrograms.Contracts
 {
     public sealed record CreateTrainingProgramRequest(
-        string Title);
+        string Title,
+        int WeeksCount,
+        int DaysPerWeek);
 }

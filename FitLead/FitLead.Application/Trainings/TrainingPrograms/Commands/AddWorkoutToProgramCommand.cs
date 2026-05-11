@@ -5,6 +5,8 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Commands
 {
     public sealed record AddWorkoutToProgramCommand(
         Guid ProgramId,
-        Guid WorkoutId
+        Guid WorkoutId,
+        int WeekNumber,
+        int DayNumber
     ) : IRequest<Result>;
 }

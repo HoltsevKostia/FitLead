@@ -48,7 +48,10 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Commands
             if (workout.TrainerId != program.TrainerId)
                 return Result.Failure(Error.Forbidden("workout.forbidden", "Workout does not belong to the same trainer as the program"));
 
-            var addResult = program.AddWorkout(request.WorkoutId);
+            var addResult = program.AddWorkout(
+                request.WorkoutId,
+                request.WeekNumber,
+                request.DayNumber);
             if (addResult.IsFailure)
                 return addResult;
 

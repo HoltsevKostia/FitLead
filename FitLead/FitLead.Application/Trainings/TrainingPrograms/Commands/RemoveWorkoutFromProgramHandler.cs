@@ -31,7 +31,7 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Commands
                 return Result.Failure(programResult.Error);
 
             var program = programResult.Value;
-            var removeResult = program.RemoveWorkout(request.WorkoutId);
+            var removeResult = program.RemoveWorkoutEntry(request.TrainingProgramWorkoutId);
             if (removeResult.IsFailure)
                 return removeResult;
 

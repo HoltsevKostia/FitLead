@@ -5,6 +5,8 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Commands
 {
     public sealed record ReorderProgramWorkoutsCommand(
         Guid ProgramId,
-        IReadOnlyList<Guid> OrderedWorkoutIds
+        int WeekNumber,
+        int DayNumber,
+        IReadOnlyList<Guid> OrderedEntryIds
     ) : IRequest<Result>;
 }
