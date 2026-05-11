@@ -180,8 +180,7 @@ namespace FitLead.Infrastructure.Migrations
 
                     b.HasIndex("WorkoutId");
 
-                    b.HasIndex("TrainingProgramId", "WeekNumber", "DayNumber", "OrderInDay")
-                        .IsUnique();
+                    b.HasIndex("TrainingProgramId", "WeekNumber", "DayNumber", "OrderInDay");
 
                     b.ToTable("training_program_workouts", null, t =>
                         {

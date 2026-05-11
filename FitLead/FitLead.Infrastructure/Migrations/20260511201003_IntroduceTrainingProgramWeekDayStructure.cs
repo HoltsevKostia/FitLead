@@ -57,11 +57,12 @@ namespace FitLead.Infrastructure.Migrations
                 table: "training_programs",
                 sql: "\"WeeksCount\" BETWEEN 1 AND 24");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_training_program_workouts_TrainingProgramId_WeekNumber_DayN~",
-                table: "training_program_workouts",
-                columns: new[] { "TrainingProgramId", "WeekNumber", "DayNumber", "OrderInDay" },
-                unique: true);
+            migrationBuilder.Sql("""
+                ALTER TABLE "training_program_workouts"
+                ADD CONSTRAINT "UQ_training_program_workouts_program_day_order"
+                UNIQUE ("TrainingProgramId", "WeekNumber", "DayNumber", "OrderInDay")
+                DEFERRABLE INITIALLY DEFERRED;
+                """);
 
             migrationBuilder.AddCheckConstraint(
                 name: "CK_training_program_workouts_day_number_positive",
@@ -90,9 +91,10 @@ namespace FitLead.Infrastructure.Migrations
                 name: "CK_training_programs_weeks_count_range",
                 table: "training_programs");
 
-            migrationBuilder.DropIndex(
-                name: "IX_training_program_workouts_TrainingProgramId_WeekNumber_DayN~",
-                table: "training_program_workouts");
+            migrationBuilder.Sql("""
+                ALTER TABLE "training_program_workouts"
+                DROP CONSTRAINT "UQ_training_program_workouts_program_day_order";
+                """);
 
             migrationBuilder.DropCheckConstraint(
                 name: "CK_training_program_workouts_day_number_positive",

@@ -54,7 +54,7 @@ namespace FitLead.Infrastructure.Persistence.Configurations
                 x.WeekNumber,
                 x.DayNumber,
                 x.OrderInDay
-            }).IsUnique();
+            });
 
             builder.HasOne<TrainingProgram>()
                 .WithMany(x => x.Workouts)
