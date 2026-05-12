@@ -1,5 +1,6 @@
 using FitLead.Domain.Invitations;
 using FitLead.Domain.Trainings.Exercises;
+using FitLead.Domain.Trainings.TrainingProgramAssignments;
 using FitLead.Domain.Trainings.TrainingPrograms;
 using FitLead.Domain.Trainings.Workouts;
 using FitLead.Domain.Users;
@@ -25,6 +26,7 @@ namespace FitLead.Infrastructure.Persistence
         public DbSet<Workout> Workouts => Set<Workout>();
         public DbSet<WorkoutExercise> WorkoutExercises => Set<WorkoutExercise>();
         public DbSet<Invitation> Invitations => Set<Invitation>();
+        public DbSet<AssignedTrainingProgram> AssignedTrainingPrograms => Set<AssignedTrainingProgram>();
         public DbSet<TrainingProgramWorkout> TrainingProgramWorkouts => Set<TrainingProgramWorkout>();
         public DbSet<UserIdentityLink> UserIdentityLinks => Set<UserIdentityLink>();
         public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
