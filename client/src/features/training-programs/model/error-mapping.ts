@@ -25,6 +25,14 @@ export function mapTrainingProgramMutationError(error: unknown): string {
     return "День поза межами структури програми.";
   }
 
+  if (error.errorCode === "training_program.workouts.remove.not_found") {
+    return "Запис тренування у програмі не знайдено.";
+  }
+
+  if (error.errorCode === "training_program.workouts.remove.entry_id_required") {
+    return "Не вдалося визначити запис тренування.";
+  }
+
   if (error.errorCode === "training_program.not_found") {
     return "Програму не знайдено.";
   }

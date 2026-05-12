@@ -43,4 +43,16 @@ export const trainingProgramsApi = {
       },
     );
   },
+
+  removeWorkout(programId: string, trainingProgramWorkoutId: string): Promise<void> {
+    return apiRequest<void>(
+      `/api/training-programs/${encodeURIComponent(programId)}/workouts/${encodeURIComponent(
+        trainingProgramWorkoutId,
+      )}`,
+      {
+        method: "DELETE",
+        responseType: "void",
+      },
+    );
+  },
 };

@@ -9,6 +9,7 @@ import type {
 } from "@/entities/training-program/model/types";
 import type { Workout } from "@/entities/workout/model/types";
 import { AddWorkoutToProgramDayForm } from "@/features/training-programs/ui/add-workout-to-program-day-form";
+import { TrainingProgramWorkoutEntryActions } from "@/features/training-programs/ui/training-program-workout-entry-actions";
 
 interface TrainingProgramDetailViewProps {
   program: TrainingProgram;
@@ -30,7 +31,13 @@ function getEntriesForDay(
     .sort((first, second) => first.orderInDay - second.orderInDay);
 }
 
-function WorkoutCard({ entry }: { entry: TrainingProgramWorkout }) {
+function WorkoutCard({
+  programId,
+  entry,
+}: {
+  programId: string;
+  entry: TrainingProgramWorkout;
+}) {
   return (
     <article className="rounded-xl border border-border bg-white px-4 py-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -44,12 +51,15 @@ function WorkoutCard({ entry }: { entry: TrainingProgramWorkout }) {
           <h3 className="mt-2 text-base font-semibold text-foreground">{entry.workoutName}</h3>
         </div>
 
-        <Link
-          href={`/workouts/${entry.workoutId}`}
-          className="w-fit rounded-full border border-border px-3 py-2 text-sm font-medium text-foreground transition hover:bg-surface-strong"
-        >
-          Відкрити
-        </Link>
+        <div className="flex flex-col gap-2 sm:items-end">
+          <Link
+            href={`/workouts/${entry.workoutId}`}
+            className="w-fit rounded-full border border-border px-3 py-2 text-sm font-medium text-foreground transition hover:bg-surface-strong"
+          >
+            Відкрити
+          </Link>
+          <TrainingProgramWorkoutEntryActions programId={programId} entryId={entry.id} />
+        </div>
       </div>
     </article>
   );
@@ -84,7 +94,7 @@ function DayCard({
       ) : (
         <div className="space-y-3">
           {entries.map((entry) => (
-            <WorkoutCard key={entry.id} entry={entry} />
+            <WorkoutCard key={entry.id} programId={programId} entry={entry} />
           ))}
         </div>
       )}
