@@ -25,6 +25,13 @@ public sealed class TrainingProgramsTestClient(HttpClient httpClient)
         return SendGetAsync("/api/training-programs", cancellationToken);
     }
 
+    public Task<HttpResponseMessage> GetByIdAsync(
+        Guid programId,
+        CancellationToken cancellationToken = default)
+    {
+        return SendGetAsync($"/api/training-programs/{programId:D}", cancellationToken);
+    }
+
     public Task<HttpResponseMessage> GetWorkoutsAsync(
         Guid programId,
         CancellationToken cancellationToken = default)
