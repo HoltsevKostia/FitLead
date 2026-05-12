@@ -7,5 +7,10 @@ namespace FitLead.Application.Abstractions.Persistence
         Task<IReadOnlyList<TrainerClientDto>> GetClientsByTrainerIdAsync(
             Guid trainerId,
             CancellationToken cancellationToken);
+
+        Task<IReadOnlyList<TrainerClientOverviewDto>> GetClientsOverviewByTrainerIdAsync(
+            Guid trainerId,
+            DateTime utcNow,
+            CancellationToken cancellationToken);
     }
 }
