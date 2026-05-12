@@ -1,4 +1,7 @@
-﻿namespace FitLead.Api.Contracts.Trainings
+namespace FitLead.Api.TrainingPrograms.Contracts
 {
-    public sealed record ReorderProgramWorkoutsRequest(IReadOnlyList<Guid> WorkoutIds);
+    public sealed record ReorderProgramWorkoutsRequest(
+        int WeekNumber,
+        int DayNumber,
+        IReadOnlyList<Guid> EntryIds);
 }

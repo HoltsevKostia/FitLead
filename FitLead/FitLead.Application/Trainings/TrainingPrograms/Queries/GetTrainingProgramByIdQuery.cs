@@ -3,7 +3,7 @@ using MediatR;
 
 namespace FitLead.Application.Trainings.TrainingPrograms.Queries
 {
-    public sealed record GetWorkoutsByProgramIdQuery(
+    public sealed record GetTrainingProgramByIdQuery(
         Guid ProgramId
-    ) : IRequest<Result<IReadOnlyList<TrainingProgramWorkoutDto>>>;
+    ) : IRequest<Result<TrainingProgramDto>>;
 }

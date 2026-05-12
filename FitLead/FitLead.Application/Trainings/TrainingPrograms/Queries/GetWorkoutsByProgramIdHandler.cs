@@ -1,41 +1,41 @@
 using FitLead.Application.Abstractions.Persistence;
-using FitLead.Common.Errors;
+using FitLead.Application.Trainings.TrainingPrograms.Access;
 using FitLead.Common.Results;
-using FitLead.Application.Trainings.Workouts.Queries;
 using MediatR;
-using FitLead.Application.Identity;
 
 namespace FitLead.Application.Trainings.TrainingPrograms.Queries
 {
     public sealed class GetWorkoutsByProgramIdHandler
-        : IRequestHandler<GetWorkoutsByProgramIdQuery, Result<IReadOnlyList<WorkoutDto>>>
+        : IRequestHandler<GetWorkoutsByProgramIdQuery, Result<IReadOnlyList<TrainingProgramWorkoutDto>>>
     {
-        private readonly IUserContext _user;
+        private readonly ITrainingProgramLoader _programLoader;
         private readonly ITrainingProgramReadRepository _repository;
+
         public GetWorkoutsByProgramIdHandler(
-            IUserContext user,
+            ITrainingProgramLoader programLoader,
             ITrainingProgramReadRepository trainingProgramReadRepository)
         {
-            _user = user;
+            _programLoader = programLoader;
             _repository = trainingProgramReadRepository;
         }
 
-        public async Task<Result<IReadOnlyList<WorkoutDto>>> Handle(GetWorkoutsByProgramIdQuery request, CancellationToken cancellationToken)
+        public async Task<Result<IReadOnlyList<TrainingProgramWorkoutDto>>> Handle(
+            GetWorkoutsByProgramIdQuery request,
+            CancellationToken cancellationToken)
         {
-            var isOwner = await _repository.IsOwnedByTrainerAsync(
-            request.ProgramId,
-            _user.UserId,
-            cancellationToken);
+            var programResult = await _programLoader.GetOwnedOrNotFoundAsync(
+                request.ProgramId,
+                cancellationToken);
 
-            if (!isOwner)
-                return Result<IReadOnlyList<WorkoutDto>>.Failure(
-                    Error.Forbidden("training_program.forbidden", "Forbidden"));
+            if (programResult.IsFailure)
+                return Result<IReadOnlyList<TrainingProgramWorkoutDto>>.Failure(
+                    programResult.Error);
 
             var workouts = await _repository.GetWorkoutsByProgramIdAsync(
                 request.ProgramId,
                 cancellationToken);
-            return Result<IReadOnlyList<WorkoutDto>>.Success(workouts);
-        }      
+
+            return Result<IReadOnlyList<TrainingProgramWorkoutDto>>.Success(workouts);
+        }
     }
 }
-
