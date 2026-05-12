@@ -17,6 +17,21 @@ export interface AddTrainingProgramWorkoutRequest {
   dayNumber: number;
 }
 
+export interface AssignTrainingProgramToClientRequest {
+  clientId: string;
+  expiresAtUtc: string | null;
+}
+
+export interface TrainingProgramAssignment {
+  assignmentId: string;
+  programId: string;
+  clientId: string;
+  status: string;
+  accessSource: string;
+  assignedAtUtc: string;
+  expiresAtUtc: string | null;
+}
+
 export interface TrainingProgramWorkout {
   id: string;
   workoutId: string;

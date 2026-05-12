@@ -1,7 +1,9 @@
 import type {
   AddTrainingProgramWorkoutRequest,
+  AssignTrainingProgramToClientRequest,
   CreateTrainingProgramRequest,
   TrainingProgram,
+  TrainingProgramAssignment,
   TrainingProgramWorkout,
 } from "@/entities/training-program/model/types";
 import { apiRequest } from "@/lib/api/http-client";
@@ -52,6 +54,19 @@ export const trainingProgramsApi = {
       {
         method: "DELETE",
         responseType: "void",
+      },
+    );
+  },
+
+  assignToClient(
+    programId: string,
+    request: AssignTrainingProgramToClientRequest,
+  ): Promise<TrainingProgramAssignment> {
+    return apiRequest<TrainingProgramAssignment>(
+      `/api/training-programs/${encodeURIComponent(programId)}/assignments`,
+      {
+        method: "POST",
+        body: request,
       },
     );
   },

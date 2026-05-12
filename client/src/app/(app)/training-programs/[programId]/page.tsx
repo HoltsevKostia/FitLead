@@ -4,12 +4,14 @@ import { getCurrentUser } from "@/features/auth/server/get-current-user";
 import { getTrainingProgram } from "@/features/training-programs/server/get-training-program";
 import { getTrainingProgramWorkouts } from "@/features/training-programs/server/get-training-program-workouts";
 import { TrainingProgramDetailView } from "@/features/training-programs/ui/training-program-detail-view";
+import { getTrainerClients } from "@/features/users/server/get-trainer-clients";
 import { getWorkouts } from "@/features/workouts/server/get-workouts";
 import { isApiError } from "@/lib/api/api-error";
 import type {
   TrainingProgram,
   TrainingProgramWorkout,
 } from "@/entities/training-program/model/types";
+import type { TrainerClient } from "@/entities/user/model/types";
 import type { Workout } from "@/entities/workout/model/types";
 
 interface TrainingProgramDetailsPageProps {
@@ -38,15 +40,17 @@ async function getProgramDetailsOrNotFound(programId: string): Promise<{
   program: TrainingProgram;
   workouts: TrainingProgramWorkout[];
   availableWorkouts: Workout[];
+  clients: TrainerClient[];
 }> {
   try {
-    const [program, workouts, availableWorkouts] = await Promise.all([
+    const [program, workouts, availableWorkouts, clients] = await Promise.all([
       getTrainingProgram(programId),
       getTrainingProgramWorkouts(programId),
       getWorkouts(),
+      getTrainerClients(),
     ]);
 
-    return { program, workouts, availableWorkouts };
+    return { program, workouts, availableWorkouts, clients };
   } catch (error) {
     if (isApiError(error) && error.status === 404) {
       notFound();
@@ -66,7 +70,7 @@ export default async function TrainingProgramDetailsPage({
   }
 
   const { programId } = await params;
-  const { program, workouts, availableWorkouts } =
+  const { program, workouts, availableWorkouts, clients } =
     await getProgramDetailsOrNotFound(programId);
 
   return (
@@ -74,6 +78,7 @@ export default async function TrainingProgramDetailsPage({
       program={program}
       workouts={workouts}
       availableWorkouts={availableWorkouts}
+      clients={clients}
     />
   );
 }
