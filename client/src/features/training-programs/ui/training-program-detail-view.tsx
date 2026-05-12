@@ -7,10 +7,13 @@ import type {
   TrainingProgram,
   TrainingProgramWorkout,
 } from "@/entities/training-program/model/types";
+import type { Workout } from "@/entities/workout/model/types";
+import { AddWorkoutToProgramDayForm } from "@/features/training-programs/ui/add-workout-to-program-day-form";
 
 interface TrainingProgramDetailViewProps {
   program: TrainingProgram;
   workouts: TrainingProgramWorkout[];
+  availableWorkouts: Workout[];
 }
 
 function buildRange(count: number): number[] {
@@ -53,11 +56,17 @@ function WorkoutCard({ entry }: { entry: TrainingProgramWorkout }) {
 }
 
 function DayCard({
+  programId,
+  weekNumber,
   dayNumber,
   entries,
+  availableWorkouts,
 }: {
+  programId: string;
+  weekNumber: number;
   dayNumber: number;
   entries: TrainingProgramWorkout[];
+  availableWorkouts: Workout[];
 }) {
   return (
     <article className="rounded-2xl border border-border bg-surface px-5 py-5">
@@ -79,6 +88,15 @@ function DayCard({
           ))}
         </div>
       )}
+
+      <div className="mt-4">
+        <AddWorkoutToProgramDayForm
+          programId={programId}
+          weekNumber={weekNumber}
+          dayNumber={dayNumber}
+          availableWorkouts={availableWorkouts}
+        />
+      </div>
     </article>
   );
 }
@@ -86,6 +104,7 @@ function DayCard({
 export function TrainingProgramDetailView({
   program,
   workouts,
+  availableWorkouts,
 }: TrainingProgramDetailViewProps) {
   const [selectedWeek, setSelectedWeek] = useState(1);
   const weeks = useMemo(() => buildRange(program.weeksCount), [program.weeksCount]);
@@ -152,8 +171,11 @@ export function TrainingProgramDetailView({
         {days.map((dayNumber) => (
           <DayCard
             key={dayNumber}
+            programId={program.id}
+            weekNumber={selectedWeek}
             dayNumber={dayNumber}
             entries={getEntriesForDay(workouts, selectedWeek, dayNumber)}
+            availableWorkouts={availableWorkouts}
           />
         ))}
       </div>

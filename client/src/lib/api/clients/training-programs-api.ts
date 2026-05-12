@@ -1,4 +1,5 @@
 import type {
+  AddTrainingProgramWorkoutRequest,
   CreateTrainingProgramRequest,
   TrainingProgram,
   TrainingProgramWorkout,
@@ -26,6 +27,20 @@ export const trainingProgramsApi = {
   getProgramWorkouts(programId: string): Promise<TrainingProgramWorkout[]> {
     return apiRequest<TrainingProgramWorkout[]>(
       `/api/training-programs/${encodeURIComponent(programId)}/workouts`,
+    );
+  },
+
+  addWorkout(
+    programId: string,
+    request: AddTrainingProgramWorkoutRequest,
+  ): Promise<void> {
+    return apiRequest<void>(
+      `/api/training-programs/${encodeURIComponent(programId)}/workouts`,
+      {
+        method: "POST",
+        body: request,
+        responseType: "void",
+      },
     );
   },
 };

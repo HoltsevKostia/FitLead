@@ -17,5 +17,25 @@ export function mapTrainingProgramMutationError(error: unknown): string {
     return "Кількість днів у тижні має бути від 1 до 7.";
   }
 
+  if (error.errorCode === "training_program.workouts.week_number_out_of_range") {
+    return "Тиждень поза межами структури програми.";
+  }
+
+  if (error.errorCode === "training_program.workouts.day_number_out_of_range") {
+    return "День поза межами структури програми.";
+  }
+
+  if (error.errorCode === "training_program.not_found") {
+    return "Програму не знайдено.";
+  }
+
+  if (error.errorCode === "workout.not_found") {
+    return "Тренування не знайдено.";
+  }
+
+  if (error.errorCode === "workout.forbidden") {
+    return "Це тренування належить іншому тренеру.";
+  }
+
   return error.detail ?? error.title ?? "Не вдалося виконати дію. Спробуйте ще раз.";
 }

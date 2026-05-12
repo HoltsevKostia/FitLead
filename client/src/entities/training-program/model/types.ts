@@ -11,6 +11,12 @@ export interface CreateTrainingProgramRequest {
   daysPerWeek: number;
 }
 
+export interface AddTrainingProgramWorkoutRequest {
+  workoutId: string;
+  weekNumber: number;
+  dayNumber: number;
+}
+
 export interface TrainingProgramWorkout {
   id: string;
   workoutId: string;

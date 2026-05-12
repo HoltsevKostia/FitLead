@@ -4,11 +4,13 @@ import { getCurrentUser } from "@/features/auth/server/get-current-user";
 import { getTrainingProgram } from "@/features/training-programs/server/get-training-program";
 import { getTrainingProgramWorkouts } from "@/features/training-programs/server/get-training-program-workouts";
 import { TrainingProgramDetailView } from "@/features/training-programs/ui/training-program-detail-view";
+import { getWorkouts } from "@/features/workouts/server/get-workouts";
 import { isApiError } from "@/lib/api/api-error";
 import type {
   TrainingProgram,
   TrainingProgramWorkout,
 } from "@/entities/training-program/model/types";
+import type { Workout } from "@/entities/workout/model/types";
 
 interface TrainingProgramDetailsPageProps {
   params: Promise<{
@@ -35,14 +37,16 @@ function TrainerOnlyNotice() {
 async function getProgramDetailsOrNotFound(programId: string): Promise<{
   program: TrainingProgram;
   workouts: TrainingProgramWorkout[];
+  availableWorkouts: Workout[];
 }> {
   try {
-    const [program, workouts] = await Promise.all([
+    const [program, workouts, availableWorkouts] = await Promise.all([
       getTrainingProgram(programId),
       getTrainingProgramWorkouts(programId),
+      getWorkouts(),
     ]);
 
-    return { program, workouts };
+    return { program, workouts, availableWorkouts };
   } catch (error) {
     if (isApiError(error) && error.status === 404) {
       notFound();
@@ -62,7 +66,14 @@ export default async function TrainingProgramDetailsPage({
   }
 
   const { programId } = await params;
-  const { program, workouts } = await getProgramDetailsOrNotFound(programId);
+  const { program, workouts, availableWorkouts } =
+    await getProgramDetailsOrNotFound(programId);
 
-  return <TrainingProgramDetailView program={program} workouts={workouts} />;
+  return (
+    <TrainingProgramDetailView
+      program={program}
+      workouts={workouts}
+      availableWorkouts={availableWorkouts}
+    />
+  );
 }
