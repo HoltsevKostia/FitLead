@@ -53,6 +53,14 @@ export function mapTrainingProgramMutationError(error: unknown): string {
     return "Дата завершення має бути у майбутньому.";
   }
 
+  if (error.errorCode === "training_program.assignment.not_found") {
+    return "Призначення не знайдено.";
+  }
+
+  if (error.errorCode === "training_program.assignment.revoke.invalid_status") {
+    return "Це призначення вже не активне.";
+  }
+
   if (error.errorCode === "workout.not_found") {
     return "Тренування не знайдено.";
   }

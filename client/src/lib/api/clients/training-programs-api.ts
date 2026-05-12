@@ -61,12 +61,38 @@ export const trainingProgramsApi = {
   assignToClient(
     programId: string,
     request: AssignTrainingProgramToClientRequest,
-  ): Promise<TrainingProgramAssignment> {
-    return apiRequest<TrainingProgramAssignment>(
+  ): Promise<{
+    assignmentId: string;
+    programId: string;
+    clientId: string;
+    status: string;
+    accessSource: string;
+    assignedAtUtc: string;
+    expiresAtUtc: string | null;
+  }> {
+    return apiRequest(
       `/api/training-programs/${encodeURIComponent(programId)}/assignments`,
       {
         method: "POST",
         body: request,
+      },
+    );
+  },
+
+  getAssignments(programId: string): Promise<TrainingProgramAssignment[]> {
+    return apiRequest<TrainingProgramAssignment[]>(
+      `/api/training-programs/${encodeURIComponent(programId)}/assignments`,
+    );
+  },
+
+  revokeAssignment(programId: string, assignmentId: string): Promise<void> {
+    return apiRequest<void>(
+      `/api/training-programs/${encodeURIComponent(programId)}/assignments/${encodeURIComponent(
+        assignmentId,
+      )}/revoke`,
+      {
+        method: "POST",
+        responseType: "void",
       },
     );
   },

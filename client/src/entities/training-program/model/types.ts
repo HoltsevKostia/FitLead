@@ -24,12 +24,13 @@ export interface AssignTrainingProgramToClientRequest {
 
 export interface TrainingProgramAssignment {
   assignmentId: string;
-  programId: string;
   clientId: string;
+  clientName: string;
   status: string;
   accessSource: string;
   assignedAtUtc: string;
   expiresAtUtc: string | null;
+  revokedAtUtc: string | null;
 }
 
 export interface TrainingProgramWorkout {

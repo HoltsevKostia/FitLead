@@ -5,12 +5,14 @@ import { useMemo, useState } from "react";
 
 import type {
   TrainingProgram,
+  TrainingProgramAssignment,
   TrainingProgramWorkout,
 } from "@/entities/training-program/model/types";
 import type { TrainerClient } from "@/entities/user/model/types";
 import type { Workout } from "@/entities/workout/model/types";
 import { AddWorkoutToProgramDayForm } from "@/features/training-programs/ui/add-workout-to-program-day-form";
 import { AssignTrainingProgramToClientForm } from "@/features/training-programs/ui/assign-training-program-to-client-form";
+import { TrainingProgramAssignmentList } from "@/features/training-programs/ui/training-program-assignment-list";
 import { TrainingProgramWorkoutEntryActions } from "@/features/training-programs/ui/training-program-workout-entry-actions";
 
 interface TrainingProgramDetailViewProps {
@@ -18,6 +20,7 @@ interface TrainingProgramDetailViewProps {
   workouts: TrainingProgramWorkout[];
   availableWorkouts: Workout[];
   clients: TrainerClient[];
+  assignments: TrainingProgramAssignment[];
 }
 
 function buildRange(count: number): number[] {
@@ -119,6 +122,7 @@ export function TrainingProgramDetailView({
   workouts,
   availableWorkouts,
   clients,
+  assignments,
 }: TrainingProgramDetailViewProps) {
   const [selectedWeek, setSelectedWeek] = useState(1);
   const weeks = useMemo(() => buildRange(program.weeksCount), [program.weeksCount]);
@@ -141,6 +145,7 @@ export function TrainingProgramDetailView({
       </div>
 
       <AssignTrainingProgramToClientForm programId={program.id} clients={clients} />
+      <TrainingProgramAssignmentList programId={program.id} assignments={assignments} />
 
       <div className="space-y-3">
         <label className="block text-sm font-medium text-foreground md:hidden" htmlFor="week-select">
