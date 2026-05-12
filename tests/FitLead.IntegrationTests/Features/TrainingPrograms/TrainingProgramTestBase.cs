@@ -12,12 +12,13 @@ public abstract class TrainingProgramTestBase : IntegrationTestBase
     protected TestUsers Users { get; }
     protected TestWorkouts Workouts { get; }
     protected TestApiClients Api { get; }
+    protected TestDb Db { get; }
 
     protected TrainingProgramTestBase(IntegrationTestFixture fixture) : base(fixture)
     {
-        var db = new TestDb(fixture);
-        Users = new TestUsers(fixture, db);
-        Workouts = new TestWorkouts(db);
+        Db = new TestDb(fixture);
+        Users = new TestUsers(fixture, Db);
+        Workouts = new TestWorkouts(Db);
         Api = new TestApiClients(fixture);
     }
 

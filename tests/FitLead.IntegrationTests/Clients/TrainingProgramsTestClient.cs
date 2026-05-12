@@ -94,6 +94,21 @@ public sealed class TrainingProgramsTestClient(HttpClient httpClient)
             includeCsrfHeader);
     }
 
+    public Task<HttpResponseMessage> AssignToClientAsync(
+        Guid programId,
+        Guid clientId,
+        DateTime? expiresAtUtc = null,
+        CancellationToken cancellationToken = default,
+        bool includeCsrfHeader = true)
+    {
+        return SendUnsafeJsonAsync(
+            HttpMethod.Post,
+            $"/api/training-programs/{programId:D}/assignments",
+            new AssignTrainingProgramToClientRequest(clientId, expiresAtUtc),
+            cancellationToken,
+            includeCsrfHeader);
+    }
+
     public Task<HttpResponseMessage> DeleteAsync(
         Guid programId,
         CancellationToken cancellationToken = default,
