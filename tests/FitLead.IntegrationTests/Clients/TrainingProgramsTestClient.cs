@@ -109,6 +109,28 @@ public sealed class TrainingProgramsTestClient(HttpClient httpClient)
             includeCsrfHeader);
     }
 
+    public Task<HttpResponseMessage> GetAssignmentsAsync(
+        Guid programId,
+        CancellationToken cancellationToken = default)
+    {
+        return SendGetAsync(
+            $"/api/training-programs/{programId:D}/assignments",
+            cancellationToken);
+    }
+
+    public Task<HttpResponseMessage> RevokeAssignmentAsync(
+        Guid programId,
+        Guid assignmentId,
+        CancellationToken cancellationToken = default,
+        bool includeCsrfHeader = true)
+    {
+        return SendUnsafeAsync(
+            HttpMethod.Post,
+            $"/api/training-programs/{programId:D}/assignments/{assignmentId:D}/revoke",
+            cancellationToken,
+            includeCsrfHeader);
+    }
+
     public Task<HttpResponseMessage> DeleteAsync(
         Guid programId,
         CancellationToken cancellationToken = default,

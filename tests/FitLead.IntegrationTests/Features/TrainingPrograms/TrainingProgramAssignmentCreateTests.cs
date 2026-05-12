@@ -1,7 +1,6 @@
 using System.Net;
 using FitLead.Application.Trainings.TrainingProgramAssignments.Commands;
 using FitLead.Domain.Trainings.TrainingProgramAssignments;
-using FitLead.Infrastructure.Persistence.Models;
 using FitLead.IntegrationTests.Helpers;
 using FitLead.IntegrationTests.Infrastructure;
 using FluentAssertions;
@@ -10,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace FitLead.IntegrationTests.Features.TrainingPrograms;
 
 [Collection(IntegrationTestCollectionNames.Default)]
-public sealed class TrainingProgramAssignmentTests(IntegrationTestFixture fixture)
+public sealed class TrainingProgramAssignmentCreateTests(IntegrationTestFixture fixture)
     : TrainingProgramTestBase(fixture)
 {
     [Fact]
@@ -179,14 +178,5 @@ public sealed class TrainingProgramAssignmentTests(IntegrationTestFixture fixtur
             includeCsrfHeader: false);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-    }
-
-    private async Task CreateTrainerClientRelationshipAsync(Guid trainerId, Guid clientId)
-    {
-        await Db.ExecuteAsync(async context =>
-        {
-            await context.TrainerClients.AddAsync(new TrainerClient(trainerId, clientId));
-            await context.SaveChangesAsync();
-        });
     }
 }

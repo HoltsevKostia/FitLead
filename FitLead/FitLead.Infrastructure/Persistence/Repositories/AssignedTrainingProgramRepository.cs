@@ -32,5 +32,19 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                          x.Status == AssignedProgramStatus.Active,
                     cancellationToken);
         }
+
+        public async Task<AssignedTrainingProgram?> GetByIdForProgramAndTrainerAsync(
+            Guid assignmentId,
+            Guid trainingProgramId,
+            Guid trainerId,
+            CancellationToken cancellationToken)
+        {
+            return await _context.AssignedTrainingPrograms
+                .FirstOrDefaultAsync(
+                    x => x.Id == assignmentId &&
+                         x.TrainingProgramId == trainingProgramId &&
+                         x.TrainerId == trainerId,
+                    cancellationToken);
+        }
     }
 }

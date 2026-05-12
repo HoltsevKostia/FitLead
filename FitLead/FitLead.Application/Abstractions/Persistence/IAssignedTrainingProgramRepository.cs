@@ -12,5 +12,11 @@ namespace FitLead.Application.Abstractions.Persistence
             Guid clientId,
             Guid trainingProgramId,
             CancellationToken cancellationToken);
+
+        Task<AssignedTrainingProgram?> GetByIdForProgramAndTrainerAsync(
+            Guid assignmentId,
+            Guid trainingProgramId,
+            Guid trainerId,
+            CancellationToken cancellationToken);
     }
 }
