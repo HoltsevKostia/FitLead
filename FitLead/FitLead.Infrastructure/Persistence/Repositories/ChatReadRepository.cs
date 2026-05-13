@@ -13,36 +13,54 @@ namespace FitLead.Infrastructure.Persistence.Repositories
             _context = context;
         }
 
-        public async Task<IReadOnlyList<ChatDto>> GetChatsForTrainerAsync(
+        public async Task<IReadOnlyList<ChatListItemDto>> GetChatsForTrainerAsync(
             Guid trainerId,
             CancellationToken cancellationToken)
         {
-            return await GetChatsQuery()
-                .Where(chat => chat.TrainerId == trainerId)
-                .OrderByDescending(chat => chat.LastMessageAtUtc ?? chat.CreatedAtUtc)
+            return await (
+                from chat in _context.Chats.AsNoTracking()
+                join trainerClient in _context.TrainerClients.AsNoTracking()
+                    on new { chat.TrainerId, chat.ClientId }
+                    equals new { trainerClient.TrainerId, trainerClient.ClientId }
+                join trainer in _context.DomainUsers.AsNoTracking()
+                    on chat.TrainerId equals trainer.Id
+                join client in _context.DomainUsers.AsNoTracking()
+                    on chat.ClientId equals client.Id
+                where chat.TrainerId == trainerId
+                orderby (chat.LastMessageAtUtc ?? chat.CreatedAtUtc) descending
+                select new ChatListItemDto(
+                    chat.Id,
+                    chat.TrainerId,
+                    trainer.FullName,
+                    chat.ClientId,
+                    client.FullName,
+                    chat.LastMessageAtUtc))
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<IReadOnlyList<ChatDto>> GetChatsForClientAsync(
+        public async Task<IReadOnlyList<ChatListItemDto>> GetChatsForClientAsync(
             Guid clientId,
             CancellationToken cancellationToken)
         {
-            return await GetChatsQuery()
-                .Where(chat => chat.ClientId == clientId)
-                .OrderByDescending(chat => chat.LastMessageAtUtc ?? chat.CreatedAtUtc)
-                .ToListAsync(cancellationToken);
-        }
-
-        private IQueryable<ChatDto> GetChatsQuery()
-        {
-            return
+            return await (
                 from chat in _context.Chats.AsNoTracking()
-                select new ChatDto(
+                join trainerClient in _context.TrainerClients.AsNoTracking()
+                    on new { chat.TrainerId, chat.ClientId }
+                    equals new { trainerClient.TrainerId, trainerClient.ClientId }
+                join trainer in _context.DomainUsers.AsNoTracking()
+                    on chat.TrainerId equals trainer.Id
+                join client in _context.DomainUsers.AsNoTracking()
+                    on chat.ClientId equals client.Id
+                where chat.ClientId == clientId
+                orderby (chat.LastMessageAtUtc ?? chat.CreatedAtUtc) descending
+                select new ChatListItemDto(
                     chat.Id,
                     chat.TrainerId,
+                    trainer.FullName,
                     chat.ClientId,
-                    chat.CreatedAtUtc,
-                    chat.LastMessageAtUtc);
+                    client.FullName,
+                    chat.LastMessageAtUtc))
+                .ToListAsync(cancellationToken);
         }
     }
 }

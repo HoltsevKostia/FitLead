@@ -1,5 +1,6 @@
 using FitLead.Api.Common.Results;
 using FitLead.Application.Messenger.Chats.Commands;
+using FitLead.Application.Messenger.Chats.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +16,17 @@ namespace FitLead.Api.Chats
         public ChatsController(IMediator mediator)
         {
             _mediator = mediator;
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> GetChats(CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new GetChatsQuery(),
+                cancellationToken);
+
+            return result.ToActionResult(this);
         }
 
         [Authorize(Policy = "TrainerOnly")]

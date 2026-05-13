@@ -4,11 +4,11 @@ namespace FitLead.Application.Abstractions.Persistence
 {
     public interface IChatReadRepository
     {
-        Task<IReadOnlyList<ChatDto>> GetChatsForTrainerAsync(
+        Task<IReadOnlyList<ChatListItemDto>> GetChatsForTrainerAsync(
             Guid trainerId,
             CancellationToken cancellationToken);
 
-        Task<IReadOnlyList<ChatDto>> GetChatsForClientAsync(
+        Task<IReadOnlyList<ChatListItemDto>> GetChatsForClientAsync(
             Guid clientId,
             CancellationToken cancellationToken);
     }

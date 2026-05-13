@@ -3,6 +3,11 @@ namespace FitLead.IntegrationTests.Clients;
 public sealed class ChatsTestClient(HttpClient httpClient)
     : AuthenticatedApiTestClient(httpClient, "chats")
 {
+    public Task<HttpResponseMessage> GetChatsAsync(CancellationToken cancellationToken = default)
+    {
+        return SendGetAsync("/api/chats", cancellationToken);
+    }
+
     public Task<HttpResponseMessage> GetOrCreateWithClientAsync(
         Guid clientId,
         CancellationToken cancellationToken = default,
