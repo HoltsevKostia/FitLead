@@ -1,5 +1,3 @@
-using FitLead.Application.Trainings.TrainingPrograms.Queries;
-
 namespace FitLead.Application.Trainings.TrainingProgramAssignments.Queries
 {
     public sealed record ClientAssignedTrainingProgramDetailsDto(
@@ -12,5 +10,5 @@ namespace FitLead.Application.Trainings.TrainingProgramAssignments.Queries
         int DaysPerWeek,
         DateTime AssignedAtUtc,
         DateTime? ExpiresAtUtc,
-        IReadOnlyList<TrainingProgramWorkoutDto> Workouts);
+        IReadOnlyList<ClientAssignedTrainingProgramWorkoutDto> Workouts);
 }

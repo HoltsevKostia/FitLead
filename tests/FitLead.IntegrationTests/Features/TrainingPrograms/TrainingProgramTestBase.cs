@@ -12,6 +12,7 @@ public abstract class TrainingProgramTestBase : IntegrationTestBase
 {
     protected TestUsers Users { get; }
     protected TestWorkouts Workouts { get; }
+    protected TestExercises Exercises { get; }
     protected TestApiClients Api { get; }
     protected TestDb Db { get; }
 
@@ -20,6 +21,7 @@ public abstract class TrainingProgramTestBase : IntegrationTestBase
         Db = new TestDb(fixture);
         Users = new TestUsers(fixture, Db);
         Workouts = new TestWorkouts(Db);
+        Exercises = new TestExercises(Db);
         Api = new TestApiClients(fixture);
     }
 

@@ -68,6 +68,21 @@ public sealed class ClientAssignedTrainingProgramAccessTests(IntegrationTestFixt
         var clientPrograms = await Api.ClientTrainingProgramsAsync(client.Auth);
         var programId = await CreateProgramAsync(trainerPrograms, "Details Program", weeksCount: 2, daysPerWeek: 3);
         var workoutId = await Workouts.CreateWorkoutAsync(trainer.Id, "Details Workout");
+        var exerciseId = await Exercises.CreateTrainerExerciseAsync(
+            trainer.Id,
+            "Push Up",
+            "Bodyweight press",
+            mediaUrl: "https://example.com/push-up.png");
+        var trainerWorkouts = await Api.WorkoutsAsync(trainer.Auth);
+        (await trainerWorkouts.AddExerciseAsync(
+            workoutId,
+            exerciseId,
+            repetitions: 12,
+            sets: 3,
+            loadKg: null,
+            restSeconds: 60,
+            trainerNote: "Keep a straight line"))
+            .StatusCode.Should().Be(HttpStatusCode.Created);
         (await trainerPrograms.AddWorkoutAsync(programId, workoutId, weekNumber: 2, dayNumber: 3))
             .StatusCode.Should().Be(HttpStatusCode.NoContent);
         var assignResponse = await trainerPrograms.AssignToClientAsync(programId, client.Id);
@@ -87,6 +102,13 @@ public sealed class ClientAssignedTrainingProgramAccessTests(IntegrationTestFixt
         workout.WeekNumber.Should().Be(2);
         workout.DayNumber.Should().Be(3);
         workout.OrderInDay.Should().Be(1);
+        var exercise = workout.Exercises.Should().ContainSingle().Subject;
+        exercise.ExerciseId.Should().Be(exerciseId);
+        exercise.ExerciseName.Should().Be("Push Up");
+        exercise.Repetitions.Should().Be(12);
+        exercise.Sets.Should().Be(3);
+        exercise.RestSeconds.Should().Be(60);
+        exercise.TrainerNote.Should().Be("Keep a straight line");
     }
 
     [Fact]
