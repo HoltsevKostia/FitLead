@@ -45,8 +45,10 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Commands
                 return Result<Guid>.Failure(Error.Forbidden("trainer.required", "User is not a trainer"));
 
             var programResult = TrainingProgram.Create(
+                _user.UserId,
                 request.Title,
-                _user.UserId);
+                request.WeeksCount,
+                request.DaysPerWeek);
             if (programResult.IsFailure)
                 return Result<Guid>.Failure(programResult.Error);
 

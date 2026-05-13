@@ -29,7 +29,10 @@ namespace FitLead.Application.Trainings.TrainingPrograms.Commands
                 return Result.Failure(programResult.Error);
 
             var program = programResult.Value;
-            var reorderResult = program.ReorderWorkouts(request.OrderedWorkoutIds);
+            var reorderResult = program.ReorderDay(
+                request.WeekNumber,
+                request.DayNumber,
+                request.OrderedEntryIds);
             if (reorderResult.IsFailure)
                 return reorderResult;
 

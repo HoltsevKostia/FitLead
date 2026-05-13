@@ -1,5 +1,7 @@
 using FitLead.Api.Common.Results;
-using FitLead.Api.Contracts.Trainings;
+using FitLead.Api.TrainingPrograms.Contracts;
+using FitLead.Application.Trainings.TrainingProgramAssignments.Commands;
+using FitLead.Application.Trainings.TrainingProgramAssignments.Queries;
 using Microsoft.AspNetCore.Authorization;
 using FitLead.Application.Trainings.TrainingPrograms.Commands;
 using FitLead.Application.Trainings.TrainingPrograms.Queries;
@@ -20,11 +22,18 @@ namespace FitLead.Api.TrainingPrograms
         }
 
         [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> Create(
-        CreateTrainingProgramCommand command)
+            [FromBody] CreateTrainingProgramRequest request,
+            CancellationToken cancellationToken)
         {
-            var result = await _mediator.Send(command);
+            var result = await _mediator.Send(
+                new CreateTrainingProgramCommand(
+                    request.Title,
+                    request.WeeksCount,
+                    request.DaysPerWeek),
+                cancellationToken);
 
             return result.ToCreated(this);
         }
@@ -37,6 +46,19 @@ namespace FitLead.Api.TrainingPrograms
                 new GetTrainingProgramsByTrainerIdQuery());
 
             return programs.ToActionResult(this);
+        }
+
+        [Authorize(Policy = "TrainerOnly")]
+        [HttpGet("{programId:guid}")]
+        public async Task<IActionResult> GetById(
+            Guid programId,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new GetTrainingProgramByIdQuery(programId),
+                cancellationToken);
+
+            return result.ToActionResult(this);
         }
 
         [Authorize(Policy = "TrainerOnly")]
@@ -54,6 +76,7 @@ namespace FitLead.Api.TrainingPrograms
         }
 
         [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
         [HttpPost("{programId:guid}/workouts")]
         public async Task<IActionResult> AddWorkout(
             Guid programId,
@@ -63,29 +86,33 @@ namespace FitLead.Api.TrainingPrograms
             var result = await _mediator.Send(
                 new AddWorkoutToProgramCommand(
                     programId,
-                    request.WorkoutId),
+                    request.WorkoutId,
+                    request.WeekNumber,
+                    request.DayNumber),
                 cancellationToken);
 
             return result.ToActionResult(this);
         }
 
         [Authorize(Policy = "TrainerOnly")]
-        [HttpDelete("{programId:guid}/workouts/{workoutId:guid}")]
+        [ValidateAntiForgeryToken]
+        [HttpDelete("{programId:guid}/workouts/{trainingProgramWorkoutId:guid}")]
         public async Task<IActionResult> RemoveWorkout(
             Guid programId,
-            Guid workoutId,
+            Guid trainingProgramWorkoutId,
             CancellationToken cancellationToken)
         {
             var result = await _mediator.Send(
                 new RemoveWorkoutFromProgramCommand(
                     programId,
-                    workoutId),
+                    trainingProgramWorkoutId),
                 cancellationToken);
 
             return result.ToActionResult(this);
         }
 
         [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
         [HttpPut("{programId:guid}/workouts/order")]
         public async Task<IActionResult> ReorderWorkouts(
             Guid programId,
@@ -93,13 +120,39 @@ namespace FitLead.Api.TrainingPrograms
             CancellationToken cancellationToken)
         {
             var result = await _mediator.Send(
-                new ReorderProgramWorkoutsCommand(programId, request.WorkoutIds),
+                new ReorderProgramWorkoutsCommand(
+                    programId,
+                    request.WeekNumber,
+                    request.DayNumber,
+                    request.EntryIds),
                 cancellationToken);
 
             return result.ToActionResult(this);
         }
 
         [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
+        [HttpPut("{programId:guid}/workouts/{trainingProgramWorkoutId:guid}/position")]
+        public async Task<IActionResult> MoveWorkout(
+            Guid programId,
+            Guid trainingProgramWorkoutId,
+            [FromBody] MoveWorkoutEntryRequest request,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new MoveWorkoutEntryCommand(
+                    programId,
+                    trainingProgramWorkoutId,
+                    request.TargetWeekNumber,
+                    request.TargetDayNumber,
+                    request.TargetOrderInDay),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
+
+        [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
         [HttpDelete("{programId:guid}")]
         public async Task<IActionResult> Delete(
             Guid programId,
@@ -113,6 +166,55 @@ namespace FitLead.Api.TrainingPrograms
         }
 
         [Authorize(Policy = "TrainerOnly")]
+        [HttpGet("{programId:guid}/assignments")]
+        public async Task<IActionResult> GetAssignments(
+            Guid programId,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new GetTrainingProgramAssignmentsQuery(programId),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
+
+        [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
+        [HttpPost("{programId:guid}/assignments/{assignmentId:guid}/revoke")]
+        public async Task<IActionResult> RevokeAssignment(
+            Guid programId,
+            Guid assignmentId,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new RevokeTrainingProgramAssignmentCommand(
+                    programId,
+                    assignmentId),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
+
+        [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
+        [HttpPost("{programId:guid}/assignments")]
+        public async Task<IActionResult> AssignToClient(
+            Guid programId,
+            [FromBody] AssignTrainingProgramToClientRequest request,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new AssignTrainingProgramToClientCommand(
+                    programId,
+                    request.ClientId,
+                    request.ExpiresAtUtc),
+                cancellationToken);
+
+            return result.ToCreated(this);
+        }
+
+        [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
         [HttpPost("{programId:guid}/deletion-confirmations")]
         public async Task<IActionResult> ConfirmDelete(
             Guid programId,

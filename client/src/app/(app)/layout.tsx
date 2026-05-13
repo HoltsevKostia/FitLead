@@ -4,12 +4,18 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/features/auth/server/get-current-user";
 import { LogoutButton } from "@/features/auth/ui/logout-button";
 
-const links = [
+const trainerLinks = [
   { href: "/dashboard", label: "Панель" },
+  { href: "/clients", label: "Клієнти" },
   { href: "/exercises", label: "Вправи" },
   { href: "/workouts", label: "Тренування" },
   { href: "/training-programs", label: "Програми" },
   { href: "/invitations", label: "Запрошення" },
+];
+
+const clientLinks = [
+  { href: "/dashboard", label: "Панель" },
+  { href: "/client/training-programs", label: "Мої програми" },
 ];
 
 export default async function AppLayout({
@@ -22,6 +28,8 @@ export default async function AppLayout({
   if (!currentUser) {
     redirect("/login");
   }
+
+  const links = currentUser.role === "Trainer" ? trainerLinks : clientLinks;
 
   return (
     <div className="app-shell">

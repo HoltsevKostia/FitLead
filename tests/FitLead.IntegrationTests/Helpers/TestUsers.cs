@@ -13,6 +13,11 @@ public sealed class TestUsers(IntegrationTestFixture fixture, TestDb db)
         return await RegisterAsync(prefix, "Test Trainer", AuthRoles.Trainer);
     }
 
+    public async Task<TestUser> RegisterClientAsync(string prefix)
+    {
+        return await RegisterAsync(prefix, "Test Client", AuthRoles.Client);
+    }
+
     private async Task<TestUser> RegisterAsync(
         string prefix,
         string fullName,

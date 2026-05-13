@@ -122,10 +122,61 @@ namespace FitLead.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("FitLead.Domain.Trainings.TrainingProgramAssignments.AssignedTrainingProgram", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AccessSource")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("AssignedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ClientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("ExpiresAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("RevokedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TrainerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TrainingProgramId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TrainingProgramId")
+                        .HasDatabaseName("IX_assigned_training_programs_training_program_id");
+
+                    b.HasIndex("ClientId", "Status")
+                        .HasDatabaseName("IX_assigned_training_programs_client_id_status");
+
+                    b.HasIndex("ClientId", "TrainingProgramId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_assigned_training_programs_active_client_program")
+                        .HasFilter("\"Status\" = 1");
+
+                    b.HasIndex("TrainerId", "ClientId")
+                        .HasDatabaseName("IX_assigned_training_programs_trainer_id_client_id");
+
+                    b.ToTable("assigned_training_programs", (string)null);
+                });
+
             modelBuilder.Entity("FitLead.Domain.Trainings.TrainingPrograms.TrainingProgram", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
+
+                    b.Property<int>("DaysPerWeek")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -135,11 +186,19 @@ namespace FitLead.Infrastructure.Migrations
                     b.Property<Guid>("TrainerId")
                         .HasColumnType("uuid");
 
+                    b.Property<int>("WeeksCount")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("TrainerId");
 
-                    b.ToTable("training_programs", (string)null);
+                    b.ToTable("training_programs", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_training_programs_days_per_week_range", "\"DaysPerWeek\" BETWEEN 1 AND 7");
+
+                            t.HasCheckConstraint("CK_training_programs_weeks_count_range", "\"WeeksCount\" BETWEEN 1 AND 24");
+                        });
                 });
 
             modelBuilder.Entity("FitLead.Domain.Trainings.TrainingPrograms.TrainingProgramWorkout", b =>
@@ -147,22 +206,35 @@ namespace FitLead.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("Order")
+                    b.Property<int>("DayNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("OrderInDay")
                         .HasColumnType("integer");
 
                     b.Property<Guid>("TrainingProgramId")
                         .HasColumnType("uuid");
+
+                    b.Property<int>("WeekNumber")
+                        .HasColumnType("integer");
 
                     b.Property<Guid>("WorkoutId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TrainingProgramId");
-
                     b.HasIndex("WorkoutId");
 
-                    b.ToTable("training_program_workouts", (string)null);
+                    b.HasIndex("TrainingProgramId", "WeekNumber", "DayNumber", "OrderInDay");
+
+                    b.ToTable("training_program_workouts", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_training_program_workouts_day_number_positive", "\"DayNumber\" > 0");
+
+                            t.HasCheckConstraint("CK_training_program_workouts_order_in_day_positive", "\"OrderInDay\" > 0");
+
+                            t.HasCheckConstraint("CK_training_program_workouts_week_number_positive", "\"WeekNumber\" > 0");
+                        });
                 });
 
             modelBuilder.Entity("FitLead.Domain.Trainings.Workouts.Workout", b =>
@@ -560,6 +632,27 @@ namespace FitLead.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("OwnerTrainerId")
                         .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("FitLead.Domain.Trainings.TrainingProgramAssignments.AssignedTrainingProgram", b =>
+                {
+                    b.HasOne("FitLead.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FitLead.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("TrainerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FitLead.Domain.Trainings.TrainingPrograms.TrainingProgram", null)
+                        .WithMany()
+                        .HasForeignKey("TrainingProgramId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("FitLead.Domain.Trainings.TrainingPrograms.TrainingProgram", b =>

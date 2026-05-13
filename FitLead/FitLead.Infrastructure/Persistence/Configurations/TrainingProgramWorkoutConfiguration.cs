@@ -11,7 +11,20 @@ namespace FitLead.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<TrainingProgramWorkout> builder)
         {
-            builder.ToTable("training_program_workouts");
+            builder.ToTable("training_program_workouts", table =>
+            {
+                table.HasCheckConstraint(
+                    "CK_training_program_workouts_week_number_positive",
+                    "\"WeekNumber\" > 0");
+
+                table.HasCheckConstraint(
+                    "CK_training_program_workouts_day_number_positive",
+                    "\"DayNumber\" > 0");
+
+                table.HasCheckConstraint(
+                    "CK_training_program_workouts_order_in_day_positive",
+                    "\"OrderInDay\" > 0");
+            });
 
             builder.HasKey(x => x.Id);
 
@@ -24,11 +37,24 @@ namespace FitLead.Infrastructure.Persistence.Configurations
             builder.Property(x => x.WorkoutId)
                 .IsRequired();
 
-            builder.Property(x => x.Order)
+            builder.Property(x => x.WeekNumber)
                 .IsRequired();
 
-            builder.HasIndex(x => x.TrainingProgramId);
+            builder.Property(x => x.DayNumber)
+                .IsRequired();
+
+            builder.Property(x => x.OrderInDay)
+                .IsRequired();
+
             builder.HasIndex(x => x.WorkoutId);
+
+            builder.HasIndex(x => new
+            {
+                x.TrainingProgramId,
+                x.WeekNumber,
+                x.DayNumber,
+                x.OrderInDay
+            });
 
             builder.HasOne<TrainingProgram>()
                 .WithMany(x => x.Workouts)

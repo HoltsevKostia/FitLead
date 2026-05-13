@@ -1,6 +1,7 @@
-﻿namespace FitLead.Api.Contracts.Trainings
+namespace FitLead.Api.TrainingPrograms.Contracts
 {
     public sealed record AddWorkoutToProgramRequest(
-        Guid WorkoutId
-    );
+        Guid WorkoutId,
+        int WeekNumber,
+        int DayNumber);
 }

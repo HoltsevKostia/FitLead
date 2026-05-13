@@ -1,6 +1,5 @@
-namespace FitLead.Api.Contracts.Trainings
+namespace FitLead.Api.TrainingPrograms.Contracts
 {
     public sealed record ConfirmDeleteTrainingProgramRequest(
-        string Token
-    );
+        string Token);
 }
