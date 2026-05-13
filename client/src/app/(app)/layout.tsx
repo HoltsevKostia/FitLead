@@ -6,6 +6,7 @@ import { LogoutButton } from "@/features/auth/ui/logout-button";
 
 const trainerLinks = [
   { href: "/dashboard", label: "Панель" },
+  { href: "/chats", label: "Чати" },
   { href: "/clients", label: "Клієнти" },
   { href: "/exercises", label: "Вправи" },
   { href: "/workouts", label: "Тренування" },
@@ -15,6 +16,7 @@ const trainerLinks = [
 
 const clientLinks = [
   { href: "/dashboard", label: "Панель" },
+  { href: "/chats", label: "Чати" },
   { href: "/client/training-programs", label: "Мої програми" },
 ];
 
