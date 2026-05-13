@@ -16,10 +16,19 @@ import { ExerciseMediaPreview } from "@/features/exercises/ui/exercise-media-pre
 
 interface ClientAssignedTrainingProgramDetailViewProps {
   program: ClientAssignedTrainingProgramDetails;
+  initialWeek?: number;
 }
 
 function buildRange(count: number): number[] {
   return Array.from({ length: count }, (_, index) => index + 1);
+}
+
+function getInitialWeek(initialWeek: number | undefined, weeksCount: number): number {
+  if (!initialWeek || initialWeek < 1 || initialWeek > weeksCount) {
+    return 1;
+  }
+
+  return initialWeek;
 }
 
 function formatDate(value: string | null): string {
@@ -52,7 +61,40 @@ function getEntriesForDay(
     .sort((first, second) => first.orderInDay - second.orderInDay);
 }
 
-function ExerciseCard({ exercise }: { exercise: WorkoutExerciseDetails }) {
+function buildProgramWeekHref(assignmentId: string, weekNumber: number): string {
+  return `/client/training-programs/${assignmentId}?week=${weekNumber}`;
+}
+
+function buildWorkoutHref(
+  assignmentId: string,
+  workoutId: string,
+  weekNumber: number,
+): string {
+  const returnTo = buildProgramWeekHref(assignmentId, weekNumber);
+  return `/client/training-programs/${assignmentId}/workouts/${workoutId}?returnTo=${encodeURIComponent(returnTo)}`;
+}
+
+function buildExerciseHref(
+  assignmentId: string,
+  workoutId: string,
+  workoutExerciseId: string,
+  weekNumber: number,
+): string {
+  const returnTo = buildProgramWeekHref(assignmentId, weekNumber);
+  return `/client/training-programs/${assignmentId}/workouts/${workoutId}/exercises/${workoutExerciseId}?returnTo=${encodeURIComponent(returnTo)}`;
+}
+
+function ExerciseCard({
+  assignmentId,
+  workoutId,
+  selectedWeek,
+  exercise,
+}: {
+  assignmentId: string;
+  workoutId: string;
+  selectedWeek: number;
+  exercise: WorkoutExerciseDetails;
+}) {
   return (
     <article className="rounded-xl border border-border bg-surface px-4 py-4">
       <div className="space-y-3">
@@ -73,7 +115,17 @@ function ExerciseCard({ exercise }: { exercise: WorkoutExerciseDetails }) {
         </div>
 
         <div className="space-y-2">
-          <h4 className="text-base font-semibold text-foreground">{exercise.exerciseName}</h4>
+          <Link
+            href={buildExerciseHref(
+              assignmentId,
+              workoutId,
+              exercise.workoutExerciseId,
+              selectedWeek,
+            )}
+            className="block text-base font-semibold text-foreground hover:text-accent"
+          >
+            {exercise.exerciseName}
+          </Link>
           <p className="text-sm leading-6 text-muted">
             {exercise.exerciseDescription || "Опис поки не додано."}
           </p>
@@ -112,7 +164,15 @@ function ExerciseCard({ exercise }: { exercise: WorkoutExerciseDetails }) {
   );
 }
 
-function WorkoutCard({ workout }: { workout: ClientAssignedTrainingProgramWorkout }) {
+function WorkoutCard({
+  assignmentId,
+  selectedWeek,
+  workout,
+}: {
+  assignmentId: string;
+  selectedWeek: number;
+  workout: ClientAssignedTrainingProgramWorkout;
+}) {
   const exercises = [...workout.exercises].sort((first, second) => first.order - second.order);
 
   return (
@@ -126,18 +186,27 @@ function WorkoutCard({ workout }: { workout: ClientAssignedTrainingProgramWorkou
         </div>
 
         <div>
-          <h3 className="text-lg font-semibold text-foreground">{workout.workoutName}</h3>
+          <Link
+            href={buildWorkoutHref(assignmentId, workout.workoutId, selectedWeek)}
+            className="block text-lg font-semibold text-foreground hover:text-accent"
+          >
+            {workout.workoutName}
+          </Link>
           <p className="mt-1 text-sm text-muted">
-            {exercises.length > 0
-              ? `${exercises.length} вправ`
-              : "Вправи поки не додано"}
+            {exercises.length > 0 ? `${exercises.length} вправ` : "Вправи поки не додано"}
           </p>
         </div>
 
         {exercises.length > 0 ? (
           <div className="space-y-3">
             {exercises.map((exercise) => (
-              <ExerciseCard key={exercise.workoutExerciseId} exercise={exercise} />
+              <ExerciseCard
+                key={exercise.workoutExerciseId}
+                assignmentId={assignmentId}
+                workoutId={workout.workoutId}
+                selectedWeek={selectedWeek}
+                exercise={exercise}
+              />
             ))}
           </div>
         ) : null}
@@ -147,9 +216,13 @@ function WorkoutCard({ workout }: { workout: ClientAssignedTrainingProgramWorkou
 }
 
 function DayCard({
+  assignmentId,
+  selectedWeek,
   dayNumber,
   entries,
 }: {
+  assignmentId: string;
+  selectedWeek: number;
   dayNumber: number;
   entries: ClientAssignedTrainingProgramWorkout[];
 }) {
@@ -169,7 +242,12 @@ function DayCard({
       ) : (
         <div className="space-y-3">
           {entries.map((entry) => (
-            <WorkoutCard key={entry.id} workout={entry} />
+            <WorkoutCard
+              key={entry.id}
+              assignmentId={assignmentId}
+              selectedWeek={selectedWeek}
+              workout={entry}
+            />
           ))}
         </div>
       )}
@@ -179,8 +257,11 @@ function DayCard({
 
 export function ClientAssignedTrainingProgramDetailView({
   program,
+  initialWeek,
 }: ClientAssignedTrainingProgramDetailViewProps) {
-  const [selectedWeek, setSelectedWeek] = useState(1);
+  const [selectedWeek, setSelectedWeek] = useState(() =>
+    getInitialWeek(initialWeek, program.weeksCount),
+  );
   const weeks = useMemo(() => buildRange(program.weeksCount), [program.weeksCount]);
   const days = useMemo(() => buildRange(program.daysPerWeek), [program.daysPerWeek]);
 
@@ -246,6 +327,8 @@ export function ClientAssignedTrainingProgramDetailView({
         {days.map((dayNumber) => (
           <DayCard
             key={dayNumber}
+            assignmentId={program.assignmentId}
+            selectedWeek={selectedWeek}
             dayNumber={dayNumber}
             entries={getEntriesForDay(program.workouts, selectedWeek, dayNumber)}
           />
