@@ -1,0 +1,48 @@
+using FitLead.Api.Common.Results;
+using FitLead.Application.Messenger.Chats.Commands;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace FitLead.Api.Chats
+{
+    [ApiController]
+    [Route("api/chats")]
+    public sealed class ChatsController : ControllerBase
+    {
+        private readonly IMediator _mediator;
+
+        public ChatsController(IMediator mediator)
+        {
+            _mediator = mediator;
+        }
+
+        [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
+        [HttpPost("with-client/{clientId:guid}")]
+        public async Task<IActionResult> GetOrCreateWithClient(
+            Guid clientId,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new GetOrCreateChatWithClientCommand(clientId),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
+
+        [Authorize(Policy = "ClientOnly")]
+        [ValidateAntiForgeryToken]
+        [HttpPost("with-trainer/{trainerId:guid}")]
+        public async Task<IActionResult> GetOrCreateWithTrainer(
+            Guid trainerId,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new GetOrCreateChatWithTrainerCommand(trainerId),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
+    }
+}

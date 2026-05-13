@@ -37,16 +37,10 @@ namespace FitLead.Infrastructure.Persistence.Repositories
         {
             return
                 from chat in _context.Chats.AsNoTracking()
-                join trainer in _context.DomainUsers.AsNoTracking()
-                    on chat.TrainerId equals trainer.Id
-                join client in _context.DomainUsers.AsNoTracking()
-                    on chat.ClientId equals client.Id
                 select new ChatDto(
                     chat.Id,
-                    trainer.Id,
-                    client.Id,
-                    trainer.FullName,
-                    client.FullName,
+                    chat.TrainerId,
+                    chat.ClientId,
                     chat.CreatedAtUtc,
                     chat.LastMessageAtUtc);
         }
