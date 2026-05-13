@@ -58,6 +58,8 @@ namespace FitLead.Infrastructure
             services.AddScoped<IWorkoutReadRepository, WorkoutReadRepository>();
             services.AddScoped<IInvitationRepository, InvitationRepository>();
             services.AddScoped<IInvitationReadRepository, InvitationReadRepository>();
+            services.AddScoped<IChatRepository, ChatRepository>();
+            services.AddScoped<IChatReadRepository, ChatReadRepository>();
             services.AddScoped<IInvitationLinkService, InvitationLinkService>();
             services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
             services.AddScoped(typeof(IPipelineBehavior<,>), typeof(DomainExceptionToResultBehavior<,>));
