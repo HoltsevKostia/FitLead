@@ -1,3 +1,5 @@
+import type { WorkoutExerciseDetails } from "@/entities/workout/model/types";
+
 export interface TrainingProgram {
   id: string;
   title: string;
@@ -17,6 +19,22 @@ export interface AddTrainingProgramWorkoutRequest {
   dayNumber: number;
 }
 
+export interface AssignTrainingProgramToClientRequest {
+  clientId: string;
+  expiresAtUtc: string | null;
+}
+
+export interface TrainingProgramAssignment {
+  assignmentId: string;
+  clientId: string;
+  clientName: string;
+  status: string;
+  accessSource: string;
+  assignedAtUtc: string;
+  expiresAtUtc: string | null;
+  revokedAtUtc: string | null;
+}
+
 export interface TrainingProgramWorkout {
   id: string;
   workoutId: string;
@@ -25,4 +43,26 @@ export interface TrainingProgramWorkout {
   weekNumber: number;
   dayNumber: number;
   orderInDay: number;
+}
+
+export interface ClientAssignedTrainingProgram {
+  assignmentId: string;
+  programId: string;
+  title: string;
+  trainerId: string;
+  trainerName: string;
+  weeksCount: number;
+  daysPerWeek: number;
+  assignedAtUtc: string;
+  expiresAtUtc: string | null;
+}
+
+export interface ClientAssignedTrainingProgramWorkout extends TrainingProgramWorkout {
+  exercises: WorkoutExerciseDetails[];
+}
+
+export interface ClientAssignedTrainingProgramDetails
+  extends Omit<ClientAssignedTrainingProgram, "programId"> {
+  programId: string;
+  workouts: ClientAssignedTrainingProgramWorkout[];
 }

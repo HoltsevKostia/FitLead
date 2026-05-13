@@ -1,7 +1,9 @@
 import type {
   AddTrainingProgramWorkoutRequest,
+  AssignTrainingProgramToClientRequest,
   CreateTrainingProgramRequest,
   TrainingProgram,
+  TrainingProgramAssignment,
   TrainingProgramWorkout,
 } from "@/entities/training-program/model/types";
 import { apiRequest } from "@/lib/api/http-client";
@@ -51,6 +53,45 @@ export const trainingProgramsApi = {
       )}`,
       {
         method: "DELETE",
+        responseType: "void",
+      },
+    );
+  },
+
+  assignToClient(
+    programId: string,
+    request: AssignTrainingProgramToClientRequest,
+  ): Promise<{
+    assignmentId: string;
+    programId: string;
+    clientId: string;
+    status: string;
+    accessSource: string;
+    assignedAtUtc: string;
+    expiresAtUtc: string | null;
+  }> {
+    return apiRequest(
+      `/api/training-programs/${encodeURIComponent(programId)}/assignments`,
+      {
+        method: "POST",
+        body: request,
+      },
+    );
+  },
+
+  getAssignments(programId: string): Promise<TrainingProgramAssignment[]> {
+    return apiRequest<TrainingProgramAssignment[]>(
+      `/api/training-programs/${encodeURIComponent(programId)}/assignments`,
+    );
+  },
+
+  revokeAssignment(programId: string, assignmentId: string): Promise<void> {
+    return apiRequest<void>(
+      `/api/training-programs/${encodeURIComponent(programId)}/assignments/${encodeURIComponent(
+        assignmentId,
+      )}/revoke`,
+      {
+        method: "POST",
         responseType: "void",
       },
     );

@@ -37,6 +37,30 @@ export function mapTrainingProgramMutationError(error: unknown): string {
     return "Програму не знайдено.";
   }
 
+  if (error.errorCode === "assignment.already_exists") {
+    return "Цей клієнт уже має активний доступ до програми.";
+  }
+
+  if (error.errorCode === "client.not_found") {
+    return "Клієнта не знайдено серед ваших клієнтів.";
+  }
+
+  if (error.errorCode === "training_program.assignment.client_id_required") {
+    return "Виберіть клієнта.";
+  }
+
+  if (error.errorCode === "training_program.assignment.create.expires_at_invalid") {
+    return "Дата завершення має бути у майбутньому.";
+  }
+
+  if (error.errorCode === "training_program.assignment.not_found") {
+    return "Призначення не знайдено.";
+  }
+
+  if (error.errorCode === "training_program.assignment.revoke.invalid_status") {
+    return "Це призначення вже не активне.";
+  }
+
   if (error.errorCode === "workout.not_found") {
     return "Тренування не знайдено.";
   }

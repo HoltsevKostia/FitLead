@@ -17,6 +17,11 @@ namespace FitLead.Application.Modules.Users
             Guid clientId,
             CancellationToken cancellationToken = default);
 
+        Task<bool> HasTrainerClientRelationshipAsync(
+            Guid trainerId,
+            Guid clientId,
+            CancellationToken cancellationToken = default);
+
         Task EnsureTrainerClientRelationshipAsync(
             Guid trainerId,
             Guid clientId,

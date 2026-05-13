@@ -25,6 +25,13 @@ public sealed class TrainingProgramsTestClient(HttpClient httpClient)
         return SendGetAsync("/api/training-programs", cancellationToken);
     }
 
+    public Task<HttpResponseMessage> GetByIdAsync(
+        Guid programId,
+        CancellationToken cancellationToken = default)
+    {
+        return SendGetAsync($"/api/training-programs/{programId:D}", cancellationToken);
+    }
+
     public Task<HttpResponseMessage> GetWorkoutsAsync(
         Guid programId,
         CancellationToken cancellationToken = default)
@@ -90,6 +97,43 @@ public sealed class TrainingProgramsTestClient(HttpClient httpClient)
         return SendUnsafeAsync(
             HttpMethod.Delete,
             $"/api/training-programs/{programId:D}/workouts/{trainingProgramWorkoutId:D}",
+            cancellationToken,
+            includeCsrfHeader);
+    }
+
+    public Task<HttpResponseMessage> AssignToClientAsync(
+        Guid programId,
+        Guid clientId,
+        DateTime? expiresAtUtc = null,
+        CancellationToken cancellationToken = default,
+        bool includeCsrfHeader = true)
+    {
+        return SendUnsafeJsonAsync(
+            HttpMethod.Post,
+            $"/api/training-programs/{programId:D}/assignments",
+            new AssignTrainingProgramToClientRequest(clientId, expiresAtUtc),
+            cancellationToken,
+            includeCsrfHeader);
+    }
+
+    public Task<HttpResponseMessage> GetAssignmentsAsync(
+        Guid programId,
+        CancellationToken cancellationToken = default)
+    {
+        return SendGetAsync(
+            $"/api/training-programs/{programId:D}/assignments",
+            cancellationToken);
+    }
+
+    public Task<HttpResponseMessage> RevokeAssignmentAsync(
+        Guid programId,
+        Guid assignmentId,
+        CancellationToken cancellationToken = default,
+        bool includeCsrfHeader = true)
+    {
+        return SendUnsafeAsync(
+            HttpMethod.Post,
+            $"/api/training-programs/{programId:D}/assignments/{assignmentId:D}/revoke",
             cancellationToken,
             includeCsrfHeader);
     }

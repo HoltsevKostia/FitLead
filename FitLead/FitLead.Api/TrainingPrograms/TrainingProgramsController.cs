@@ -1,5 +1,7 @@
 using FitLead.Api.Common.Results;
 using FitLead.Api.TrainingPrograms.Contracts;
+using FitLead.Application.Trainings.TrainingProgramAssignments.Commands;
+using FitLead.Application.Trainings.TrainingProgramAssignments.Queries;
 using Microsoft.AspNetCore.Authorization;
 using FitLead.Application.Trainings.TrainingPrograms.Commands;
 using FitLead.Application.Trainings.TrainingPrograms.Queries;
@@ -161,6 +163,54 @@ namespace FitLead.Api.TrainingPrograms
                 cancellationToken);
 
             return result.ToActionResult(this);
+        }
+
+        [Authorize(Policy = "TrainerOnly")]
+        [HttpGet("{programId:guid}/assignments")]
+        public async Task<IActionResult> GetAssignments(
+            Guid programId,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new GetTrainingProgramAssignmentsQuery(programId),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
+
+        [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
+        [HttpPost("{programId:guid}/assignments/{assignmentId:guid}/revoke")]
+        public async Task<IActionResult> RevokeAssignment(
+            Guid programId,
+            Guid assignmentId,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new RevokeTrainingProgramAssignmentCommand(
+                    programId,
+                    assignmentId),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
+
+        [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
+        [HttpPost("{programId:guid}/assignments")]
+        public async Task<IActionResult> AssignToClient(
+            Guid programId,
+            [FromBody] AssignTrainingProgramToClientRequest request,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new AssignTrainingProgramToClientCommand(
+                    programId,
+                    request.ClientId,
+                    request.ExpiresAtUtc),
+                cancellationToken);
+
+            return result.ToCreated(this);
         }
 
         [Authorize(Policy = "TrainerOnly")]

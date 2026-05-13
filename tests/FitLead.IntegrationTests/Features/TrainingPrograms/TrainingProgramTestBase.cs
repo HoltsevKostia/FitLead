@@ -3,6 +3,7 @@ using FitLead.Application.Trainings.TrainingPrograms.Queries;
 using FitLead.IntegrationTests.Clients;
 using FitLead.IntegrationTests.Helpers;
 using FitLead.IntegrationTests.Infrastructure;
+using FitLead.Infrastructure.Persistence.Models;
 using FluentAssertions;
 
 namespace FitLead.IntegrationTests.Features.TrainingPrograms;
@@ -11,13 +12,16 @@ public abstract class TrainingProgramTestBase : IntegrationTestBase
 {
     protected TestUsers Users { get; }
     protected TestWorkouts Workouts { get; }
+    protected TestExercises Exercises { get; }
     protected TestApiClients Api { get; }
+    protected TestDb Db { get; }
 
     protected TrainingProgramTestBase(IntegrationTestFixture fixture) : base(fixture)
     {
-        var db = new TestDb(fixture);
-        Users = new TestUsers(fixture, db);
-        Workouts = new TestWorkouts(db);
+        Db = new TestDb(fixture);
+        Users = new TestUsers(fixture, Db);
+        Workouts = new TestWorkouts(Db);
+        Exercises = new TestExercises(Db);
         Api = new TestApiClients(fixture);
     }
 
@@ -39,5 +43,14 @@ public abstract class TrainingProgramTestBase : IntegrationTestBase
         var response = await client.GetWorkoutsAsync(programId);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         return await response.ReadRequiredJsonAsync<IReadOnlyList<TrainingProgramWorkoutDto>>();
+    }
+
+    protected async Task CreateTrainerClientRelationshipAsync(Guid trainerId, Guid clientId)
+    {
+        await Db.ExecuteAsync(async context =>
+        {
+            await context.TrainerClients.AddAsync(new TrainerClient(trainerId, clientId));
+            await context.SaveChangesAsync();
+        });
     }
 }
