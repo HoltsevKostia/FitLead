@@ -8,6 +8,13 @@ public sealed class ChatsTestClient(HttpClient httpClient)
         return SendGetAsync("/api/chats", cancellationToken);
     }
 
+    public Task<HttpResponseMessage> GetChatAsync(
+        Guid chatId,
+        CancellationToken cancellationToken = default)
+    {
+        return SendGetAsync($"/api/chats/{chatId:D}", cancellationToken);
+    }
+
     public Task<HttpResponseMessage> GetOrCreateWithClientAsync(
         Guid clientId,
         CancellationToken cancellationToken = default,

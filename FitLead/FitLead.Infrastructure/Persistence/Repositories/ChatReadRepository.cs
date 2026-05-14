@@ -13,6 +13,28 @@ namespace FitLead.Infrastructure.Persistence.Repositories
             _context = context;
         }
 
+        public async Task<ChatDetailsDto?> GetByIdAsync(
+            Guid chatId,
+            CancellationToken cancellationToken)
+        {
+            return await (
+                from chat in _context.Chats.AsNoTracking()
+                join trainer in _context.DomainUsers.AsNoTracking()
+                    on chat.TrainerId equals trainer.Id
+                join client in _context.DomainUsers.AsNoTracking()
+                    on chat.ClientId equals client.Id
+                where chat.Id == chatId
+                select new ChatDetailsDto(
+                    chat.Id,
+                    chat.TrainerId,
+                    trainer.FullName,
+                    chat.ClientId,
+                    client.FullName,
+                    chat.CreatedAtUtc,
+                    chat.LastMessageAtUtc))
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
         public async Task<IReadOnlyList<ChatListItemDto>> GetChatsForTrainerAsync(
             Guid trainerId,
             CancellationToken cancellationToken)

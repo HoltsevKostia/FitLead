@@ -29,6 +29,19 @@ namespace FitLead.Api.Chats
             return result.ToActionResult(this);
         }
 
+        [Authorize]
+        [HttpGet("{chatId:guid}")]
+        public async Task<IActionResult> GetChat(
+            Guid chatId,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new GetChatDetailsQuery(chatId),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
+
         [Authorize(Policy = "TrainerOnly")]
         [ValidateAntiForgeryToken]
         [HttpPost("with-client/{clientId:guid}")]

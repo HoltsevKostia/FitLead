@@ -1,15 +1,36 @@
-import Link from "next/link";
+import { notFound } from "next/navigation";
 
-export default function ChatDetailsPage() {
-  return (
-    <section className="space-y-6">
-      <Link href="/chats" className="text-sm font-medium text-accent hover:text-accent-strong">
-        Назад до чатів
-      </Link>
+import { getCurrentUser } from "@/features/auth/server/get-current-user";
+import { getChat } from "@/features/chats/server/get-chat";
+import { ChatShell } from "@/features/chats/ui/chat-shell";
+import { isApiError } from "@/lib/api/api-error";
 
-      <div className="space-y-3">
-        <h1 className="text-3xl font-semibold tracking-tight">Чат</h1>
-      </div>
-    </section>
-  );
+interface ChatDetailsPageProps {
+  params: Promise<{
+    chatId: string;
+  }>;
+}
+
+async function getVisibleChatOrNotFound(chatId: string) {
+  try {
+    return await getChat(chatId);
+  } catch (error) {
+    if (isApiError(error) && error.status === 404) {
+      notFound();
+    }
+
+    throw error;
+  }
+}
+
+export default async function ChatDetailsPage({ params }: ChatDetailsPageProps) {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    notFound();
+  }
+
+  const { chatId } = await params;
+  const chat = await getVisibleChatOrNotFound(chatId);
+
+  return <ChatShell chat={chat} currentUser={currentUser} />;
 }

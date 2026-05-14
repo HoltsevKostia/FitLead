@@ -14,3 +14,13 @@ export interface Chat {
   createdAtUtc: string;
   lastMessageAtUtc: string | null;
 }
+
+export interface ChatDetails {
+  id: string;
+  trainerId: string;
+  trainerName: string;
+  clientId: string;
+  clientName: string;
+  createdAtUtc: string;
+  lastMessageAtUtc: string | null;
+}
