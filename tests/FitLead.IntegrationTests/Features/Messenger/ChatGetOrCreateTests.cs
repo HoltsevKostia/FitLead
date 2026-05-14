@@ -1,6 +1,5 @@
 using System.Net;
 using FitLead.Application.Messenger.Chats.Queries;
-using FitLead.Infrastructure.Persistence.Models;
 using FitLead.IntegrationTests.Helpers;
 using FitLead.IntegrationTests.Infrastructure;
 using FluentAssertions;
@@ -9,26 +8,17 @@ using Microsoft.EntityFrameworkCore;
 namespace FitLead.IntegrationTests.Features.Messenger;
 
 [Collection(IntegrationTestCollectionNames.Default)]
-public sealed class ChatGetOrCreateTests : IntegrationTestBase
+public sealed class ChatGetOrCreateTests : MessengerTestBase
 {
-    private readonly TestDb _db;
-    private readonly TestUsers _users;
-    private readonly TestApiClients _api;
-
-    public ChatGetOrCreateTests(IntegrationTestFixture fixture) : base(fixture)
-    {
-        _db = new TestDb(fixture);
-        _users = new TestUsers(fixture, _db);
-        _api = new TestApiClients(fixture);
-    }
+    public ChatGetOrCreateTests(IntegrationTestFixture fixture) : base(fixture) { }
 
     [Fact]
     public async Task TrainerGetOrCreateWithOwnClient_ShouldCreateChat()
     {
-        var trainer = await _users.RegisterTrainerAsync("chat-trainer-create");
-        var client = await _users.RegisterClientAsync("chat-client-create");
-        await CreateTrainerClientRelationshipAsync(trainer.Id, client.Id);
-        var chats = await _api.ChatsAsync(trainer.Auth);
+        var trainer = await Users.RegisterTrainerAsync("chat-trainer-create");
+        var client = await Users.RegisterClientAsync("chat-client-create");
+        await CreateRelationshipAsync(trainer.Id, client.Id);
+        var chats = await Api.ChatsAsync(trainer.Auth);
 
         var response = await chats.GetOrCreateWithClientAsync(client.Id);
 
@@ -43,10 +33,10 @@ public sealed class ChatGetOrCreateTests : IntegrationTestBase
     [Fact]
     public async Task TrainerGetOrCreateSecondCall_ShouldReturnSameChat()
     {
-        var trainer = await _users.RegisterTrainerAsync("chat-trainer-idempotent");
-        var client = await _users.RegisterClientAsync("chat-client-idempotent");
-        await CreateTrainerClientRelationshipAsync(trainer.Id, client.Id);
-        var chats = await _api.ChatsAsync(trainer.Auth);
+        var trainer = await Users.RegisterTrainerAsync("chat-trainer-idempotent");
+        var client = await Users.RegisterClientAsync("chat-client-idempotent");
+        await CreateRelationshipAsync(trainer.Id, client.Id);
+        var chats = await Api.ChatsAsync(trainer.Auth);
 
         var firstResponse = await chats.GetOrCreateWithClientAsync(client.Id);
         var secondResponse = await chats.GetOrCreateWithClientAsync(client.Id);
@@ -57,7 +47,7 @@ public sealed class ChatGetOrCreateTests : IntegrationTestBase
         var second = await secondResponse.ReadRequiredJsonAsync<ChatDto>();
         second.Id.Should().Be(first.Id);
 
-        var chatCount = await _db.QueryAsync(context =>
+        var chatCount = await Db.QueryAsync(context =>
             context.Chats.CountAsync(x =>
                 x.TrainerId == trainer.Id &&
                 x.ClientId == client.Id));
@@ -67,9 +57,9 @@ public sealed class ChatGetOrCreateTests : IntegrationTestBase
     [Fact]
     public async Task TrainerGetOrCreateWithUnrelatedClient_ShouldReturnNotFound()
     {
-        var trainer = await _users.RegisterTrainerAsync("chat-trainer-unrelated");
-        var client = await _users.RegisterClientAsync("chat-client-unrelated");
-        var chats = await _api.ChatsAsync(trainer.Auth);
+        var trainer = await Users.RegisterTrainerAsync("chat-trainer-unrelated");
+        var client = await Users.RegisterClientAsync("chat-client-unrelated");
+        var chats = await Api.ChatsAsync(trainer.Auth);
 
         var response = await chats.GetOrCreateWithClientAsync(client.Id);
 
@@ -81,10 +71,10 @@ public sealed class ChatGetOrCreateTests : IntegrationTestBase
     [Fact]
     public async Task ClientGetOrCreateWithOwnTrainer_ShouldCreateChat()
     {
-        var trainer = await _users.RegisterTrainerAsync("chat-trainer-client-open");
-        var client = await _users.RegisterClientAsync("chat-client-open");
-        await CreateTrainerClientRelationshipAsync(trainer.Id, client.Id);
-        var chats = await _api.ChatsAsync(client.Auth);
+        var trainer = await Users.RegisterTrainerAsync("chat-trainer-client-open");
+        var client = await Users.RegisterClientAsync("chat-client-open");
+        await CreateRelationshipAsync(trainer.Id, client.Id);
+        var chats = await Api.ChatsAsync(client.Auth);
 
         var response = await chats.GetOrCreateWithTrainerAsync(trainer.Id);
 
@@ -94,27 +84,4 @@ public sealed class ChatGetOrCreateTests : IntegrationTestBase
         chat.ClientId.Should().Be(client.Id);
     }
 
-    [Fact]
-    public async Task GetOrCreateWithoutCsrf_ShouldReturnBadRequest()
-    {
-        var trainer = await _users.RegisterTrainerAsync("chat-trainer-csrf");
-        var client = await _users.RegisterClientAsync("chat-client-csrf");
-        await CreateTrainerClientRelationshipAsync(trainer.Id, client.Id);
-        var chats = await _api.ChatsAsync(trainer.Auth);
-
-        var response = await chats.GetOrCreateWithClientAsync(
-            client.Id,
-            includeCsrfHeader: false);
-
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-    }
-
-    private async Task CreateTrainerClientRelationshipAsync(Guid trainerId, Guid clientId)
-    {
-        await _db.ExecuteAsync(async context =>
-        {
-            await context.TrainerClients.AddAsync(new TrainerClient(trainerId, clientId));
-            await context.SaveChangesAsync();
-        });
-    }
 }

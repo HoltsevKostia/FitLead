@@ -38,4 +38,18 @@ public sealed class ChatsTestClient(HttpClient httpClient)
             cancellationToken,
             includeCsrfHeader);
     }
+
+    public Task<HttpResponseMessage> SendTextMessageAsync(
+        Guid chatId,
+        string text,
+        CancellationToken cancellationToken = default,
+        bool includeCsrfHeader = true)
+    {
+        return SendUnsafeJsonAsync(
+            HttpMethod.Post,
+            $"/api/chats/{chatId:D}/messages",
+            new { text },
+            cancellationToken,
+            includeCsrfHeader);
+    }
 }
