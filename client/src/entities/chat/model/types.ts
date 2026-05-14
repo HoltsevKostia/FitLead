@@ -24,3 +24,18 @@ export interface ChatDetails {
   createdAtUtc: string;
   lastMessageAtUtc: string | null;
 }
+
+export interface ChatMessage {
+  id: string;
+  chatId: string;
+  senderId: string;
+  senderName: string;
+  type: string;
+  text: string | null;
+  createdAtUtc: string;
+}
+
+export interface ChatMessageHistory {
+  items: ChatMessage[];
+  hasMore: boolean;
+}

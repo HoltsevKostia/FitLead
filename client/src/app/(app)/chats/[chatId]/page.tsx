@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { getCurrentUser } from "@/features/auth/server/get-current-user";
 import { getChat } from "@/features/chats/server/get-chat";
+import { getChatMessages } from "@/features/chats/server/get-chat-messages";
 import { ChatShell } from "@/features/chats/ui/chat-shell";
 import { isApiError } from "@/lib/api/api-error";
 
@@ -31,6 +32,13 @@ export default async function ChatDetailsPage({ params }: ChatDetailsPageProps) 
 
   const { chatId } = await params;
   const chat = await getVisibleChatOrNotFound(chatId);
+  const history = await getChatMessages(chatId, 50);
 
-  return <ChatShell chat={chat} currentUser={currentUser} />;
+  return (
+    <ChatShell
+      chat={chat}
+      currentUser={currentUser}
+      messages={history.items}
+    />
+  );
 }
