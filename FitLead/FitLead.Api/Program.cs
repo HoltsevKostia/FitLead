@@ -195,6 +195,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     await DevIdentitySeeder.SeedAsync(app.Services);
+    await DemoMessengerSeeder.SeedAsync(app.Services);
     using (var scope = app.Services.CreateScope())
     {
         var dbContext = scope.ServiceProvider.GetRequiredService<FitLeadDbContext>();
