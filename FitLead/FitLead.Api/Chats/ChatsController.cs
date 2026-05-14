@@ -1,4 +1,6 @@
 using FitLead.Api.Common.Results;
+using FitLead.Api.Chats.Contracts;
+using FitLead.Application.Messenger.ChatMessages.Commands;
 using FitLead.Application.Messenger.Chats.Commands;
 using FitLead.Application.Messenger.Chats.Queries;
 using MediatR;
@@ -65,6 +67,21 @@ namespace FitLead.Api.Chats
         {
             var result = await _mediator.Send(
                 new GetOrCreateChatWithTrainerCommand(trainerId),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
+
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        [HttpPost("{chatId:guid}/messages")]
+        public async Task<IActionResult> SendTextMessage(
+            Guid chatId,
+            [FromBody] SendTextMessageRequest request,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new SendTextMessageCommand(chatId, request.Text),
                 cancellationToken);
 
             return result.ToActionResult(this);

@@ -54,5 +54,13 @@ namespace FitLead.Domain.Messenger.Chats
         {
             return userId == TrainerId || userId == ClientId;
         }
+
+        public void MarkMessageCreated(DateTime createdAtUtc)
+        {
+            if (!LastMessageAtUtc.HasValue || createdAtUtc > LastMessageAtUtc.Value)
+            {
+                LastMessageAtUtc = createdAtUtc;
+            }
+        }
     }
 }
