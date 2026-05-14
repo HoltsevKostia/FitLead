@@ -62,6 +62,7 @@ namespace FitLead.Infrastructure
             services.AddScoped<IChatRepository, ChatRepository>();
             services.AddScoped<IChatReadRepository, ChatReadRepository>();
             services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
+            services.AddScoped<IChatMessageReadRepository, ChatMessageReadRepository>();
             services.AddScoped<IInvitationLinkService, InvitationLinkService>();
             services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
             services.AddScoped(typeof(IPipelineBehavior<,>), typeof(DomainExceptionToResultBehavior<,>));

@@ -15,6 +15,30 @@ public sealed class ChatsTestClient(HttpClient httpClient)
         return SendGetAsync($"/api/chats/{chatId:D}", cancellationToken);
     }
 
+    public Task<HttpResponseMessage> GetMessagesAsync(
+        Guid chatId,
+        int? limit = null,
+        DateTime? beforeCreatedAtUtc = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new List<string>();
+        if (limit.HasValue)
+        {
+            query.Add($"limit={limit.Value}");
+        }
+
+        if (beforeCreatedAtUtc.HasValue)
+        {
+            query.Add($"beforeCreatedAtUtc={Uri.EscapeDataString(beforeCreatedAtUtc.Value.ToString("O"))}");
+        }
+
+        var queryString = query.Count > 0
+            ? "?" + string.Join("&", query)
+            : string.Empty;
+
+        return SendGetAsync($"/api/chats/{chatId:D}/messages{queryString}", cancellationToken);
+    }
+
     public Task<HttpResponseMessage> GetOrCreateWithClientAsync(
         Guid clientId,
         CancellationToken cancellationToken = default,

@@ -1,3 +1,4 @@
+using FitLead.Domain.Messenger.ChatMessages;
 using FitLead.Domain.Messenger.Chats;
 using FitLead.Infrastructure.Persistence.Models;
 using FitLead.IntegrationTests.Helpers;
@@ -38,5 +39,26 @@ public abstract class MessengerTestBase : IntegrationTestBase
         });
 
         return chat;
+    }
+
+    protected async Task<ChatMessage> CreateTextMessageAsync(
+        Chat chat,
+        Guid senderId,
+        string text,
+        DateTime createdAtUtc)
+    {
+        var message = ChatMessage.CreateText(
+            chat,
+            senderId,
+            text,
+            createdAtUtc).Value;
+
+        await Db.ExecuteAsync(async context =>
+        {
+            await context.ChatMessages.AddAsync(message);
+            await context.SaveChangesAsync();
+        });
+
+        return message;
     }
 }
