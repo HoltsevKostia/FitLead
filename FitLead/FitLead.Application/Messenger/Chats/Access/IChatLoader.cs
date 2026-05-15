@@ -9,6 +9,11 @@ namespace FitLead.Application.Messenger.Chats.Access
             Guid chatId,
             CancellationToken cancellationToken);
 
+        Task<Result<Chat>> GetAccessibleForUserOrNotFoundAsync(
+            Guid userId,
+            Guid chatId,
+            CancellationToken cancellationToken);
+
         Task<Result> EnsureCurrentTrainerHasClientAsync(
             Guid clientId,
             CancellationToken cancellationToken);

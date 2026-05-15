@@ -37,20 +37,37 @@ namespace FitLead.Application.Messenger.Chats.Access
                 return Result<Chat>.Failure(currentUserResult.Error);
             }
 
+            return await GetAccessibleForUserOrNotFoundAsync(
+                currentUserResult.Value.Id,
+                chatId,
+                cancellationToken);
+        }
+
+        public async Task<Result<Chat>> GetAccessibleForUserOrNotFoundAsync(
+            Guid userId,
+            Guid chatId,
+            CancellationToken cancellationToken)
+        {
+            var user = await _usersModule.GetByIdAsync(userId, cancellationToken);
+            if (user is null)
+            {
+                return Result<Chat>.Failure(ChatNotFound);
+            }
+
             var chat = await _chatRepository.GetByIdAsync(chatId, cancellationToken);
             if (chat is null)
             {
                 return Result<Chat>.Failure(ChatNotFound);
             }
 
-            var hasAccess = currentUserResult.Value.Role switch
+            var hasAccess = user.Role switch
             {
                 UserRole.Trainer => await HasTrainerAccessAsync(
-                    currentUserResult.Value.Id,
+                    user.Id,
                     chat,
                     cancellationToken),
                 UserRole.Client => await HasClientAccessAsync(
-                    currentUserResult.Value.Id,
+                    user.Id,
                     chat,
                     cancellationToken),
                 _ => false
