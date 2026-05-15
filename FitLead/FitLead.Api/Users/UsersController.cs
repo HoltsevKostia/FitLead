@@ -35,6 +35,17 @@ namespace FitLead.Api.Users
 
             return clients.ToActionResult(this);
         }
+
+        [Authorize(Policy = "ClientOnly")]
+        [HttpGet("my-trainer")]
+        public async Task<IActionResult> GetMyTrainer(CancellationToken cancellationToken)
+        {
+            var trainer = await _mediator.Send(
+                new GetMyTrainerQuery(),
+                cancellationToken);
+
+            return trainer.ToActionResult(this);
+        }
     }
 }
 

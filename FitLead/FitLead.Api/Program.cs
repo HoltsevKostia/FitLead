@@ -1,7 +1,9 @@
 using FitLead.Api.Errors;
 using FitLead.Api.Auth;
+using FitLead.Api.Hubs;
 using FitLead.Api.Identity;
 using FitLead.Application.Identity;
+using FitLead.Application.Messenger.ChatMessages.Realtime;
 using FitLead.Application.Trainings.TrainingPrograms.Commands;
 using FitLead.Infrastructure;
 using FitLead.Infrastructure.Identity;
@@ -20,6 +22,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddSignalR();
 builder.Services.AddAntiforgery(options =>
 {
     options.HeaderName = CsrfTokenNames.RequestHeader;
@@ -188,6 +191,7 @@ builder.Services.AddAuthorization(options =>
 });
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IAuthTokenIssuer, AuthTokenIssuer>();
+builder.Services.AddScoped<IChatRealtimeNotifier, SignalRChatRealtimeNotifier>();
 
 var app = builder.Build();
 
@@ -195,6 +199,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     await DevIdentitySeeder.SeedAsync(app.Services);
+    await DemoMessengerSeeder.SeedAsync(app.Services);
     using (var scope = app.Services.CreateScope())
     {
         var dbContext = scope.ServiceProvider.GetRequiredService<FitLeadDbContext>();
@@ -218,6 +223,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<ChatHub>("/hubs/chat");
 
 app.Run();
 

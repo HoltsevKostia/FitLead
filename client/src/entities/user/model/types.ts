@@ -18,3 +18,8 @@ export interface TrainerClientOverview {
   fullName: string;
   activePrograms: TrainerClientProgramAccess[];
 }
+
+export interface ClientTrainer {
+  trainerId: string;
+  fullName: string;
+}

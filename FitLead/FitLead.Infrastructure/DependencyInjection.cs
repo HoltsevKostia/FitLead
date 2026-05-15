@@ -6,6 +6,7 @@ using FitLead.Application.Common.Results;
 using FitLead.Application.Common.Time;
 using FitLead.Application.Identity;
 using FitLead.Application.Invitations.Services;
+using FitLead.Application.Messenger.Chats.Access;
 using FitLead.Application.Modules.Exercises;
 using FitLead.Application.Modules.TrainingPrograms;
 using FitLead.Application.Modules.Users;
@@ -58,6 +59,10 @@ namespace FitLead.Infrastructure
             services.AddScoped<IWorkoutReadRepository, WorkoutReadRepository>();
             services.AddScoped<IInvitationRepository, InvitationRepository>();
             services.AddScoped<IInvitationReadRepository, InvitationReadRepository>();
+            services.AddScoped<IChatRepository, ChatRepository>();
+            services.AddScoped<IChatReadRepository, ChatReadRepository>();
+            services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
+            services.AddScoped<IChatMessageReadRepository, ChatMessageReadRepository>();
             services.AddScoped<IInvitationLinkService, InvitationLinkService>();
             services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
             services.AddScoped(typeof(IPipelineBehavior<,>), typeof(DomainExceptionToResultBehavior<,>));
@@ -79,6 +84,7 @@ namespace FitLead.Infrastructure
             services.AddScoped<IWorkoutLoader, WorkoutLoader>();
             services.AddScoped<IExerciseLoader, ExerciseLoader>();
             services.AddScoped<ITrainingProgramLoader, TrainingProgramLoader>();
+            services.AddScoped<IChatLoader, ChatLoader>();
             services.AddScoped<ICurrentUserLoader, CurrentUserLoader>();
 
             return services;

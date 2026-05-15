@@ -27,6 +27,10 @@ interface TrainerInvitationsWorkspaceProps {
   loadError?: string | null;
 }
 
+type InvitationDuration = 7 | 14;
+
+const durationOptions: InvitationDuration[] = [7, 14];
+
 function CreatedInvitationNotice({
   invitation,
 }: {
@@ -49,7 +53,7 @@ function CreatedInvitationNotice({
 
         <div className="space-y-2">
           <label className="text-sm font-medium text-foreground" htmlFor="created-invite-url">
-            Invite link
+            Посилання
           </label>
           <input
             id="created-invite-url"
@@ -58,7 +62,7 @@ function CreatedInvitationNotice({
             className="w-full rounded-2xl border border-border bg-white px-4 py-3 text-sm text-foreground"
           />
           <p className="text-sm text-muted">
-            Скопіюй або збережи це посилання зараз. Після переходу на іншу сторінку або
+            Скопіюйте це посилання зараз. Після переходу на іншу сторінку або
             перезавантаження цей блок зникне, бо система не зберігає raw invite token для
             повторного показу.
           </p>
@@ -75,27 +79,27 @@ export function TrainerInvitationsWorkspace({
   loadError,
 }: TrainerInvitationsWorkspaceProps) {
   const router = useRouter();
+  const [selectedDuration, setSelectedDuration] = useState<InvitationDuration>(7);
   const [createdInvitation, setCreatedInvitation] = useState<CreateInvitationResult | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
   const sortedInvitations = sortTrainerInvitations(invitations);
 
-  async function handleCreate(expiresInDays: 7 | 14) {
+  async function handleCreate() {
     setIsCreating(true);
     setCreateError(null);
+    setCreatedInvitation(null);
 
     try {
-      const result = await invitationsApi.create({ expiresInDays });
+      const result = await invitationsApi.create({ expiresInDays: selectedDuration });
       setCreatedInvitation(result);
       router.refresh();
     } catch (error) {
       setCreateError(mapCreateInvitationError(error));
+    } finally {
       setIsCreating(false);
-      return;
     }
-
-    setIsCreating(false);
   }
 
   function handleRevoked() {
@@ -107,7 +111,7 @@ export function TrainerInvitationsWorkspace({
       <div className="space-y-3">
         <h1 className="text-3xl font-semibold tracking-tight">Запрошення</h1>
         <p className="max-w-3xl text-muted">
-          Створюй одноразові посилання для клієнтів на 7 або 14 днів. Після прийняття
+          Створюйте одноразові посилання для клієнтів на 7 або 14 днів. Після прийняття
           запрошення стає недоступним для повторного використання.
         </p>
       </div>
@@ -116,26 +120,44 @@ export function TrainerInvitationsWorkspace({
         <div className="space-y-1">
           <h2 className="text-xl font-semibold">Створити нове запрошення</h2>
           <p className="text-sm text-muted">
-            Вибери строк дії і надішли клієнту готове посилання.
+            Виберіть строк дії, а потім створіть посилання для клієнта.
           </p>
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-foreground">Строк дії</p>
+            <div className="inline-flex rounded-full border border-border bg-white p-1">
+              {durationOptions.map((duration) => {
+                const isSelected = selectedDuration === duration;
+
+                return (
+                  <button
+                    key={duration}
+                    type="button"
+                    onClick={() => setSelectedDuration(duration)}
+                    disabled={isCreating}
+                    aria-pressed={isSelected}
+                    className={`rounded-full px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-70 ${
+                      isSelected
+                        ? "bg-accent text-white"
+                        : "text-foreground hover:bg-surface-strong"
+                    }`}
+                  >
+                    {duration} днів
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <button
             type="button"
-            onClick={() => handleCreate(7)}
+            onClick={handleCreate}
             disabled={isCreating}
-            className="rounded-full bg-accent px-5 py-3 text-sm font-medium text-white transition hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-70"
+            className="w-fit rounded-full bg-accent px-5 py-3 text-sm font-medium text-white transition hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {isCreating ? "Створюємо..." : "Створити на 7 днів"}
-          </button>
-          <button
-            type="button"
-            onClick={() => handleCreate(14)}
-            disabled={isCreating}
-            className="rounded-full border border-border px-5 py-3 text-sm font-medium transition hover:bg-surface-strong disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            Створити на 14 днів
+            {isCreating ? "Створюємо..." : "Створити"}
           </button>
         </div>
 

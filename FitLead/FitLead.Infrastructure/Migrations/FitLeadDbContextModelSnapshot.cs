@@ -63,6 +63,72 @@ namespace FitLead.Infrastructure.Migrations
                     b.ToTable("invitations", (string)null);
                 });
 
+            modelBuilder.Entity("FitLead.Domain.Messenger.ChatMessages.ChatMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ChatId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("SenderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Text")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SenderId");
+
+                    b.HasIndex("ChatId", "CreatedAtUtc")
+                        .HasDatabaseName("IX_chat_messages_chat_id_created_at_utc");
+
+                    b.HasIndex("ChatId", "Id")
+                        .HasDatabaseName("IX_chat_messages_chat_id_id");
+
+                    b.ToTable("chat_messages", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_chat_messages_text_required_for_text_type", "\"Type\" <> 1 OR (\"Text\" IS NOT NULL AND length(btrim(\"Text\")) > 0)");
+                        });
+                });
+
+            modelBuilder.Entity("FitLead.Domain.Messenger.Chats.Chat", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ClientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("LastMessageAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("TrainerId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientId")
+                        .HasDatabaseName("IX_chats_client_id");
+
+                    b.HasIndex("TrainerId", "ClientId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_chats_trainer_id_client_id");
+
+                    b.ToTable("chats", (string)null);
+                });
+
             modelBuilder.Entity("FitLead.Domain.Trainings.Exercises.Exercise", b =>
                 {
                     b.Property<Guid>("Id")
@@ -613,6 +679,36 @@ namespace FitLead.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("AcceptedByClientId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("FitLead.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("TrainerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FitLead.Domain.Messenger.ChatMessages.ChatMessage", b =>
+                {
+                    b.HasOne("FitLead.Domain.Messenger.Chats.Chat", null)
+                        .WithMany()
+                        .HasForeignKey("ChatId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FitLead.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FitLead.Domain.Messenger.Chats.Chat", b =>
+                {
+                    b.HasOne("FitLead.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("FitLead.Domain.Users.User", null)
                         .WithMany()
