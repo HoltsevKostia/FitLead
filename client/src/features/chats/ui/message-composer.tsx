@@ -72,7 +72,7 @@ export function MessageComposer({ chatId }: MessageComposerProps) {
         void handleSubmit(event.nativeEvent);
       }}
     >
-      <div className="flex items-end gap-3">
+      <div className="flex min-w-0 items-end gap-2 sm:gap-3">
         <textarea
           value={text}
           onChange={(event) => {
@@ -86,12 +86,12 @@ export function MessageComposer({ chatId }: MessageComposerProps) {
           rows={1}
           maxLength={MAX_MESSAGE_LENGTH + 1}
           placeholder="Повідомлення..."
-          className="max-h-32 min-h-12 flex-1 resize-none rounded-2xl border border-border bg-surface px-4 py-3 text-sm text-foreground outline-none transition focus:border-accent disabled:cursor-not-allowed disabled:opacity-70"
+          className="max-h-32 min-h-12 min-w-0 flex-1 resize-none rounded-2xl border border-border bg-surface px-4 py-3 text-sm text-foreground outline-none transition focus:border-accent disabled:cursor-not-allowed disabled:opacity-70"
         />
         <button
           type="submit"
           disabled={isSubmitting || text.trim().length === 0}
-          className="h-12 rounded-full bg-accent px-5 text-sm font-medium text-white transition hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-70"
+          className="h-12 shrink-0 rounded-full bg-accent px-4 text-sm font-medium text-white transition hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-70 sm:px-5"
         >
           {isSubmitting ? "Надсилання..." : "Надіслати"}
         </button>

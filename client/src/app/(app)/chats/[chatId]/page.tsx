@@ -38,6 +38,7 @@ export default async function ChatDetailsPage({ params }: ChatDetailsPageProps) 
     <ChatShell
       chat={chat}
       currentUser={currentUser}
+      hasMoreMessages={history.hasMore}
       messages={history.items}
     />
   );

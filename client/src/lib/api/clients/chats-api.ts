@@ -1,4 +1,4 @@
-import type { Chat, ChatMessage } from "@/entities/chat/model/types";
+import type { Chat, ChatMessage, ChatMessageHistory } from "@/entities/chat/model/types";
 import { apiRequest } from "@/lib/api/http-client";
 
 interface SendTextMessageRequest {
@@ -28,6 +28,27 @@ export const chatsApi = {
         method: "POST",
         body: request,
       },
+    );
+  },
+
+  getMessages(
+    chatId: string,
+    options: { limit?: number; beforeCreatedAtUtc?: string } = {},
+  ): Promise<ChatMessageHistory> {
+    const params = new URLSearchParams();
+
+    if (options.limit !== undefined) {
+      params.set("limit", options.limit.toString());
+    }
+
+    if (options.beforeCreatedAtUtc) {
+      params.set("beforeCreatedAtUtc", options.beforeCreatedAtUtc);
+    }
+
+    const query = params.toString();
+
+    return apiRequest<ChatMessageHistory>(
+      `/api/chats/${encodeURIComponent(chatId)}/messages${query ? `?${query}` : ""}`,
     );
   },
 };
