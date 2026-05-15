@@ -1,16 +1,21 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useState } from "react";
 
 import type { ChatMessage } from "@/entities/chat/model/types";
 import type { CurrentUser } from "@/features/auth/model/types";
 import { useChatMessages } from "@/features/chats/model/use-chat-messages";
-import { useChatRealtime } from "@/features/chats/model/use-chat-realtime";
+import {
+  type ChatConnectionStatus,
+  useChatRealtime,
+} from "@/features/chats/model/use-chat-realtime";
 import { ChatHistory } from "@/features/chats/ui/chat-history";
 import { MessageComposer } from "@/features/chats/ui/message-composer";
 
 interface ChatThreadProps {
   chatId: string;
+  companionName: string;
   currentUser: CurrentUser;
   initialHasMore: boolean;
   initialMessages: ChatMessage[];
@@ -26,11 +31,14 @@ function getErrorMessage(error: unknown): string {
 
 export function ChatThread({
   chatId,
+  companionName,
   currentUser,
   initialHasMore,
   initialMessages,
 }: ChatThreadProps) {
   const [error, setError] = useState<string | null>(null);
+  const [connectionStatus, setConnectionStatus] =
+    useState<ChatConnectionStatus>("connecting");
   const {
     appendMessage,
     hasMore,
@@ -68,10 +76,26 @@ export function ChatThread({
     chatId,
     onError: handleRealtimeError,
     onMessageCreated: handleRealtimeMessage,
+    onStatusChange: setConnectionStatus,
   });
 
   return (
     <>
+      <header className="min-w-0 border-b border-border px-4 py-4 sm:px-5">
+        <div className="flex items-center justify-between gap-3">
+          <Link
+            href="/chats"
+            className="text-sm font-medium text-accent hover:text-accent-strong"
+          >
+            Назад до чатів
+          </Link>
+          <ConnectionStatusBadge status={connectionStatus} />
+        </div>
+        <h1 className="mt-3 break-words text-xl font-semibold text-foreground sm:text-2xl">
+          {companionName}
+        </h1>
+      </header>
+
       <div className="min-h-0 min-w-0 flex-1">
         <ChatHistory
           currentUser={currentUser}
@@ -87,5 +111,40 @@ export function ChatThread({
         <MessageComposer chatId={chatId} onMessageSent={appendMessage} />
       </footer>
     </>
+  );
+}
+
+function ConnectionStatusBadge({ status }: { status: ChatConnectionStatus }) {
+  if (status === "connected") {
+    return (
+      <span
+        aria-label="Real-time з'єднання активне"
+        title="Real-time з'єднання активне"
+        className="inline-flex h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500"
+      />
+    );
+  }
+
+  const config = {
+    connecting: {
+      label: "Підключення...",
+      className: "border-border bg-surface text-muted",
+    },
+    reconnecting: {
+      label: "Відновлюємо з'єднання...",
+      className: "border-amber-200 bg-amber-50 text-amber-700",
+    },
+    disconnected: {
+      label: "Немає real-time з'єднання",
+      className: "border-rose-200 bg-rose-50 text-rose-700",
+    },
+  }[status];
+
+  return (
+    <span
+      className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${config.className}`}
+    >
+      {config.label}
+    </span>
   );
 }

@@ -5,10 +5,17 @@ import { useEffect } from "react";
 import type { ChatMessage } from "@/entities/chat/model/types";
 import { createChatConnection } from "@/lib/realtime/chat-connection";
 
+export type ChatConnectionStatus =
+  | "connecting"
+  | "connected"
+  | "reconnecting"
+  | "disconnected";
+
 interface UseChatRealtimeOptions {
   chatId: string;
   onError: (message: string) => void;
   onMessageCreated: (message: ChatMessage) => void;
+  onStatusChange: (status: ChatConnectionStatus) => void;
 }
 
 function getErrorMessage(error: unknown): string {
@@ -23,6 +30,7 @@ export function useChatRealtime({
   chatId,
   onError,
   onMessageCreated,
+  onStatusChange,
 }: UseChatRealtimeOptions) {
   useEffect(() => {
     const connection = createChatConnection();
@@ -35,25 +43,51 @@ export function useChatRealtime({
     }
 
     function handleReconnected() {
-      void connection.invoke("JoinChat", chatId).catch((caughtError) => {
-        if (!isDisposed) {
-          onError(getErrorMessage(caughtError));
+      void (async () => {
+        try {
+          await connection.invoke("JoinChat", chatId);
+
+          if (!isDisposed) {
+            onStatusChange("connected");
+          }
+        } catch (caughtError) {
+          if (!isDisposed) {
+            onStatusChange("disconnected");
+            onError(getErrorMessage(caughtError));
+          }
         }
-      });
+      })();
+    }
+
+    function handleReconnecting() {
+      if (!isDisposed) {
+        onStatusChange("reconnecting");
+      }
+    }
+
+    function handleClosed() {
+      if (!isDisposed) {
+        onStatusChange("disconnected");
+      }
     }
 
     async function startConnection() {
       connection.on("MessageCreated", handleMessageCreated);
+      connection.onreconnecting(handleReconnecting);
       connection.onreconnected(handleReconnected);
+      connection.onclose(handleClosed);
 
       try {
+        onStatusChange("connecting");
         await connection.start();
 
         if (!isDisposed) {
           await connection.invoke("JoinChat", chatId);
+          onStatusChange("connected");
         }
       } catch (caughtError) {
         if (!isDisposed) {
+          onStatusChange("disconnected");
           onError(getErrorMessage(caughtError));
         }
       }
@@ -66,5 +100,5 @@ export function useChatRealtime({
       connection.off("MessageCreated", handleMessageCreated);
       void startPromise.finally(() => connection.stop());
     };
-  }, [chatId, onError, onMessageCreated]);
+  }, [chatId, onError, onMessageCreated, onStatusChange]);
 }

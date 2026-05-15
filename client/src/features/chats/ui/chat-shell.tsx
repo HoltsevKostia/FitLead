@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import type { ChatDetails, ChatMessage } from "@/entities/chat/model/types";
 import type { CurrentUser } from "@/features/auth/model/types";
 import { ChatThread } from "@/features/chats/ui/chat-thread";
@@ -26,29 +24,18 @@ export function ChatShell({
   chat,
   currentUser,
   hasMoreMessages,
-  messages,
+    messages,
 }: ChatShellProps) {
   return (
     <section className="flex h-[calc(100dvh-8rem)] min-h-[32rem] min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-white md:h-[calc(100vh-9rem)]">
-      <header className="min-w-0 border-b border-border px-4 py-4 sm:px-5">
-        <Link
-          href="/chats"
-          className="text-sm font-medium text-accent hover:text-accent-strong"
-        >
-          Назад до чатів
-        </Link>
-        <h1 className="mt-3 break-words text-xl font-semibold text-foreground sm:text-2xl">
-          {getCompanionName(chat, currentUser)}
-        </h1>
-      </header>
-
       <ChatThread
-          key={getThreadKey(chat.id, messages)}
-          chatId={chat.id}
-          currentUser={currentUser}
-          initialHasMore={hasMoreMessages}
-          initialMessages={messages}
-        />
+        key={getThreadKey(chat.id, messages)}
+        chatId={chat.id}
+        companionName={getCompanionName(chat, currentUser)}
+        currentUser={currentUser}
+        initialHasMore={hasMoreMessages}
+        initialMessages={messages}
+      />
     </section>
   );
 }
