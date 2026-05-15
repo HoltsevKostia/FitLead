@@ -4,20 +4,21 @@ import { useLayoutEffect, useRef, useState } from "react";
 
 import type { ChatMessage } from "@/entities/chat/model/types";
 import type { CurrentUser } from "@/features/auth/model/types";
-import { chatsApi } from "@/lib/api/clients/chats-api";
 import { FormAlert } from "@/shared/forms/form-alert";
 
-const HISTORY_PAGE_SIZE = 50;
+const NEAR_BOTTOM_THRESHOLD_PX = 96;
 const messageTimeFormatter = new Intl.DateTimeFormat("uk-UA", {
   hour: "2-digit",
   minute: "2-digit",
 });
 
 interface ChatHistoryProps {
-  chatId: string;
   currentUser: CurrentUser;
-  initialHasMore: boolean;
-  initialMessages: ChatMessage[];
+  error: string | null;
+  hasMore: boolean;
+  isLoadingOlder: boolean;
+  messages: ChatMessage[];
+  onLoadOlder: () => Promise<boolean>;
 }
 
 function formatMessageTime(value: string): string {
@@ -60,85 +61,101 @@ function MessageBubble({
   );
 }
 
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message;
+function isNearBottom(scrollContainer: HTMLDivElement | null): boolean {
+  if (!scrollContainer) {
+    return true;
   }
 
-  return "Не вдалося завантажити повідомлення.";
+  const distanceFromBottom =
+    scrollContainer.scrollHeight -
+    scrollContainer.scrollTop -
+    scrollContainer.clientHeight;
+
+  return distanceFromBottom <= NEAR_BOTTOM_THRESHOLD_PX;
 }
 
 export function ChatHistory({
-  chatId,
   currentUser,
-  initialHasMore,
-  initialMessages,
+  error,
+  hasMore,
+  isLoadingOlder,
+  messages,
+  onLoadOlder,
 }: ChatHistoryProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const didInitialScrollRef = useRef(false);
+  const previousMessagesLengthRef = useRef(messages.length);
+  const wasAtBottomBeforeAppendRef = useRef(true);
   const scrollHeightBeforePrependRef = useRef<number | null>(null);
-  const [messages, setMessages] = useState(initialMessages);
-  const [hasMore, setHasMore] = useState(initialHasMore);
-  const [isLoadingOlder, setIsLoadingOlder] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isAtBottom, setIsAtBottom] = useState(true);
+  const [hasUnreadLiveMessages, setHasUnreadLiveMessages] = useState(false);
 
   function scrollToLatest() {
     scrollContainerRef.current?.scrollTo({
       top: scrollContainerRef.current.scrollHeight,
       behavior: "smooth",
     });
+    setIsAtBottom(true);
+    setHasUnreadLiveMessages(false);
   }
 
   useLayoutEffect(() => {
     const scrollHeightBeforePrepend = scrollHeightBeforePrependRef.current;
     const scrollContainer = scrollContainerRef.current;
+    const didAppendMessage = messages.length > previousMessagesLengthRef.current;
+    const didPrependMessages = scrollHeightBeforePrepend !== null;
 
     if (!didInitialScrollRef.current && scrollContainer) {
       scrollContainer.scrollTop = scrollContainer.scrollHeight;
       didInitialScrollRef.current = true;
+      previousMessagesLengthRef.current = messages.length;
+      setIsAtBottom(true);
       return;
     }
 
-    if (scrollHeightBeforePrepend === null || !scrollContainer) {
+    if (scrollHeightBeforePrepend !== null && scrollContainer) {
+      scrollContainer.scrollTop +=
+        scrollContainer.scrollHeight - scrollHeightBeforePrepend;
+      scrollHeightBeforePrependRef.current = null;
+    }
+
+    if (!didAppendMessage || didPrependMessages || !scrollContainer) {
+      previousMessagesLengthRef.current = messages.length;
       return;
     }
 
-    scrollContainer.scrollTop +=
-      scrollContainer.scrollHeight - scrollHeightBeforePrepend;
-    scrollHeightBeforePrependRef.current = null;
+    if (wasAtBottomBeforeAppendRef.current) {
+      scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      setIsAtBottom(true);
+      setHasUnreadLiveMessages(false);
+    } else {
+      setHasUnreadLiveMessages(true);
+    }
+
+    previousMessagesLengthRef.current = messages.length;
   }, [messages.length]);
 
   async function loadOlderMessages() {
-    const oldestMessage = messages[0];
-
-    if (!oldestMessage || isLoadingOlder) {
+    if (messages.length === 0 || isLoadingOlder) {
       return;
     }
 
     scrollHeightBeforePrependRef.current =
       scrollContainerRef.current?.scrollHeight ?? null;
-    setIsLoadingOlder(true);
-    setError(null);
 
-    try {
-      const history = await chatsApi.getMessages(chatId, {
-        limit: HISTORY_PAGE_SIZE,
-        beforeCreatedAtUtc: oldestMessage.createdAtUtc,
-      });
+    if (!(await onLoadOlder())) {
+      scrollHeightBeforePrependRef.current = null;
+    }
+  }
 
-      setMessages((currentMessages) => {
-        const existingIds = new Set(currentMessages.map((message) => message.id));
-        const olderMessages = history.items.filter(
-          (message) => !existingIds.has(message.id),
-        );
+  function handleScroll() {
+    const atBottom = isNearBottom(scrollContainerRef.current);
 
-        return [...olderMessages, ...currentMessages];
-      });
-      setHasMore(history.hasMore);
-    } catch (caughtError) {
-      setError(getErrorMessage(caughtError));
-    } finally {
-      setIsLoadingOlder(false);
+    wasAtBottomBeforeAppendRef.current = atBottom;
+    setIsAtBottom(atBottom);
+
+    if (atBottom) {
+      setHasUnreadLiveMessages(false);
     }
   }
 
@@ -156,6 +173,7 @@ export function ChatHistory({
   return (
     <div
       ref={scrollContainerRef}
+      onScroll={handleScroll}
       className="h-full min-w-0 space-y-4 overflow-y-auto px-3 py-5 sm:px-5 sm:py-6"
     >
       {hasMore ? (
@@ -185,15 +203,17 @@ export function ChatHistory({
         ))}
       </div>
 
-      <div className="sticky bottom-0 flex justify-end pb-1 pt-2">
-        <button
-          type="button"
-          onClick={scrollToLatest}
-          className="rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-foreground shadow-sm transition hover:bg-surface-strong"
-        >
-          До останніх
-        </button>
-      </div>
+      {!isAtBottom || hasUnreadLiveMessages ? (
+        <div className="sticky bottom-0 flex justify-end pb-1 pt-2">
+          <button
+            type="button"
+            onClick={scrollToLatest}
+            className="rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-foreground shadow-sm transition hover:bg-surface-strong"
+          >
+            {hasUnreadLiveMessages ? "Нове повідомлення" : "До останніх"}
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

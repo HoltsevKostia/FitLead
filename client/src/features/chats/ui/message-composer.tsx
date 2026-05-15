@@ -1,8 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { type KeyboardEvent, useState } from "react";
 
+import type { ChatMessage } from "@/entities/chat/model/types";
 import { chatsApi } from "@/lib/api/clients/chats-api";
 import { FormAlert } from "@/shared/forms/form-alert";
 
@@ -10,6 +10,7 @@ const MAX_MESSAGE_LENGTH = 4000;
 
 interface MessageComposerProps {
   chatId: string;
+  onMessageSent: (message: ChatMessage) => void;
 }
 
 function getErrorMessage(error: unknown): string {
@@ -20,8 +21,7 @@ function getErrorMessage(error: unknown): string {
   return "Не вдалося надіслати повідомлення.";
 }
 
-export function MessageComposer({ chatId }: MessageComposerProps) {
-  const router = useRouter();
+export function MessageComposer({ chatId, onMessageSent }: MessageComposerProps) {
   const [text, setText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,9 +43,9 @@ export function MessageComposer({ chatId }: MessageComposerProps) {
     setError(null);
 
     try {
-      await chatsApi.sendTextMessage(chatId, { text: trimmedText });
+      const message = await chatsApi.sendTextMessage(chatId, { text: trimmedText });
+      onMessageSent(message);
       setText("");
-      router.refresh();
     } catch (caughtError) {
       setError(getErrorMessage(caughtError));
     } finally {

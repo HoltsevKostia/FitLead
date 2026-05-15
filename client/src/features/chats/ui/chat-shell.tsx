@@ -2,8 +2,7 @@ import Link from "next/link";
 
 import type { ChatDetails, ChatMessage } from "@/entities/chat/model/types";
 import type { CurrentUser } from "@/features/auth/model/types";
-import { ChatHistory } from "@/features/chats/ui/chat-history";
-import { MessageComposer } from "@/features/chats/ui/message-composer";
+import { ChatThread } from "@/features/chats/ui/chat-thread";
 
 interface ChatShellProps {
   chat: ChatDetails;
@@ -16,11 +15,11 @@ function getCompanionName(chat: ChatDetails, currentUser: CurrentUser): string {
   return currentUser.role === "Trainer" ? chat.clientName : chat.trainerName;
 }
 
-function getHistoryKey(messages: ChatMessage[]): string {
+function getThreadKey(chatId: string, messages: ChatMessage[]): string {
   const firstMessageId = messages[0]?.id ?? "empty";
   const lastMessageId = messages.at(-1)?.id ?? "empty";
 
-  return `${messages.length}:${firstMessageId}:${lastMessageId}`;
+  return `${chatId}:${messages.length}:${firstMessageId}:${lastMessageId}`;
 }
 
 export function ChatShell({
@@ -43,19 +42,13 @@ export function ChatShell({
         </h1>
       </header>
 
-      <div className="min-h-0 min-w-0 flex-1">
-        <ChatHistory
-          key={getHistoryKey(messages)}
+      <ChatThread
+          key={getThreadKey(chat.id, messages)}
           chatId={chat.id}
           currentUser={currentUser}
           initialHasMore={hasMoreMessages}
           initialMessages={messages}
         />
-      </div>
-
-      <footer className="min-w-0 border-t border-border px-3 py-3 sm:px-5 sm:py-4">
-        <MessageComposer chatId={chat.id} />
-      </footer>
     </section>
   );
 }
