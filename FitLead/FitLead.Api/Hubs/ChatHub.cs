@@ -36,7 +36,7 @@ namespace FitLead.Api.Hubs
 
             await Groups.AddToGroupAsync(
                 Context.ConnectionId,
-                GetChatGroupName(chatId),
+                ChatHubGroups.ForChat(chatId),
                 Context.ConnectionAborted);
         }
 
@@ -49,11 +49,6 @@ namespace FitLead.Api.Hubs
             }
 
             return userId;
-        }
-
-        private static string GetChatGroupName(Guid chatId)
-        {
-            return $"chat:{chatId:D}";
         }
     }
 }

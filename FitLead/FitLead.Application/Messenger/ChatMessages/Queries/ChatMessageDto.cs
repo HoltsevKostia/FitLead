@@ -4,6 +4,7 @@ namespace FitLead.Application.Messenger.ChatMessages.Queries
         Guid Id,
         Guid ChatId,
         Guid SenderId,
+        string SenderName,
         string Type,
         string? Text,
         DateTime CreatedAtUtc);

@@ -2,11 +2,13 @@ using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
 using FitLead.Application.Common.Time;
 using FitLead.Application.Messenger.ChatMessages.Queries;
+using FitLead.Application.Messenger.ChatMessages.Realtime;
 using FitLead.Application.Messenger.Chats.Access;
 using FitLead.Application.Users.Access;
 using FitLead.Common.Results;
 using FitLead.Domain.Messenger.ChatMessages;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace FitLead.Application.Messenger.ChatMessages.Commands
 {
@@ -16,21 +18,27 @@ namespace FitLead.Application.Messenger.ChatMessages.Commands
         private readonly IChatLoader _chatLoader;
         private readonly IChatMessageRepository _chatMessageRepository;
         private readonly ICurrentUserLoader _currentUserLoader;
+        private readonly IChatRealtimeNotifier _chatRealtimeNotifier;
         private readonly IClock _clock;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<SendTextMessageHandler> _logger;
 
         public SendTextMessageHandler(
             IChatLoader chatLoader,
             IChatMessageRepository chatMessageRepository,
             ICurrentUserLoader currentUserLoader,
+            IChatRealtimeNotifier chatRealtimeNotifier,
             IClock clock,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            ILogger<SendTextMessageHandler> logger)
         {
             _chatLoader = chatLoader;
             _chatMessageRepository = chatMessageRepository;
             _currentUserLoader = currentUserLoader;
+            _chatRealtimeNotifier = chatRealtimeNotifier;
             _clock = clock;
             _unitOfWork = unitOfWork;
+            _logger = logger;
         }
 
         public async Task<Result<ChatMessageDto>> Handle(
@@ -66,15 +74,37 @@ namespace FitLead.Application.Messenger.ChatMessages.Commands
             await _chatMessageRepository.AddAsync(messageResult.Value, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return Result<ChatMessageDto>.Success(ToDto(messageResult.Value));
+            var messageDto = ToDto(
+                messageResult.Value,
+                currentUserResult.Value.FullName);
+
+            try
+            {
+                await _chatRealtimeNotifier.MessageCreatedAsync(
+                    messageDto,
+                    CancellationToken.None);
+            }
+            catch (Exception exception)
+            {
+                _logger.LogWarning(
+                    exception,
+                    "Failed to publish realtime message event for chat {ChatId} and message {MessageId}.",
+                    messageDto.ChatId,
+                    messageDto.Id);
+            }
+
+            return Result<ChatMessageDto>.Success(messageDto);
         }
 
-        private static ChatMessageDto ToDto(ChatMessage message)
+        private static ChatMessageDto ToDto(
+            ChatMessage message,
+            string senderName)
         {
             return new ChatMessageDto(
                 message.Id,
                 message.ChatId,
                 message.SenderId,
+                senderName,
                 message.Type.ToString(),
                 message.Text,
                 message.CreatedAtUtc);
