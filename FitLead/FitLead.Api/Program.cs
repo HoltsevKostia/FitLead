@@ -1,5 +1,6 @@
 using FitLead.Api.Errors;
 using FitLead.Api.Auth;
+using FitLead.Api.Hubs;
 using FitLead.Api.Identity;
 using FitLead.Application.Identity;
 using FitLead.Application.Trainings.TrainingPrograms.Commands;
@@ -20,6 +21,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddSignalR();
 builder.Services.AddAntiforgery(options =>
 {
     options.HeaderName = CsrfTokenNames.RequestHeader;
@@ -219,6 +221,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<ChatHub>("/hubs/chat");
 
 app.Run();
 
