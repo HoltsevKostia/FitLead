@@ -51,5 +51,16 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                                   mediaAsset.StorageObjectId == storageObjectId,
                     cancellationToken);
         }
+
+        public async Task<IReadOnlyList<MediaAsset>> GetOwnedByIdsAsync(
+            Guid ownerUserId,
+            IReadOnlyCollection<Guid> mediaAssetIds,
+            CancellationToken cancellationToken)
+        {
+            return await _context.MediaAssets
+                .Where(mediaAsset => mediaAsset.OwnerUserId == ownerUserId &&
+                                     mediaAssetIds.Contains(mediaAsset.Id))
+                .ToListAsync(cancellationToken);
+        }
     }
 }

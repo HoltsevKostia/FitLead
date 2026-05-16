@@ -7,6 +7,7 @@ using FitLead.Application.Common.Time;
 using FitLead.Application.Identity;
 using FitLead.Application.Invitations.Services;
 using FitLead.Application.Messenger.Chats.Access;
+using FitLead.Application.Media.MediaAssets.Access;
 using FitLead.Application.Modules.Exercises;
 using FitLead.Application.Modules.TrainingPrograms;
 using FitLead.Application.Modules.Users;
@@ -86,6 +87,7 @@ namespace FitLead.Infrastructure
             services.AddScoped<IExerciseLoader, ExerciseLoader>();
             services.AddScoped<ITrainingProgramLoader, TrainingProgramLoader>();
             services.AddScoped<IChatLoader, ChatLoader>();
+            services.AddScoped<IMediaAssetLoader, MediaAssetLoader>();
             services.AddScoped<ICurrentUserLoader, CurrentUserLoader>();
 
             return services;

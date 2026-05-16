@@ -21,5 +21,10 @@ namespace FitLead.Application.Abstractions.Persistence
             MediaStorageProvider storageProvider,
             string storageObjectId,
             CancellationToken cancellationToken);
+
+        Task<IReadOnlyList<MediaAsset>> GetOwnedByIdsAsync(
+            Guid ownerUserId,
+            IReadOnlyCollection<Guid> mediaAssetIds,
+            CancellationToken cancellationToken);
     }
 }
