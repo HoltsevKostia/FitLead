@@ -1,0 +1,14 @@
+import type {
+  MediaAsset,
+  RegisterMediaAssetRequest,
+} from "@/entities/media-asset/model/types";
+import { apiRequest } from "@/lib/api/http-client";
+
+export const mediaAssetsApi = {
+  register(request: RegisterMediaAssetRequest): Promise<MediaAsset> {
+    return apiRequest<MediaAsset>("/api/media/assets", {
+      method: "POST",
+      body: request,
+    });
+  },
+};
