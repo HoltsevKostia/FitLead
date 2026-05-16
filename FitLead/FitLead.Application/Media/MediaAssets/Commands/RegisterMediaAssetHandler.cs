@@ -2,6 +2,8 @@ using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
 using FitLead.Application.Common.Time;
 using FitLead.Application.Media.MediaAssets.Queries;
+using FitLead.Application.Media.MediaAssets.Registration;
+using FitLead.Application.Media.Uploadcare;
 using FitLead.Application.Users.Access;
 using FitLead.Common.Errors;
 using FitLead.Common.Results;
@@ -15,17 +17,23 @@ namespace FitLead.Application.Media.MediaAssets.Commands
     {
         private readonly IMediaAssetRepository _mediaAssetRepository;
         private readonly ICurrentUserLoader _currentUserLoader;
+        private readonly IMediaAssetRegistrationPolicy _registrationPolicy;
+        private readonly IUploadcareClient _uploadcareClient;
         private readonly IClock _clock;
         private readonly IUnitOfWork _unitOfWork;
 
         public RegisterMediaAssetHandler(
             IMediaAssetRepository mediaAssetRepository,
             ICurrentUserLoader currentUserLoader,
+            IMediaAssetRegistrationPolicy registrationPolicy,
+            IUploadcareClient uploadcareClient,
             IClock clock,
             IUnitOfWork unitOfWork)
         {
             _mediaAssetRepository = mediaAssetRepository;
             _currentUserLoader = currentUserLoader;
+            _registrationPolicy = registrationPolicy;
+            _uploadcareClient = uploadcareClient;
             _clock = clock;
             _unitOfWork = unitOfWork;
         }
@@ -40,10 +48,12 @@ namespace FitLead.Application.Media.MediaAssets.Commands
                 return Result<MediaAssetDto>.Failure(storageProviderResult.Error);
             }
 
-            var kindResult = ParseKind(request.Kind);
-            if (kindResult.IsFailure)
+            if (!_registrationPolicy.IsProviderAllowed(storageProviderResult.Value))
             {
-                return Result<MediaAssetDto>.Failure(kindResult.Error);
+                return Result<MediaAssetDto>.Failure(
+                    Error.Validation(
+                        "media_asset.storage_provider_not_allowed",
+                        "StorageProvider is not allowed"));
             }
 
             var currentUserResult = await _currentUserLoader.GetCurrentOrNotFoundAsync(cancellationToken);
@@ -52,25 +62,24 @@ namespace FitLead.Application.Media.MediaAssets.Commands
                 return Result<MediaAssetDto>.Failure(currentUserResult.Error);
             }
 
-            var mediaAssetResult = MediaAsset.Create(
-                currentUserResult.Value.Id,
-                storageProviderResult.Value,
-                request.StorageObjectId,
-                request.DeliveryUrl,
-                request.FileName,
-                request.ContentType,
-                request.SizeBytes,
-                kindResult.Value,
-                request.DurationSeconds,
-                _clock.UtcNow);
-            if (mediaAssetResult.IsFailure)
+            var normalizedStorageObjectIdResult = NormalizeStorageObjectId(request.StorageObjectId);
+            if (normalizedStorageObjectIdResult.IsFailure)
             {
-                return Result<MediaAssetDto>.Failure(mediaAssetResult.Error);
+                return Result<MediaAssetDto>.Failure(normalizedStorageObjectIdResult.Error);
+            }
+
+            if (storageProviderResult.Value == MediaStorageProvider.Uploadcare &&
+                !Guid.TryParse(normalizedStorageObjectIdResult.Value, out _))
+            {
+                return Result<MediaAssetDto>.Failure(
+                    Error.Validation(
+                        "media_asset.uploadcare_storage_object_id_invalid",
+                        "Uploadcare StorageObjectId must be a UUID"));
             }
 
             var existingAsset = await _mediaAssetRepository.GetByStorageObjectAsync(
-                mediaAssetResult.Value.StorageProvider,
-                mediaAssetResult.Value.StorageObjectId,
+                storageProviderResult.Value,
+                normalizedStorageObjectIdResult.Value,
                 cancellationToken);
             if (existingAsset is not null)
             {
@@ -83,6 +92,32 @@ namespace FitLead.Application.Media.MediaAssets.Commands
                     Error.Conflict(
                         "media_asset.storage_object_already_registered",
                         "Storage object is already registered"));
+            }
+
+            var metadataResult = await GetRegistrationMetadataAsync(
+                request,
+                storageProviderResult.Value,
+                normalizedStorageObjectIdResult.Value,
+                cancellationToken);
+            if (metadataResult.IsFailure)
+            {
+                return Result<MediaAssetDto>.Failure(metadataResult.Error);
+            }
+
+            var mediaAssetResult = MediaAsset.Create(
+                currentUserResult.Value.Id,
+                storageProviderResult.Value,
+                metadataResult.Value.StorageObjectId,
+                metadataResult.Value.DeliveryUrl,
+                metadataResult.Value.FileName,
+                metadataResult.Value.ContentType,
+                metadataResult.Value.SizeBytes,
+                metadataResult.Value.Kind,
+                metadataResult.Value.DurationSeconds,
+                _clock.UtcNow);
+            if (mediaAssetResult.IsFailure)
+            {
+                return Result<MediaAssetDto>.Failure(mediaAssetResult.Error);
             }
 
             await _mediaAssetRepository.AddAsync(mediaAssetResult.Value, cancellationToken);
@@ -127,6 +162,125 @@ namespace FitLead.Application.Media.MediaAssets.Commands
             return Result<MediaAssetKind>.Success(kind);
         }
 
+        private async Task<Result<RegistrationMetadata>> GetRegistrationMetadataAsync(
+            RegisterMediaAssetCommand request,
+            MediaStorageProvider storageProvider,
+            string normalizedStorageObjectId,
+            CancellationToken cancellationToken)
+        {
+            if (storageProvider == MediaStorageProvider.Uploadcare)
+            {
+                UploadcareFileInfo? fileInfo;
+                try
+                {
+                    fileInfo = await _uploadcareClient.GetFileInfoAsync(
+                        normalizedStorageObjectId,
+                        cancellationToken);
+                }
+                catch (Exception)
+                {
+                    return Result<RegistrationMetadata>.Failure(
+                        Error.Failure(
+                            "media_asset.uploadcare_verification_failed",
+                            "Could not verify Uploadcare file"));
+                }
+                if (fileInfo is null)
+                {
+                    return Result<RegistrationMetadata>.Failure(
+                        Error.Validation(
+                            "media_asset.uploadcare_file_not_found",
+                            "Uploadcare file was not found"));
+                }
+
+                var verifiedKindResult = GetKindFromContentType(fileInfo.MimeType);
+                if (verifiedKindResult.IsFailure)
+                {
+                    return Result<RegistrationMetadata>.Failure(verifiedKindResult.Error);
+                }
+
+                return Result<RegistrationMetadata>.Success(
+                    new RegistrationMetadata(
+                        fileInfo.Uuid,
+                        fileInfo.OriginalFileUrl,
+                        fileInfo.OriginalFilename,
+                        fileInfo.MimeType,
+                        fileInfo.Size,
+                        verifiedKindResult.Value,
+                        ToDurationSeconds(fileInfo.DurationMilliseconds)));
+            }
+
+            var kindResult = ParseKind(request.Kind);
+            if (kindResult.IsFailure)
+            {
+                return Result<RegistrationMetadata>.Failure(kindResult.Error);
+            }
+
+            return Result<RegistrationMetadata>.Success(
+                new RegistrationMetadata(
+                    normalizedStorageObjectId,
+                    request.DeliveryUrl,
+                    request.FileName,
+                    request.ContentType,
+                    request.SizeBytes,
+                    kindResult.Value,
+                    request.DurationSeconds));
+        }
+
+        private static Result<string> NormalizeStorageObjectId(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return Result<string>.Failure(
+                    Error.Validation(
+                        "media_asset.storage_object_id_required",
+                        "StorageObjectId is required"));
+            }
+
+            var normalizedValue = value.Trim();
+            if (normalizedValue.Length > MediaAsset.MaxStorageObjectIdLength)
+            {
+                return Result<string>.Failure(
+                    Error.Validation(
+                        "media_asset.storage_object_id_too_long",
+                        $"StorageObjectId cannot exceed {MediaAsset.MaxStorageObjectIdLength} characters"));
+            }
+
+            return Result<string>.Success(normalizedValue);
+        }
+
+        private static Result<MediaAssetKind> GetKindFromContentType(string contentType)
+        {
+            if (contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+            {
+                return Result<MediaAssetKind>.Success(MediaAssetKind.Image);
+            }
+
+            if (contentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase))
+            {
+                return Result<MediaAssetKind>.Success(MediaAssetKind.Video);
+            }
+
+            if (contentType.StartsWith("audio/", StringComparison.OrdinalIgnoreCase))
+            {
+                return Result<MediaAssetKind>.Success(MediaAssetKind.Audio);
+            }
+
+            return Result<MediaAssetKind>.Failure(
+                Error.Validation(
+                    "media_asset.uploadcare_content_type_unsupported",
+                    "Uploadcare file content type is unsupported"));
+        }
+
+        private static int? ToDurationSeconds(int? durationMilliseconds)
+        {
+            if (!durationMilliseconds.HasValue || durationMilliseconds.Value <= 0)
+            {
+                return null;
+            }
+
+            return (int)Math.Ceiling(durationMilliseconds.Value / 1000d);
+        }
+
         private static MediaAssetDto ToDto(MediaAsset mediaAsset)
         {
             return new MediaAssetDto(
@@ -142,5 +296,14 @@ namespace FitLead.Application.Media.MediaAssets.Commands
                 mediaAsset.Status.ToString(),
                 mediaAsset.CreatedAtUtc);
         }
+
+        private sealed record RegistrationMetadata(
+            string StorageObjectId,
+            string DeliveryUrl,
+            string? FileName,
+            string ContentType,
+            long SizeBytes,
+            MediaAssetKind Kind,
+            int? DurationSeconds);
     }
 }

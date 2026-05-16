@@ -10,7 +10,7 @@ public sealed class MediaAssetsTestClient(HttpClient httpClient)
     }
 
     public Task<HttpResponseMessage> RegisterAsync(
-        string? storageProvider = "Uploadcare",
+        string? storageProvider = "LocalDev",
         string storageObjectId = "uploadcare-object",
         string deliveryUrl = "https://ucarecdn.example/uploadcare-object/",
         string? fileName = "video.mp4",

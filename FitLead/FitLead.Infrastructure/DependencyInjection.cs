@@ -8,6 +8,8 @@ using FitLead.Application.Identity;
 using FitLead.Application.Invitations.Services;
 using FitLead.Application.Messenger.Chats.Access;
 using FitLead.Application.Media.MediaAssets.Access;
+using FitLead.Application.Media.MediaAssets.Registration;
+using FitLead.Application.Media.Uploadcare;
 using FitLead.Application.Modules.Exercises;
 using FitLead.Application.Modules.TrainingPrograms;
 using FitLead.Application.Modules.Users;
@@ -23,6 +25,8 @@ using FitLead.Infrastructure.Modules.Exercises;
 using FitLead.Infrastructure.Modules.TrainingPrograms;
 using FitLead.Infrastructure.Modules.Users;
 using FitLead.Infrastructure.Modules.Workouts;
+using FitLead.Infrastructure.Media.Uploadcare;
+using FitLead.Infrastructure.Media.MediaAssets;
 using FitLead.Infrastructure.Persistence;
 using FitLead.Infrastructure.Persistence.Repositories;
 using FitLead.Infrastructure.Time;
@@ -74,6 +78,10 @@ namespace FitLead.Infrastructure
             services.AddDataProtection();
             services.Configure<DeletionTokenOptions>(
                 configuration.GetSection(DeletionTokenOptions.SectionName));
+            services.Configure<UploadcareOptions>(
+                configuration.GetSection(UploadcareOptions.SectionName));
+            services.Configure<MediaAssetRegistrationOptions>(
+                configuration.GetSection(MediaAssetRegistrationOptions.SectionName));
             services.AddSingleton<IDeletionConfirmationTokenService, DataProtectionDeletionConfirmationTokenService>();
             services.AddScoped<ITokenHasher, TokenHasher>();
             services.AddScoped<IRefreshTokenService, RefreshTokenService>();
@@ -89,7 +97,12 @@ namespace FitLead.Infrastructure
             services.AddScoped<ITrainingProgramLoader, TrainingProgramLoader>();
             services.AddScoped<IChatLoader, ChatLoader>();
             services.AddScoped<IMediaAssetLoader, MediaAssetLoader>();
+            services.AddScoped<IMediaAssetRegistrationPolicy, MediaAssetRegistrationPolicy>();
             services.AddScoped<ICurrentUserLoader, CurrentUserLoader>();
+            services.AddHttpClient<IUploadcareClient, UploadcareClient>(client =>
+            {
+                client.BaseAddress = new Uri("https://api.uploadcare.com");
+            });
 
             return services;
         }
