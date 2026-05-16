@@ -1,6 +1,7 @@
 using FitLead.Api.Common.Results;
 using FitLead.Api.Media.Contracts;
 using FitLead.Application.Media.MediaAssets.Commands;
+using FitLead.Application.Media.MediaAssets.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,17 @@ namespace FitLead.Api.Media
         public MediaAssetsController(IMediator mediator)
         {
             _mediator = mediator;
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> GetMyAssets(CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new GetMyMediaAssetsQuery(),
+                cancellationToken);
+
+            return result.ToActionResult(this);
         }
 
         [Authorize]

@@ -5,6 +5,10 @@ import type {
 import { apiRequest } from "@/lib/api/http-client";
 
 export const mediaAssetsApi = {
+  getMyAssets(): Promise<MediaAsset[]> {
+    return apiRequest<MediaAsset[]>("/api/media/assets");
+  },
+
   register(request: RegisterMediaAssetRequest): Promise<MediaAsset> {
     return apiRequest<MediaAsset>("/api/media/assets", {
       method: "POST",

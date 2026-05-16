@@ -21,7 +21,8 @@ public abstract class MediaAssetTestBase : IntegrationTestBase
         Guid ownerUserId,
         MediaAssetKind kind,
         string contentType,
-        int? durationSeconds = 12)
+        int? durationSeconds = 12,
+        DateTime? createdAtUtc = null)
     {
         var mediaAsset = MediaAsset.Create(
             ownerUserId,
@@ -33,7 +34,7 @@ public abstract class MediaAssetTestBase : IntegrationTestBase
             1024,
             kind,
             durationSeconds,
-            DateTime.UtcNow).Value;
+            createdAtUtc ?? DateTime.UtcNow).Value;
 
         await Db.ExecuteAsync(async context =>
         {

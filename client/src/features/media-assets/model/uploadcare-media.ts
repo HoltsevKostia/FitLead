@@ -59,11 +59,11 @@ function getMediaAssetKind(contentType: string): MediaAssetKind | null {
 }
 
 function getDurationSeconds(file: OutputFileEntry<"success">): number | null {
-  const duration = file.fileInfo.videoInfo?.duration;
+  const durationMilliseconds = file.fileInfo.videoInfo?.duration;
 
-  if (!duration || duration <= 0) {
+  if (!durationMilliseconds || durationMilliseconds <= 0) {
     return null;
   }
 
-  return Math.ceil(duration);
+  return Math.ceil(durationMilliseconds / 1000);
 }

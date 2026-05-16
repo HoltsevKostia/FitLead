@@ -3,6 +3,12 @@ namespace FitLead.IntegrationTests.Clients;
 public sealed class MediaAssetsTestClient(HttpClient httpClient)
     : AuthenticatedApiTestClient(httpClient, "media-assets")
 {
+    public Task<HttpResponseMessage> GetMyAssetsAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return SendGetAsync("/api/media/assets", cancellationToken);
+    }
+
     public Task<HttpResponseMessage> RegisterAsync(
         string? storageProvider = "Uploadcare",
         string storageObjectId = "uploadcare-object",
