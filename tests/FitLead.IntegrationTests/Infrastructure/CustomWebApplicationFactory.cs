@@ -38,7 +38,10 @@ public sealed class CustomWebApplicationFactory(string connectionString)
             {
                 ["ConnectionStrings:DefaultConnection"] = connectionString,
                 ["Jwt:RsaPrivateKeyPem"] = EscapePem(RsaKeys.PrivateKeyPem),
-                ["Jwt:RsaPublicKeyPem"] = EscapePem(RsaKeys.PublicKeyPem)
+                ["Jwt:RsaPublicKeyPem"] = EscapePem(RsaKeys.PublicKeyPem),
+                ["Uploadcare:PublicKey"] = "test-public-key",
+                ["Uploadcare:SecretKey"] = "test-secret-key",
+                ["Uploadcare:UploadSignatureLifetimeMinutes"] = "30"
             });
         });
     }

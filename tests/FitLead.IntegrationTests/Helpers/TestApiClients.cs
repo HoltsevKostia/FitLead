@@ -46,4 +46,11 @@ public sealed class TestApiClients(IntegrationTestFixture fixture)
         await client.CopyAuthStateFromAsync(auth);
         return client;
     }
+
+    public async Task<MediaAssetsTestClient> MediaAssetsAsync(AuthTestClient auth)
+    {
+        var client = new MediaAssetsTestClient(fixture.CreateClient(handleCookies: false));
+        await client.CopyAuthStateFromAsync(auth);
+        return client;
+    }
 }
