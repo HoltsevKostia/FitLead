@@ -103,7 +103,7 @@ namespace FitLead.Infrastructure.Media.Uploadcare
             if (string.IsNullOrWhiteSpace(_options.PublicKey) ||
                 string.IsNullOrWhiteSpace(_options.SecretKey))
             {
-                throw new InvalidOperationException("Uploadcare configuration is missing.");
+                throw new InvalidOperationException("Uploadcare configuration validation failed.");
             }
         }
 

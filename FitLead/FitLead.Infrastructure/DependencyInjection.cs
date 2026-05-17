@@ -78,8 +78,19 @@ namespace FitLead.Infrastructure
             services.AddDataProtection();
             services.Configure<DeletionTokenOptions>(
                 configuration.GetSection(DeletionTokenOptions.SectionName));
-            services.Configure<UploadcareOptions>(
-                configuration.GetSection(UploadcareOptions.SectionName));
+            services
+                .AddOptions<UploadcareOptions>()
+                .Bind(configuration.GetSection(UploadcareOptions.SectionName))
+                .Validate(
+                    options => !string.IsNullOrWhiteSpace(options.PublicKey),
+                    "Uploadcare public key is required")
+                .Validate(
+                    options => !string.IsNullOrWhiteSpace(options.SecretKey),
+                    "Uploadcare secret key is required")
+                .Validate(
+                    options => options.UploadSignatureLifetimeMinutes > 0,
+                    "Uploadcare upload signature lifetime must be positive")
+                .ValidateOnStart();
             services.Configure<MediaAssetRegistrationOptions>(
                 configuration.GetSection(MediaAssetRegistrationOptions.SectionName));
             services.AddSingleton<IDeletionConfirmationTokenService, DataProtectionDeletionConfirmationTokenService>();
@@ -99,6 +110,7 @@ namespace FitLead.Infrastructure
             services.AddScoped<IMediaAssetLoader, MediaAssetLoader>();
             services.AddScoped<IMediaAssetRegistrationPolicy, MediaAssetRegistrationPolicy>();
             services.AddScoped<ICurrentUserLoader, CurrentUserLoader>();
+            services.AddScoped<IUploadcareUploadSignatureService, UploadcareUploadSignatureService>();
             services.AddHttpClient<IUploadcareClient, UploadcareClient>(client =>
             {
                 client.BaseAddress = new Uri("https://api.uploadcare.com");

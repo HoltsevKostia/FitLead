@@ -10,6 +10,7 @@ import {
   getAcceptedMimeTypes,
   mapUploadcareFileToUploadedMediaAsset,
 } from "@/features/media-assets/model/uploadcare-media";
+import { mediaAssetsApi } from "@/lib/api/clients/media-assets-api";
 import { uploadcareEnv } from "@/lib/uploadcare/env";
 
 interface UploadcareMediaUploaderProps {
@@ -30,6 +31,7 @@ export function UploadcareMediaUploader({
       sourceList="local, camera, gdrive, facebook"
       filesViewMode="grid"
       classNameUploader="uc-light uc-purple"
+      secureUploadsSignatureResolver={mediaAssetsApi.getUploadSignature}
       onFileUploadSuccess={(file) => {
         const media = mapUploadcareFileToUploadedMediaAsset(file);
 
