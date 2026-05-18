@@ -76,4 +76,25 @@ public sealed class ChatsTestClient(HttpClient httpClient)
             cancellationToken,
             includeCsrfHeader);
     }
+
+    public Task<HttpResponseMessage> CreateVideoReportAsync(
+        Guid chatId,
+        string title,
+        IReadOnlyList<Guid> mediaAssetIds,
+        string? description = null,
+        CancellationToken cancellationToken = default,
+        bool includeCsrfHeader = true)
+    {
+        return SendUnsafeJsonAsync(
+            HttpMethod.Post,
+            $"/api/chats/{chatId:D}/video-reports",
+            new
+            {
+                title,
+                description,
+                mediaAssetIds
+            },
+            cancellationToken,
+            includeCsrfHeader);
+    }
 }
