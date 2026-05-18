@@ -97,10 +97,10 @@ namespace FitLead.Domain.Media.MediaAssets
                 return Result<MediaAsset>.Failure(deliveryUrlValidation.Error);
             }
 
-            var normalizedFileNameResult = NormalizeOptionalFileName(fileName);
-            if (normalizedFileNameResult.IsFailure)
+            var fileNameValidation = ValidateOptionalFileName(fileName);
+            if (fileNameValidation.IsFailure)
             {
-                return Result<MediaAsset>.Failure(normalizedFileNameResult.Error);
+                return Result<MediaAsset>.Failure(fileNameValidation.Error);
             }
 
             if (string.IsNullOrWhiteSpace(contentType))
@@ -165,7 +165,7 @@ namespace FitLead.Domain.Media.MediaAssets
                     storageProvider,
                     trimmedStorageObjectId,
                     deliveryUrlValidation.Value,
-                    normalizedFileNameResult.Value,
+                    NormalizeOptionalFileName(fileName),
                     trimmedContentType,
                     sizeBytes,
                     kind,
@@ -213,21 +213,28 @@ namespace FitLead.Domain.Media.MediaAssets
             return Result<string>.Success(trimmedDeliveryUrl);
         }
 
-        private static Result<string?> NormalizeOptionalFileName(string? fileName)
+        private static Result ValidateOptionalFileName(string? fileName)
         {
             if (string.IsNullOrWhiteSpace(fileName))
             {
-                return Result<string?>.Success(null);
+                return Result.Success();
             }
 
             var trimmedFileName = fileName.Trim();
             if (trimmedFileName.Length > MaxFileNameLength)
             {
-                return Result<string?>.Failure(
+                return Result.Failure(
                     Error.Validation("media_asset.create.file_name_too_long", $"FileName cannot exceed {MaxFileNameLength} characters"));
             }
 
-            return Result<string?>.Success(trimmedFileName);
+            return Result.Success();
+        }
+
+        private static string? NormalizeOptionalFileName(string? fileName)
+        {
+            return string.IsNullOrWhiteSpace(fileName)
+                ? null
+                : fileName.Trim();
         }
 
         private static bool HasBasicMimeShape(string contentType)

@@ -97,16 +97,22 @@ namespace FitLead.Domain.Messenger.VideoReports
                     Error.Validation("video_report.create.title_too_long", $"Title cannot exceed {MaxTitleLength} characters"));
             }
 
-            var normalizedDescriptionResult = NormalizeDescription(description);
-            if (normalizedDescriptionResult.IsFailure)
+            var descriptionValidation = ValidateDescription(description);
+            if (descriptionValidation.IsFailure)
             {
-                return Result<VideoReport>.Failure(normalizedDescriptionResult.Error);
+                return Result<VideoReport>.Failure(descriptionValidation.Error);
             }
 
             if (mediaAssetIds is null)
             {
                 return Result<VideoReport>.Failure(
                     Error.Validation("video_report.create.media_required", "Media is required"));
+            }
+
+            if (mediaAssetIds.Count == 0)
+            {
+                return Result<VideoReport>.Failure(
+                    Error.Validation("video_report.create.media_required", "At least one media asset is required"));
             }
 
             if (mediaAssetIds.Count > MaxMediaCount)
@@ -134,26 +140,33 @@ namespace FitLead.Domain.Messenger.VideoReports
                     clientId,
                     trainerId,
                     trimmedTitle,
-                    normalizedDescriptionResult.Value,
+                    NormalizeDescription(description),
                     createdAtUtc,
                     mediaAssetIds));
         }
 
-        private static Result<string?> NormalizeDescription(string? description)
+        private static Result ValidateDescription(string? description)
         {
             if (string.IsNullOrWhiteSpace(description))
             {
-                return Result<string?>.Success(null);
+                return Result.Success();
             }
 
             var trimmedDescription = description.Trim();
             if (trimmedDescription.Length > MaxDescriptionLength)
             {
-                return Result<string?>.Failure(
+                return Result.Failure(
                     Error.Validation("video_report.create.description_too_long", $"Description cannot exceed {MaxDescriptionLength} characters"));
             }
 
-            return Result<string?>.Success(trimmedDescription);
+            return Result.Success();
+        }
+
+        private static string? NormalizeDescription(string? description)
+        {
+            return string.IsNullOrWhiteSpace(description)
+                ? null
+                : description.Trim();
         }
     }
 }
