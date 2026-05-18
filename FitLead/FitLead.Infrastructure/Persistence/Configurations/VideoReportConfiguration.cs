@@ -45,6 +45,7 @@ namespace FitLead.Infrastructure.Persistence.Configurations
                 .IsRequired(false);
 
             builder.Property(x => x.TrainerFeedbackText)
+                .HasMaxLength(VideoReport.MaxTrainerFeedbackTextLength)
                 .IsRequired(false);
 
             builder.HasOne<Chat>()

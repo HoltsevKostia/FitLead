@@ -7,5 +7,10 @@ namespace FitLead.Application.Abstractions.Persistence
         Task AddAsync(
             VideoReport videoReport,
             CancellationToken cancellationToken);
+
+        Task<VideoReport?> GetByIdAndChatIdAsync(
+            Guid reportId,
+            Guid chatId,
+            CancellationToken cancellationToken);
     }
 }

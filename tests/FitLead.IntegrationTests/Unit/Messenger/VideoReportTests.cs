@@ -64,6 +64,44 @@ public sealed class VideoReportTests
         result.Error.Code.Should().Be("video_report.create.title_required");
     }
 
+    [Fact]
+    public void Review_WhenSubmitted_ShouldSetReviewedState()
+    {
+        var report = Create().Value;
+        var reviewedAtUtc = DateTime.UtcNow;
+
+        var result = report.Review("  Keep your knees controlled.  ", reviewedAtUtc);
+
+        result.IsSuccess.Should().BeTrue();
+        report.Status.Should().Be(VideoReportStatus.Reviewed);
+        report.ReviewedAtUtc.Should().Be(reviewedAtUtc);
+        report.TrainerFeedbackText.Should().Be("Keep your knees controlled.");
+    }
+
+    [Fact]
+    public void Review_WithTooLongFeedback_ShouldReturnValidationError()
+    {
+        var report = Create().Value;
+        var feedback = new string('a', VideoReport.MaxTrainerFeedbackTextLength + 1);
+
+        var result = report.Review(feedback, DateTime.UtcNow);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("video_report.review.feedback_text_too_long");
+    }
+
+    [Fact]
+    public void Review_WhenAlreadyReviewed_ShouldReturnConflict()
+    {
+        var report = Create().Value;
+        report.Review("First review", DateTime.UtcNow).IsSuccess.Should().BeTrue();
+
+        var result = report.Review("Second review", DateTime.UtcNow);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be("video_report.review.already_reviewed");
+    }
+
     private static FitLead.Common.Results.Result<VideoReport> Create(
         string title = "Squat check",
         IReadOnlyList<Guid>? mediaAssetIds = null)

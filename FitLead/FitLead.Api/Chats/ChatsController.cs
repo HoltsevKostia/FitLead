@@ -123,6 +123,25 @@ namespace FitLead.Api.Chats
             return result.ToActionResult(this);
         }
 
+        [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
+        [HttpPost("{chatId:guid}/video-reports/{reportId:guid}/feedback")]
+        public async Task<IActionResult> SubmitVideoReportFeedback(
+            Guid chatId,
+            Guid reportId,
+            [FromBody] SubmitVideoReportFeedbackRequest request,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new SubmitVideoReportFeedbackCommand(
+                    chatId,
+                    reportId,
+                    request.Text),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
+
         [Authorize]
         [HttpGet("{chatId:guid}/messages")]
         public async Task<IActionResult> GetMessages(

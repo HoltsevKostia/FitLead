@@ -1,5 +1,6 @@
 using FitLead.Application.Abstractions.Persistence;
 using FitLead.Domain.Messenger.VideoReports;
+using Microsoft.EntityFrameworkCore;
 
 namespace FitLead.Infrastructure.Persistence.Repositories
 {
@@ -17,6 +18,19 @@ namespace FitLead.Infrastructure.Persistence.Repositories
             CancellationToken cancellationToken)
         {
             await _context.VideoReports.AddAsync(videoReport, cancellationToken);
+        }
+
+        public Task<VideoReport?> GetByIdAndChatIdAsync(
+            Guid reportId,
+            Guid chatId,
+            CancellationToken cancellationToken)
+        {
+            return _context.VideoReports
+                .FirstOrDefaultAsync(
+                    videoReport =>
+                        videoReport.Id == reportId &&
+                        videoReport.ChatId == chatId,
+                    cancellationToken);
         }
     }
 }

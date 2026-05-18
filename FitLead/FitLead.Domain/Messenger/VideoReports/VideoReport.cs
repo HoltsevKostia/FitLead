@@ -8,6 +8,7 @@ namespace FitLead.Domain.Messenger.VideoReports
     {
         public const int MaxTitleLength = 200;
         public const int MaxDescriptionLength = 2000;
+        public const int MaxTrainerFeedbackTextLength = 4000;
         public const int MaxMediaCount = 5;
 
         private readonly List<VideoReportMedia> _media = [];
@@ -143,6 +144,44 @@ namespace FitLead.Domain.Messenger.VideoReports
                     NormalizeDescription(description),
                     createdAtUtc,
                     mediaAssetIds));
+        }
+
+        public Result Review(
+            string feedbackText,
+            DateTime reviewedAtUtc)
+        {
+            if (Status != VideoReportStatus.Submitted)
+            {
+                return Result.Failure(
+                    Error.Conflict("video_report.review.already_reviewed", "Video report is already reviewed"));
+            }
+
+            if (string.IsNullOrWhiteSpace(feedbackText))
+            {
+                return Result.Failure(
+                    Error.Validation("video_report.review.feedback_text_required", "Feedback text is required"));
+            }
+
+            var trimmedFeedbackText = feedbackText.Trim();
+            if (trimmedFeedbackText.Length > MaxTrainerFeedbackTextLength)
+            {
+                return Result.Failure(
+                    Error.Validation(
+                        "video_report.review.feedback_text_too_long",
+                        $"Feedback text cannot exceed {MaxTrainerFeedbackTextLength} characters"));
+            }
+
+            if (reviewedAtUtc == default)
+            {
+                return Result.Failure(
+                    Error.Validation("video_report.review.reviewed_at_required", "ReviewedAtUtc is required"));
+            }
+
+            Status = VideoReportStatus.Reviewed;
+            ReviewedAtUtc = reviewedAtUtc;
+            TrainerFeedbackText = trimmedFeedbackText;
+
+            return Result.Success();
         }
 
         private static Result ValidateDescription(string? description)
