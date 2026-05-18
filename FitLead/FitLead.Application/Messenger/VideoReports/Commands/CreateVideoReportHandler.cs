@@ -133,7 +133,8 @@ namespace FitLead.Application.Messenger.VideoReports.Commands
 
             var messageDto = ToDto(
                 messageResult.Value,
-                currentUser.FullName);
+                currentUser.FullName,
+                videoReportResult.Value);
 
             try
             {
@@ -155,7 +156,8 @@ namespace FitLead.Application.Messenger.VideoReports.Commands
 
         private static ChatMessageDto ToDto(
             ChatMessage message,
-            string senderName)
+            string senderName,
+            VideoReport videoReport)
         {
             return new ChatMessageDto(
                 message.Id,
@@ -164,7 +166,12 @@ namespace FitLead.Application.Messenger.VideoReports.Commands
                 senderName,
                 message.Type.ToString(),
                 message.Text,
-                message.VideoReportId,
+                new VideoReportPreviewDto(
+                    videoReport.Id,
+                    videoReport.Title,
+                    videoReport.Description,
+                    videoReport.Status.ToString(),
+                    videoReport.Media.Count),
                 message.CreatedAtUtc);
         }
     }

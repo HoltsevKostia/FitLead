@@ -7,6 +7,6 @@ namespace FitLead.Application.Messenger.ChatMessages.Queries
         string SenderName,
         string Type,
         string? Text,
-        Guid? VideoReportId,
+        VideoReportPreviewDto? VideoReport,
         DateTime CreatedAtUtc);
 }

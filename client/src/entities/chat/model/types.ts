@@ -32,6 +32,13 @@ export interface ChatMessage {
   senderName: string;
   type: string;
   text: string | null;
+  videoReport: {
+    id: string;
+    title: string;
+    description: string | null;
+    status: string;
+    mediaCount: number;
+  } | null;
   createdAtUtc: string;
 }
 

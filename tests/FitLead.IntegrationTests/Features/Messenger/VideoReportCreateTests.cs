@@ -36,13 +36,15 @@ public sealed class VideoReportCreateTests : MessengerTestBase
         var message = await response.ReadRequiredJsonAsync<ChatMessageDto>();
         message.Type.Should().Be(ChatMessageType.VideoReport.ToString());
         message.Text.Should().BeNull();
-        message.VideoReportId.Should().NotBeNull();
+        message.VideoReport.Should().NotBeNull();
+        message.VideoReport!.Title.Should().Be("Squat check");
+        message.VideoReport.MediaCount.Should().Be(2);
 
         var persisted = await Db.QueryAsync(async context =>
         {
             var report = await context.VideoReports
                 .Include(videoReport => videoReport.Media)
-                .SingleAsync(videoReport => videoReport.Id == message.VideoReportId);
+                .SingleAsync(videoReport => videoReport.Id == message.VideoReport.Id);
             var persistedMessage = await context.ChatMessages
                 .SingleAsync(chatMessage => chatMessage.Id == message.Id);
             var updatedChat = await context.Chats
@@ -57,8 +59,11 @@ public sealed class VideoReportCreateTests : MessengerTestBase
         });
 
         persisted.Report.Status.Should().Be(VideoReportStatus.Submitted);
-        persisted.Report.Media.Select(media => media.MediaAssetId).Should().Equal(image.Id, video.Id);
-        persisted.Report.Media.Select(media => media.OrderInReport).Should().Equal(1, 2);
+        var orderedMedia = persisted.Report.Media
+            .OrderBy(media => media.OrderInReport)
+            .ToArray();
+        orderedMedia.Select(media => media.MediaAssetId).Should().Equal(image.Id, video.Id);
+        orderedMedia.Select(media => media.OrderInReport).Should().Equal(1, 2);
         persisted.Message.VideoReportId.Should().Be(persisted.Report.Id);
         persisted.LastMessageAtUtc.Should().Be(persisted.Message.CreatedAtUtc);
     }

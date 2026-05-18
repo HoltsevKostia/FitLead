@@ -1,6 +1,6 @@
 namespace FitLead.Application.Messenger.ChatMessages.Queries
 {
     public sealed record ChatMessageHistoryDto(
-        IReadOnlyList<ChatMessageHistoryItemDto> Items,
+        IReadOnlyList<ChatMessageDto> Items,
         bool HasMore);
 }

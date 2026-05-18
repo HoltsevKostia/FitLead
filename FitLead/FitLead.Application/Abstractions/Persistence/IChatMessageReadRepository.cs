@@ -4,7 +4,7 @@ namespace FitLead.Application.Abstractions.Persistence
 {
     public interface IChatMessageReadRepository
     {
-        Task<IReadOnlyList<ChatMessageHistoryItemDto>> GetMessagesAsync(
+        Task<IReadOnlyList<ChatMessageDto>> GetMessagesAsync(
             Guid chatId,
             int limit,
             DateTime? beforeCreatedAtUtc,

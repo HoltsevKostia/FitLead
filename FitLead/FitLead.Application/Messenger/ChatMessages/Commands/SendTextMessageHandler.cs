@@ -107,7 +107,7 @@ namespace FitLead.Application.Messenger.ChatMessages.Commands
                 senderName,
                 message.Type.ToString(),
                 message.Text,
-                message.VideoReportId,
+                null,
                 message.CreatedAtUtc);
         }
     }
