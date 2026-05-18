@@ -1,5 +1,6 @@
 using FitLead.Domain.Messenger.ChatMessages;
 using FitLead.Domain.Messenger.Chats;
+using FitLead.Domain.Messenger.VideoReports;
 using FitLead.Domain.Media.MediaAssets;
 using FitLead.Infrastructure.Persistence.Models;
 using FitLead.IntegrationTests.Helpers;
@@ -88,5 +89,31 @@ public abstract class MessengerTestBase : IntegrationTestBase
         });
 
         return mediaAsset;
+    }
+
+    protected async Task<VideoReport> CreateVideoReportAsync(
+        Chat chat,
+        Guid clientId,
+        Guid trainerId,
+        IReadOnlyList<Guid> mediaAssetIds,
+        string title = "Squat check",
+        string? description = "Please review")
+    {
+        var report = VideoReport.Create(
+            chat.Id,
+            clientId,
+            trainerId,
+            title,
+            description,
+            mediaAssetIds,
+            DateTime.UtcNow).Value;
+
+        await Db.ExecuteAsync(async context =>
+        {
+            await context.VideoReports.AddAsync(report);
+            await context.SaveChangesAsync();
+        });
+
+        return report;
     }
 }

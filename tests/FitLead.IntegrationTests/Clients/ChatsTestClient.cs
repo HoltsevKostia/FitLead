@@ -97,4 +97,14 @@ public sealed class ChatsTestClient(HttpClient httpClient)
             cancellationToken,
             includeCsrfHeader);
     }
+
+    public Task<HttpResponseMessage> GetVideoReportAsync(
+        Guid chatId,
+        Guid reportId,
+        CancellationToken cancellationToken = default)
+    {
+        return SendGetAsync(
+            $"/api/chats/{chatId:D}/video-reports/{reportId:D}",
+            cancellationToken);
+    }
 }
