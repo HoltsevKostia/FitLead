@@ -102,6 +102,41 @@ public sealed class VideoReportCreateTests : MessengerTestBase
     }
 
     [Fact]
+    public async Task ClientCreateVideoReport_InUnrelatedChat_ShouldReturnNotFound()
+    {
+        var trainer = await Users.RegisterTrainerAsync("video-report-chat-owner-trainer");
+        var client = await Users.RegisterClientAsync("video-report-chat-owner-client");
+        var unrelatedClient = await Users.RegisterClientAsync("video-report-unrelated-client");
+        await CreateRelationshipAsync(trainer.Id, client.Id);
+        var chat = await CreateChatAsync(trainer.Id, client.Id);
+        var media = await CreateMediaAssetAsync(unrelatedClient.Id, MediaAssetKind.Video, "video/mp4");
+        var chats = await Api.ChatsAsync(unrelatedClient.Auth);
+
+        var response = await chats.CreateVideoReportAsync(chat.Id, "Squat check", [media.Id]);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        var problem = await response.ReadProblemDetailsAsync();
+        problem.ErrorCode.Should().Be("chat.not_found");
+    }
+
+    [Fact]
+    public async Task ClientCreateVideoReport_WithDuplicateMedia_ShouldReturnValidationError()
+    {
+        var trainer = await Users.RegisterTrainerAsync("video-report-duplicate-trainer");
+        var client = await Users.RegisterClientAsync("video-report-duplicate-client");
+        await CreateRelationshipAsync(trainer.Id, client.Id);
+        var chat = await CreateChatAsync(trainer.Id, client.Id);
+        var media = await CreateMediaAssetAsync(client.Id, MediaAssetKind.Video, "video/mp4");
+        var chats = await Api.ChatsAsync(client.Auth);
+
+        var response = await chats.CreateVideoReportAsync(chat.Id, "Squat check", [media.Id, media.Id]);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var problem = await response.ReadProblemDetailsAsync();
+        problem.ErrorCode.Should().Be("video_report.create.duplicate_media_assets");
+    }
+
+    [Fact]
     public async Task ClientCreateVideoReport_WithAudioMedia_ShouldReturnValidationError()
     {
         var trainer = await Users.RegisterTrainerAsync("video-report-audio-trainer");

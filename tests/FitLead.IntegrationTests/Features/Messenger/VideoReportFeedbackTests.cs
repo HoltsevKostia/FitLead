@@ -53,6 +53,25 @@ public sealed class VideoReportFeedbackTests : MessengerTestBase
     }
 
     [Fact]
+    public async Task UnrelatedTrainerSubmitFeedback_ShouldReturnNotFound()
+    {
+        var trainer = await Users.RegisterTrainerAsync("video-report-feedback-owner-trainer");
+        var client = await Users.RegisterClientAsync("video-report-feedback-owner-client");
+        var unrelatedTrainer = await Users.RegisterTrainerAsync("video-report-feedback-unrelated-trainer");
+        await CreateRelationshipAsync(trainer.Id, client.Id);
+        var chat = await CreateChatAsync(trainer.Id, client.Id);
+        var media = await CreateMediaAssetAsync(client.Id, MediaAssetKind.Video, "video/mp4");
+        var report = await CreateVideoReportAsync(chat, client.Id, trainer.Id, [media.Id]);
+        var chats = await Api.ChatsAsync(unrelatedTrainer.Auth);
+
+        var response = await chats.SubmitVideoReportFeedbackAsync(chat.Id, report.Id, "Review");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        var problem = await response.ReadProblemDetailsAsync();
+        problem.ErrorCode.Should().Be("chat.not_found");
+    }
+
+    [Fact]
     public async Task TrainerSubmitFeedback_SecondTime_ShouldReturnConflict()
     {
         var trainer = await Users.RegisterTrainerAsync("video-report-feedback-duplicate-trainer");

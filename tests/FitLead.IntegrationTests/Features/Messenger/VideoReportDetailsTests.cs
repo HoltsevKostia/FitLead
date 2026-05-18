@@ -35,6 +35,26 @@ public sealed class VideoReportDetailsTests : MessengerTestBase
     }
 
     [Fact]
+    public async Task ClientParticipantGetVideoReport_ShouldReturnDetails()
+    {
+        var trainer = await Users.RegisterTrainerAsync("video-report-client-details-trainer");
+        var client = await Users.RegisterClientAsync("video-report-client-details-client");
+        await CreateRelationshipAsync(trainer.Id, client.Id);
+        var chat = await CreateChatAsync(trainer.Id, client.Id);
+        var media = await CreateMediaAssetAsync(client.Id, MediaAssetKind.Video, "video/mp4");
+        var report = await CreateVideoReportAsync(chat, client.Id, trainer.Id, [media.Id]);
+        var chats = await Api.ChatsAsync(client.Auth);
+
+        var response = await chats.GetVideoReportAsync(chat.Id, report.Id);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var details = await response.ReadRequiredJsonAsync<VideoReportDetailsDto>();
+        details.Id.Should().Be(report.Id);
+        details.ClientId.Should().Be(client.Id);
+        details.TrainerId.Should().Be(trainer.Id);
+    }
+
+    [Fact]
     public async Task GetVideoReport_WithMismatchedChat_ShouldReturnNotFound()
     {
         var trainer = await Users.RegisterTrainerAsync("video-report-mismatch-trainer");
