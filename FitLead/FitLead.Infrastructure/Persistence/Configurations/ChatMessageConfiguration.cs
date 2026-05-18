@@ -1,5 +1,6 @@
 using FitLead.Domain.Messenger.ChatMessages;
 using FitLead.Domain.Messenger.Chats;
+using FitLead.Domain.Messenger.VideoReports;
 using FitLead.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -30,6 +31,9 @@ namespace FitLead.Infrastructure.Persistence.Configurations
                 .HasMaxLength(ChatMessage.MaxTextLength)
                 .IsRequired(false);
 
+            builder.Property(x => x.VideoReportId)
+                .IsRequired(false);
+
             builder.Property(x => x.CreatedAtUtc)
                 .IsRequired();
 
@@ -43,17 +47,35 @@ namespace FitLead.Infrastructure.Persistence.Configurations
                 .HasForeignKey(x => x.SenderId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.HasOne<VideoReport>()
+                .WithMany()
+                .HasForeignKey(x => x.VideoReportId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             builder.HasIndex(x => new { x.ChatId, x.CreatedAtUtc })
                 .HasDatabaseName("IX_chat_messages_chat_id_created_at_utc");
 
             builder.HasIndex(x => new { x.ChatId, x.Id })
                 .HasDatabaseName("IX_chat_messages_chat_id_id");
 
+            builder.HasIndex(x => x.VideoReportId)
+                .IsUnique()
+                .HasFilter("\"VideoReportId\" IS NOT NULL")
+                .HasDatabaseName("UX_chat_messages_video_report_id");
+
             builder.ToTable(table =>
             {
                 table.HasCheckConstraint(
                     "CK_chat_messages_text_required_for_text_type",
                     $"\"Type\" <> {(int)ChatMessageType.Text} OR (\"Text\" IS NOT NULL AND length(btrim(\"Text\")) > 0)");
+
+                table.HasCheckConstraint(
+                    "CK_chat_messages_video_report_id_null_for_text_type",
+                    $"\"Type\" <> {(int)ChatMessageType.Text} OR \"VideoReportId\" IS NULL");
+
+                table.HasCheckConstraint(
+                    "CK_chat_messages_video_report_shape",
+                    $"\"Type\" <> {(int)ChatMessageType.VideoReport} OR (\"VideoReportId\" IS NOT NULL AND \"Text\" IS NULL)");
             });
         }
     }
