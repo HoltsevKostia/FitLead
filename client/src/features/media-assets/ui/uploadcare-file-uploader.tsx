@@ -16,7 +16,7 @@ import { uploadcareEnv } from "@/lib/uploadcare/env";
 
 type FileUploaderRegularProps = ComponentProps<typeof FileUploaderRegular>;
 
-let isUkrainianLocaleDefined = false;
+defineLocale("uk", ukLocale);
 
 interface UploadcareFileUploaderProps
   extends Omit<
@@ -35,11 +35,6 @@ export function UploadcareFileUploader({
   allowedKinds = defaultAllowedMediaKinds,
   ...props
 }: UploadcareFileUploaderProps) {
-  if (!isUkrainianLocaleDefined) {
-    defineLocale("uk", ukLocale);
-    isUkrainianLocaleDefined = true;
-  }
-
   return (
     <FileUploaderRegular
       pubkey={uploadcareEnv.publicKey}
