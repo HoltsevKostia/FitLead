@@ -35,5 +35,5 @@ export default async function VideoReportDetailsPage({
   const { chatId, reportId } = await params;
   const report = await getVisibleVideoReportOrNotFound(chatId, reportId);
 
-  return <VideoReportDetailView report={report} />;
+  return <VideoReportDetailView currentUser={currentUser} report={report} />;
 }

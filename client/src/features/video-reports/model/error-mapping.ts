@@ -27,3 +27,27 @@ export function mapCreateVideoReportError(error: unknown): string {
 
   return error.detail ?? error.title ?? "Не вдалося відправити звіт. Спробуйте ще раз.";
 }
+
+export function mapSubmitVideoReportFeedbackError(error: unknown): string {
+  if (!isApiError(error)) {
+    return "Не вдалося надіслати відгук. Спробуйте ще раз.";
+  }
+
+  if (error.errorCode === "video_report.review.already_reviewed") {
+    return "Відгук до цього звіту вже надіслано.";
+  }
+
+  if (error.status === 400) {
+    return error.detail ?? "Перевірте текст відгуку.";
+  }
+
+  if (error.status === 404) {
+    return "Звіт недоступний.";
+  }
+
+  if (error.status >= 500) {
+    return "Не вдалося надіслати відгук. Спробуйте ще раз.";
+  }
+
+  return error.detail ?? error.title ?? "Не вдалося надіслати відгук. Спробуйте ще раз.";
+}

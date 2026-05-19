@@ -18,6 +18,18 @@ function getVideoReportStatusLabel(status: string): string {
   return labels[status] ?? status;
 }
 
+function getVideoReportStatusClassName(status: string): string {
+  if (status === "Submitted") {
+    return "border-sky-200 bg-sky-50 text-sky-800";
+  }
+
+  if (status === "Reviewed") {
+    return "border-emerald-200 bg-emerald-50 text-emerald-800";
+  }
+
+  return "border-border bg-white text-muted";
+}
+
 export function VideoReportMessageCard({
   currentUser,
   message,
@@ -44,7 +56,9 @@ export function VideoReportMessageCard({
               <span className="rounded-full border border-border bg-white px-2.5 py-1 text-xs font-semibold text-muted">
                 Відео-звіт
               </span>
-              <span className="rounded-full border border-border bg-white px-2.5 py-1 text-xs font-medium text-muted">
+              <span
+                className={`rounded-full border px-2.5 py-1 text-xs font-medium ${getVideoReportStatusClassName(report.status)}`}
+              >
                 {getVideoReportStatusLabel(report.status)}
               </span>
             </div>

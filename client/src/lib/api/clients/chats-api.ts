@@ -11,6 +11,10 @@ interface CreateVideoReportRequest {
   mediaAssetIds: string[];
 }
 
+interface SubmitVideoReportFeedbackRequest {
+  text: string;
+}
+
 export const chatsApi = {
   getOrCreateWithClient(clientId: string): Promise<Chat> {
     return apiRequest<Chat>(`/api/chats/with-client/${encodeURIComponent(clientId)}`, {
@@ -46,6 +50,21 @@ export const chatsApi = {
       {
         method: "POST",
         body: request,
+      },
+    );
+  },
+
+  submitVideoReportFeedback(
+    chatId: string,
+    reportId: string,
+    request: SubmitVideoReportFeedbackRequest,
+  ): Promise<void> {
+    return apiRequest<void>(
+      `/api/chats/${encodeURIComponent(chatId)}/video-reports/${encodeURIComponent(reportId)}/feedback`,
+      {
+        method: "POST",
+        body: request,
+        responseType: "void",
       },
     );
   },

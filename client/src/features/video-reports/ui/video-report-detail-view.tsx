@@ -2,12 +2,15 @@
 
 import Link from "next/link";
 
+import type { CurrentUser } from "@/features/auth/model/types";
+import { SubmitVideoReportFeedbackForm } from "@/features/video-reports/ui/submit-video-report-feedback-form";
 import type {
   VideoReportDetails,
   VideoReportMedia,
 } from "@/entities/video-report/model/types";
 
 interface VideoReportDetailViewProps {
+  currentUser: CurrentUser;
   report: VideoReportDetails;
 }
 
@@ -30,6 +33,18 @@ function getStatusLabel(status: string): string {
   };
 
   return labels[status] ?? status;
+}
+
+function getStatusClassName(status: string): string {
+  if (status === "Submitted") {
+    return "border-sky-200 bg-sky-50 text-sky-800";
+  }
+
+  if (status === "Reviewed") {
+    return "border-emerald-200 bg-emerald-50 text-emerald-800";
+  }
+
+  return "border-border bg-white text-muted";
 }
 
 function formatFileSize(sizeBytes: number): string {
@@ -77,7 +92,13 @@ function VideoReportMediaItem({ media }: { media: VideoReportMedia }) {
   );
 }
 
-export function VideoReportDetailView({ report }: VideoReportDetailViewProps) {
+export function VideoReportDetailView({
+  currentUser,
+  report,
+}: VideoReportDetailViewProps) {
+  const canSubmitFeedback =
+    currentUser.role === "Trainer" && report.status === "Submitted";
+
   return (
     <section className="mx-auto flex w-full max-w-4xl flex-col gap-6">
       <header className="space-y-4">
@@ -93,7 +114,9 @@ export function VideoReportDetailView({ report }: VideoReportDetailViewProps) {
             <span className="rounded-full border border-border bg-white px-3 py-1 text-xs font-semibold text-muted">
               Відео-звіт
             </span>
-            <span className="rounded-full border border-border bg-white px-3 py-1 text-xs font-semibold text-muted">
+            <span
+              className={`rounded-full border px-3 py-1 text-xs font-semibold ${getStatusClassName(report.status)}`}
+            >
               {getStatusLabel(report.status)}
             </span>
           </div>
@@ -140,6 +163,13 @@ export function VideoReportDetailView({ report }: VideoReportDetailViewProps) {
             {report.trainerFeedbackText}
           </p>
         </section>
+      ) : null}
+
+      {canSubmitFeedback ? (
+        <SubmitVideoReportFeedbackForm
+          chatId={report.chatId}
+          reportId={report.id}
+        />
       ) : null}
     </section>
   );
