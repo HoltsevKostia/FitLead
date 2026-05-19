@@ -5,6 +5,12 @@ interface SendTextMessageRequest {
   text: string;
 }
 
+interface CreateVideoReportRequest {
+  title: string;
+  description: string | null;
+  mediaAssetIds: string[];
+}
+
 export const chatsApi = {
   getOrCreateWithClient(clientId: string): Promise<Chat> {
     return apiRequest<Chat>(`/api/chats/with-client/${encodeURIComponent(clientId)}`, {
@@ -24,6 +30,19 @@ export const chatsApi = {
   ): Promise<ChatMessage> {
     return apiRequest<ChatMessage>(
       `/api/chats/${encodeURIComponent(chatId)}/messages`,
+      {
+        method: "POST",
+        body: request,
+      },
+    );
+  },
+
+  createVideoReport(
+    chatId: string,
+    request: CreateVideoReportRequest,
+  ): Promise<ChatMessage> {
+    return apiRequest<ChatMessage>(
+      `/api/chats/${encodeURIComponent(chatId)}/video-reports`,
       {
         method: "POST",
         body: request,
