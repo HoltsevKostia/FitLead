@@ -6,6 +6,10 @@ using FitLead.Application.Common.Results;
 using FitLead.Application.Common.Time;
 using FitLead.Application.Identity;
 using FitLead.Application.Invitations.Services;
+using FitLead.Application.Messenger.Chats.Access;
+using FitLead.Application.Media.MediaAssets.Access;
+using FitLead.Application.Media.MediaAssets.Registration;
+using FitLead.Application.Media.Uploadcare;
 using FitLead.Application.Modules.Exercises;
 using FitLead.Application.Modules.TrainingPrograms;
 using FitLead.Application.Modules.Users;
@@ -21,6 +25,8 @@ using FitLead.Infrastructure.Modules.Exercises;
 using FitLead.Infrastructure.Modules.TrainingPrograms;
 using FitLead.Infrastructure.Modules.Users;
 using FitLead.Infrastructure.Modules.Workouts;
+using FitLead.Infrastructure.Media.Uploadcare;
+using FitLead.Infrastructure.Media.MediaAssets;
 using FitLead.Infrastructure.Persistence;
 using FitLead.Infrastructure.Persistence.Repositories;
 using FitLead.Infrastructure.Time;
@@ -58,6 +64,12 @@ namespace FitLead.Infrastructure
             services.AddScoped<IWorkoutReadRepository, WorkoutReadRepository>();
             services.AddScoped<IInvitationRepository, InvitationRepository>();
             services.AddScoped<IInvitationReadRepository, InvitationReadRepository>();
+            services.AddScoped<IChatRepository, ChatRepository>();
+            services.AddScoped<IChatReadRepository, ChatReadRepository>();
+            services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
+            services.AddScoped<IChatMessageReadRepository, ChatMessageReadRepository>();
+            services.AddScoped<IMediaAssetRepository, MediaAssetRepository>();
+            services.AddScoped<IMediaAssetReadRepository, MediaAssetReadRepository>();
             services.AddScoped<IInvitationLinkService, InvitationLinkService>();
             services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
             services.AddScoped(typeof(IPipelineBehavior<,>), typeof(DomainExceptionToResultBehavior<,>));
@@ -66,6 +78,21 @@ namespace FitLead.Infrastructure
             services.AddDataProtection();
             services.Configure<DeletionTokenOptions>(
                 configuration.GetSection(DeletionTokenOptions.SectionName));
+            services
+                .AddOptions<UploadcareOptions>()
+                .Bind(configuration.GetSection(UploadcareOptions.SectionName))
+                .Validate(
+                    options => !string.IsNullOrWhiteSpace(options.PublicKey),
+                    "Uploadcare public key is required")
+                .Validate(
+                    options => !string.IsNullOrWhiteSpace(options.SecretKey),
+                    "Uploadcare secret key is required")
+                .Validate(
+                    options => options.UploadSignatureLifetimeMinutes > 0,
+                    "Uploadcare upload signature lifetime must be positive")
+                .ValidateOnStart();
+            services.Configure<MediaAssetRegistrationOptions>(
+                configuration.GetSection(MediaAssetRegistrationOptions.SectionName));
             services.AddSingleton<IDeletionConfirmationTokenService, DataProtectionDeletionConfirmationTokenService>();
             services.AddScoped<ITokenHasher, TokenHasher>();
             services.AddScoped<IRefreshTokenService, RefreshTokenService>();
@@ -79,7 +106,15 @@ namespace FitLead.Infrastructure
             services.AddScoped<IWorkoutLoader, WorkoutLoader>();
             services.AddScoped<IExerciseLoader, ExerciseLoader>();
             services.AddScoped<ITrainingProgramLoader, TrainingProgramLoader>();
+            services.AddScoped<IChatLoader, ChatLoader>();
+            services.AddScoped<IMediaAssetLoader, MediaAssetLoader>();
+            services.AddScoped<IMediaAssetRegistrationPolicy, MediaAssetRegistrationPolicy>();
             services.AddScoped<ICurrentUserLoader, CurrentUserLoader>();
+            services.AddScoped<IUploadcareUploadSignatureService, UploadcareUploadSignatureService>();
+            services.AddHttpClient<IUploadcareClient, UploadcareClient>(client =>
+            {
+                client.BaseAddress = new Uri("https://api.uploadcare.com");
+            });
 
             return services;
         }

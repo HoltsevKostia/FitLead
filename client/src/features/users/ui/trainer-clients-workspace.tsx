@@ -7,6 +7,7 @@ import type {
   TrainerClientOverview,
   TrainerClientProgramAccess,
 } from "@/entities/user/model/types";
+import { OpenChatButton } from "@/features/chats/ui/open-chat-button";
 
 interface TrainerClientsWorkspaceProps {
   clients: TrainerClientOverview[];
@@ -124,9 +125,12 @@ export function TrainerClientsWorkspace({
               className="rounded-2xl border border-border bg-white px-5 py-5"
             >
               <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(260px,1.2fr)] lg:items-start">
-                <div className="min-w-0">
-                  <h2 className="text-xl font-semibold text-foreground">{client.fullName}</h2>
-                  <p className="mt-2 break-words text-sm text-muted">{client.email}</p>
+                <div className="min-w-0 space-y-3">
+                  <div>
+                    <h2 className="text-xl font-semibold text-foreground">{client.fullName}</h2>
+                    <p className="mt-2 break-words text-sm text-muted">{client.email}</p>
+                  </div>
+                  <OpenChatButton targetId={client.clientId} targetType="client" />
                 </div>
 
                 <div className="space-y-3">

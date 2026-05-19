@@ -63,6 +63,137 @@ namespace FitLead.Infrastructure.Migrations
                     b.ToTable("invitations", (string)null);
                 });
 
+            modelBuilder.Entity("FitLead.Domain.Media.MediaAssets.MediaAsset", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DeliveryUrl")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<int?>("DurationSeconds")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("FileName")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("OwnerUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("StorageObjectId")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("StorageProvider")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerUserId")
+                        .HasDatabaseName("IX_media_assets_owner_user_id");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_media_assets_status");
+
+                    b.HasIndex("StorageProvider", "StorageObjectId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_media_assets_storage_provider_object_id");
+
+                    b.ToTable("media_assets", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_media_assets_duration_seconds_positive", "\"DurationSeconds\" IS NULL OR \"DurationSeconds\" > 0");
+
+                            t.HasCheckConstraint("CK_media_assets_size_bytes_positive", "\"SizeBytes\" > 0");
+                        });
+                });
+
+            modelBuilder.Entity("FitLead.Domain.Messenger.ChatMessages.ChatMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ChatId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("SenderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Text")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SenderId");
+
+                    b.HasIndex("ChatId", "CreatedAtUtc")
+                        .HasDatabaseName("IX_chat_messages_chat_id_created_at_utc");
+
+                    b.HasIndex("ChatId", "Id")
+                        .HasDatabaseName("IX_chat_messages_chat_id_id");
+
+                    b.ToTable("chat_messages", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_chat_messages_text_required_for_text_type", "\"Type\" <> 1 OR (\"Text\" IS NOT NULL AND length(btrim(\"Text\")) > 0)");
+                        });
+                });
+
+            modelBuilder.Entity("FitLead.Domain.Messenger.Chats.Chat", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ClientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("LastMessageAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("TrainerId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientId")
+                        .HasDatabaseName("IX_chats_client_id");
+
+                    b.HasIndex("TrainerId", "ClientId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_chats_trainer_id_client_id");
+
+                    b.ToTable("chats", (string)null);
+                });
+
             modelBuilder.Entity("FitLead.Domain.Trainings.Exercises.Exercise", b =>
                 {
                     b.Property<Guid>("Id")
@@ -613,6 +744,45 @@ namespace FitLead.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("AcceptedByClientId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("FitLead.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("TrainerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FitLead.Domain.Media.MediaAssets.MediaAsset", b =>
+                {
+                    b.HasOne("FitLead.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("OwnerUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FitLead.Domain.Messenger.ChatMessages.ChatMessage", b =>
+                {
+                    b.HasOne("FitLead.Domain.Messenger.Chats.Chat", null)
+                        .WithMany()
+                        .HasForeignKey("ChatId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FitLead.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FitLead.Domain.Messenger.Chats.Chat", b =>
+                {
+                    b.HasOne("FitLead.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("FitLead.Domain.Users.User", null)
                         .WithMany()

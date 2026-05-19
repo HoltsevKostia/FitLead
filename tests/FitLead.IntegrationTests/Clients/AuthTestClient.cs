@@ -86,6 +86,11 @@ public sealed class AuthTestClient(HttpClient httpClient)
         return SendAsync(request, includeCsrfHeader: false, cancellationToken);
     }
 
+    public string GetCookieHeader(string path = "/")
+    {
+        return BuildCookieHeader(new Uri(_baseUri, path));
+    }
+
     private async Task<HttpResponseMessage> SendUnsafeJsonAsync<TPayload>(
         string path,
         TPayload payload,
