@@ -107,6 +107,7 @@ namespace FitLead.Application.Messenger.ChatMessages.Commands
                 senderName,
                 message.Type.ToString(),
                 message.Text,
+                null,
                 message.CreatedAtUtc);
         }
     }

@@ -91,9 +91,19 @@ export function ChatThread({
           </Link>
           <ConnectionStatusBadge status={connectionStatus} />
         </div>
-        <h1 className="mt-3 break-words text-xl font-semibold text-foreground sm:text-2xl">
-          {companionName}
-        </h1>
+        <div className="mt-3 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="break-words text-xl font-semibold text-foreground sm:text-2xl">
+            {companionName}
+          </h1>
+          {currentUser.role === "Client" ? (
+            <Link
+              href={`/chats/${chatId}/reports/new`}
+              className="w-fit rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground transition hover:bg-surface-strong"
+            >
+              Створити відео-звіт
+            </Link>
+          ) : null}
+        </div>
       </header>
 
       <div className="min-h-0 min-w-0 flex-1">
@@ -135,7 +145,7 @@ function ConnectionStatusBadge({ status }: { status: ChatConnectionStatus }) {
       className: "border-amber-200 bg-amber-50 text-amber-700",
     },
     disconnected: {
-      label: "Немає real-time з'єднання",
+      label: "Відсутнє з'єднання",
       className: "border-rose-200 bg-rose-50 text-rose-700",
     },
   }[status];

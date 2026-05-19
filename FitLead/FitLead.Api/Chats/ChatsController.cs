@@ -4,6 +4,8 @@ using FitLead.Application.Messenger.ChatMessages.Commands;
 using FitLead.Application.Messenger.ChatMessages.Queries;
 using FitLead.Application.Messenger.Chats.Commands;
 using FitLead.Application.Messenger.Chats.Queries;
+using FitLead.Application.Messenger.VideoReports.Commands;
+using FitLead.Application.Messenger.VideoReports.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -83,6 +85,58 @@ namespace FitLead.Api.Chats
         {
             var result = await _mediator.Send(
                 new SendTextMessageCommand(chatId, request.Text),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
+
+        [Authorize(Policy = "ClientOnly")]
+        [ValidateAntiForgeryToken]
+        [HttpPost("{chatId:guid}/video-reports")]
+        public async Task<IActionResult> CreateVideoReport(
+            Guid chatId,
+            [FromBody] CreateVideoReportRequest request,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new CreateVideoReportCommand(
+                    chatId,
+                    request.Title,
+                    request.Description,
+                    request.MediaAssetIds),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
+
+        [Authorize]
+        [HttpGet("{chatId:guid}/video-reports/{reportId:guid}")]
+        public async Task<IActionResult> GetVideoReport(
+            Guid chatId,
+            Guid reportId,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new GetVideoReportDetailsQuery(chatId, reportId),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
+
+        [Authorize(Policy = "TrainerOnly")]
+        [ValidateAntiForgeryToken]
+        [HttpPost("{chatId:guid}/video-reports/{reportId:guid}/feedback")]
+        public async Task<IActionResult> SubmitVideoReportFeedback(
+            Guid chatId,
+            Guid reportId,
+            [FromBody] SubmitVideoReportFeedbackRequest request,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new SubmitVideoReportFeedbackCommand(
+                    chatId,
+                    reportId,
+                    request.Text),
                 cancellationToken);
 
             return result.ToActionResult(this);

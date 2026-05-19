@@ -149,9 +149,17 @@ namespace FitLead.Infrastructure.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
+                    b.Property<Guid?>("VideoReportId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("SenderId");
+
+                    b.HasIndex("VideoReportId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_chat_messages_video_report_id")
+                        .HasFilter("\"VideoReportId\" IS NOT NULL");
 
                     b.HasIndex("ChatId", "CreatedAtUtc")
                         .HasDatabaseName("IX_chat_messages_chat_id_created_at_utc");
@@ -162,6 +170,10 @@ namespace FitLead.Infrastructure.Migrations
                     b.ToTable("chat_messages", null, t =>
                         {
                             t.HasCheckConstraint("CK_chat_messages_text_required_for_text_type", "\"Type\" <> 1 OR (\"Text\" IS NOT NULL AND length(btrim(\"Text\")) > 0)");
+
+                            t.HasCheckConstraint("CK_chat_messages_video_report_id_null_for_text_type", "\"Type\" <> 1 OR \"VideoReportId\" IS NULL");
+
+                            t.HasCheckConstraint("CK_chat_messages_video_report_shape", "\"Type\" <> 3 OR (\"VideoReportId\" IS NOT NULL AND \"Text\" IS NULL)");
                         });
                 });
 
@@ -192,6 +204,87 @@ namespace FitLead.Infrastructure.Migrations
                         .HasDatabaseName("UX_chats_trainer_id_client_id");
 
                     b.ToTable("chats", (string)null);
+                });
+
+            modelBuilder.Entity("FitLead.Domain.Messenger.VideoReports.VideoReport", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ChatId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ClientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTime?>("ReviewedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("TrainerFeedbackText")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<Guid>("TrainerId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChatId")
+                        .HasDatabaseName("IX_video_reports_chat_id");
+
+                    b.HasIndex("ClientId")
+                        .HasDatabaseName("IX_video_reports_client_id");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_video_reports_status");
+
+                    b.HasIndex("TrainerId")
+                        .HasDatabaseName("IX_video_reports_trainer_id");
+
+                    b.ToTable("video_reports", (string)null);
+                });
+
+            modelBuilder.Entity("FitLead.Domain.Messenger.VideoReports.VideoReportMedia", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MediaAssetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("OrderInReport")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("VideoReportId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MediaAssetId");
+
+                    b.HasIndex("VideoReportId", "OrderInReport")
+                        .IsUnique()
+                        .HasDatabaseName("UX_video_report_media_report_id_order_in_report");
+
+                    b.ToTable("video_report_media", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_video_report_media_order_in_report_positive", "\"OrderInReport\" > 0");
+                        });
                 });
 
             modelBuilder.Entity("FitLead.Domain.Trainings.Exercises.Exercise", b =>
@@ -774,6 +867,11 @@ namespace FitLead.Infrastructure.Migrations
                         .HasForeignKey("SenderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("FitLead.Domain.Messenger.VideoReports.VideoReport", null)
+                        .WithMany()
+                        .HasForeignKey("VideoReportId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("FitLead.Domain.Messenger.Chats.Chat", b =>
@@ -788,6 +886,42 @@ namespace FitLead.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("TrainerId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FitLead.Domain.Messenger.VideoReports.VideoReport", b =>
+                {
+                    b.HasOne("FitLead.Domain.Messenger.Chats.Chat", null)
+                        .WithMany()
+                        .HasForeignKey("ChatId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FitLead.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FitLead.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("TrainerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FitLead.Domain.Messenger.VideoReports.VideoReportMedia", b =>
+                {
+                    b.HasOne("FitLead.Domain.Media.MediaAssets.MediaAsset", null)
+                        .WithMany()
+                        .HasForeignKey("MediaAssetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FitLead.Domain.Messenger.VideoReports.VideoReport", null)
+                        .WithMany("Media")
+                        .HasForeignKey("VideoReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
@@ -966,6 +1100,11 @@ namespace FitLead.Infrastructure.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("FitLead.Domain.Messenger.VideoReports.VideoReport", b =>
+                {
+                    b.Navigation("Media");
                 });
 
             modelBuilder.Entity("FitLead.Domain.Trainings.TrainingPrograms.TrainingProgram", b =>

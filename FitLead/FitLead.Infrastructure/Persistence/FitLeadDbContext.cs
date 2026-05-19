@@ -2,6 +2,7 @@ using FitLead.Domain.Invitations;
 using FitLead.Domain.Media.MediaAssets;
 using FitLead.Domain.Messenger.ChatMessages;
 using FitLead.Domain.Messenger.Chats;
+using FitLead.Domain.Messenger.VideoReports;
 using FitLead.Domain.Trainings.Exercises;
 using FitLead.Domain.Trainings.TrainingProgramAssignments;
 using FitLead.Domain.Trainings.TrainingPrograms;
@@ -31,6 +32,8 @@ namespace FitLead.Infrastructure.Persistence
         public DbSet<Invitation> Invitations => Set<Invitation>();
         public DbSet<Chat> Chats => Set<Chat>();
         public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
+        public DbSet<VideoReport> VideoReports => Set<VideoReport>();
+        public DbSet<VideoReportMedia> VideoReportMedia => Set<VideoReportMedia>();
         public DbSet<MediaAsset> MediaAssets => Set<MediaAsset>();
         public DbSet<AssignedTrainingProgram> AssignedTrainingPrograms => Set<AssignedTrainingProgram>();
         public DbSet<TrainingProgramWorkout> TrainingProgramWorkouts => Set<TrainingProgramWorkout>();

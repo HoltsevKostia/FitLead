@@ -4,13 +4,11 @@ import { useLayoutEffect, useRef, useState } from "react";
 
 import type { ChatMessage } from "@/entities/chat/model/types";
 import type { CurrentUser } from "@/features/auth/model/types";
+import { MessageBubble } from "@/features/chats/ui/message-bubble";
+import { VideoReportMessageCard } from "@/features/chats/ui/video-report-message-card";
 import { FormAlert } from "@/shared/forms/form-alert";
 
 const NEAR_BOTTOM_THRESHOLD_PX = 96;
-const messageTimeFormatter = new Intl.DateTimeFormat("uk-UA", {
-  hour: "2-digit",
-  minute: "2-digit",
-});
 
 interface ChatHistoryProps {
   currentUser: CurrentUser;
@@ -21,44 +19,18 @@ interface ChatHistoryProps {
   onLoadOlder: () => Promise<boolean>;
 }
 
-function formatMessageTime(value: string): string {
-  return messageTimeFormatter.format(new Date(value));
-}
-
-function MessageBubble({
+function ChatMessageItem({
   currentUser,
   message,
 }: {
   currentUser: CurrentUser;
   message: ChatMessage;
 }) {
-  const isOwn = message.senderId === currentUser.id;
+  if (message.type === "VideoReport") {
+    return <VideoReportMessageCard currentUser={currentUser} message={message} />;
+  }
 
-  return (
-    <div className={`flex min-w-0 ${isOwn ? "justify-end" : "justify-start"}`}>
-      <article
-        className={`min-w-0 max-w-[min(88%,42rem)] rounded-2xl px-4 py-3 sm:max-w-[min(78%,42rem)] ${
-          isOwn
-            ? "rounded-br-md bg-accent text-white"
-            : "rounded-bl-md border border-border bg-surface text-foreground"
-        }`}
-      >
-        {!isOwn ? (
-          <p className="mb-1 text-xs font-medium text-muted">{message.senderName}</p>
-        ) : null}
-        <p className="whitespace-pre-wrap break-words text-sm leading-6">
-          {message.text ?? ""}
-        </p>
-        <p
-          className={`mt-2 text-right text-xs ${
-            isOwn ? "text-white/75" : "text-muted"
-          }`}
-        >
-          {formatMessageTime(message.createdAtUtc)}
-        </p>
-      </article>
-    </div>
-  );
+  return <MessageBubble currentUser={currentUser} message={message} />;
 }
 
 function isNearBottom(scrollContainer: HTMLDivElement | null): boolean {
@@ -195,7 +167,7 @@ export function ChatHistory({
 
       <div className="min-w-0 space-y-3">
         {messages.map((message) => (
-          <MessageBubble
+          <ChatMessageItem
             key={message.id}
             currentUser={currentUser}
             message={message}
