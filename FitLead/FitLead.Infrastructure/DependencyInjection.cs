@@ -75,6 +75,8 @@ namespace FitLead.Infrastructure
             services.AddScoped<IChatMessageReadRepository, ChatMessageReadRepository>();
             services.AddScoped<IMediaAssetRepository, MediaAssetRepository>();
             services.AddScoped<IMediaAssetReadRepository, MediaAssetReadRepository>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
+            services.AddScoped<INotificationReadRepository, NotificationReadRepository>();
             services.AddScoped<IOutboxMessageRepository, OutboxMessageRepository>();
             services.AddScoped<IOutbox, Outbox.Outbox>();
             services.AddScoped<IOutboxMessageDispatcher, OutboxMessageDispatcher>();
