@@ -29,6 +29,7 @@ using FitLead.Infrastructure.Modules.Workouts;
 using FitLead.Infrastructure.Media.Uploadcare;
 using FitLead.Infrastructure.Media.MediaAssets;
 using FitLead.Infrastructure.Outbox;
+using FitLead.Infrastructure.Outbox.Handlers;
 using FitLead.Infrastructure.Persistence;
 using FitLead.Infrastructure.Persistence.Repositories;
 using FitLead.Infrastructure.Time;
@@ -77,6 +78,7 @@ namespace FitLead.Infrastructure
             services.AddScoped<IOutboxMessageRepository, OutboxMessageRepository>();
             services.AddScoped<IOutbox, Outbox.Outbox>();
             services.AddScoped<IOutboxMessageDispatcher, OutboxMessageDispatcher>();
+            services.AddScoped<IOutboxMessageHandler, ChatMessageCreatedOutboxHandler>();
             services.AddScoped<IInvitationLinkService, InvitationLinkService>();
             services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
             services.AddScoped(typeof(IPipelineBehavior<,>), typeof(DomainExceptionToResultBehavior<,>));

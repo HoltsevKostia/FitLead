@@ -5,7 +5,7 @@ namespace FitLead.Infrastructure.Outbox
         public const string SectionName = "OutboxProcessor";
 
         public int BatchSize { get; init; } = 20;
-        public int PollingIntervalSeconds { get; init; } = 5;
+        public int PollingIntervalSeconds { get; init; } = 2;
         public int MaxAttempts { get; init; } = 4;
     }
 }
