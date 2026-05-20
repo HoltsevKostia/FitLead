@@ -78,6 +78,7 @@ namespace FitLead.Infrastructure
             services.AddScoped<IOutboxMessageRepository, OutboxMessageRepository>();
             services.AddScoped<IOutbox, Outbox.Outbox>();
             services.AddScoped<IOutboxMessageDispatcher, OutboxMessageDispatcher>();
+            services.AddSingleton<IOutboxMessageProcessor, OutboxMessageProcessor>();
             services.AddScoped<IOutboxMessageHandler, ChatMessageCreatedOutboxHandler>();
             services.AddScoped<IInvitationLinkService, InvitationLinkService>();
             services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
