@@ -20,6 +20,16 @@ namespace FitLead.Infrastructure.Persistence.Repositories
             await _context.OutboxMessages.AddAsync(outboxMessage, cancellationToken);
         }
 
+        public async Task<OutboxMessage?> GetByIdAsync(
+            Guid outboxMessageId,
+            CancellationToken cancellationToken)
+        {
+            return await _context.OutboxMessages
+                .FirstOrDefaultAsync(
+                    outboxMessage => outboxMessage.Id == outboxMessageId,
+                    cancellationToken);
+        }
+
         public async Task<IReadOnlyList<OutboxMessage>> GetPendingAsync(
             DateTime utcNow,
             int batchSize,

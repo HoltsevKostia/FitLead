@@ -8,6 +8,10 @@ namespace FitLead.Application.Abstractions.Persistence
             OutboxMessage outboxMessage,
             CancellationToken cancellationToken);
 
+        Task<OutboxMessage?> GetByIdAsync(
+            Guid outboxMessageId,
+            CancellationToken cancellationToken);
+
         Task<IReadOnlyList<OutboxMessage>> GetPendingAsync(
             DateTime utcNow,
             int batchSize,
