@@ -2,6 +2,7 @@ using EntityFramework.Exceptions.PostgreSQL;
 using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
 using FitLead.Application.Common.Deletion;
+using FitLead.Application.Common.Outbox;
 using FitLead.Application.Common.Results;
 using FitLead.Application.Common.Time;
 using FitLead.Application.Identity;
@@ -27,6 +28,8 @@ using FitLead.Infrastructure.Modules.Users;
 using FitLead.Infrastructure.Modules.Workouts;
 using FitLead.Infrastructure.Media.Uploadcare;
 using FitLead.Infrastructure.Media.MediaAssets;
+using FitLead.Infrastructure.Outbox;
+using FitLead.Infrastructure.Outbox.Handlers;
 using FitLead.Infrastructure.Persistence;
 using FitLead.Infrastructure.Persistence.Repositories;
 using FitLead.Infrastructure.Time;
@@ -72,6 +75,11 @@ namespace FitLead.Infrastructure
             services.AddScoped<IChatMessageReadRepository, ChatMessageReadRepository>();
             services.AddScoped<IMediaAssetRepository, MediaAssetRepository>();
             services.AddScoped<IMediaAssetReadRepository, MediaAssetReadRepository>();
+            services.AddScoped<IOutboxMessageRepository, OutboxMessageRepository>();
+            services.AddScoped<IOutbox, Outbox.Outbox>();
+            services.AddScoped<IOutboxMessageDispatcher, OutboxMessageDispatcher>();
+            services.AddSingleton<IOutboxMessageProcessor, OutboxMessageProcessor>();
+            services.AddScoped<IOutboxMessageHandler, ChatMessageCreatedOutboxHandler>();
             services.AddScoped<IInvitationLinkService, InvitationLinkService>();
             services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
             services.AddScoped(typeof(IPipelineBehavior<,>), typeof(DomainExceptionToResultBehavior<,>));
@@ -95,6 +103,19 @@ namespace FitLead.Infrastructure
                 .ValidateOnStart();
             services.Configure<MediaAssetRegistrationOptions>(
                 configuration.GetSection(MediaAssetRegistrationOptions.SectionName));
+            services
+                .AddOptions<OutboxProcessorOptions>()
+                .Bind(configuration.GetSection(OutboxProcessorOptions.SectionName))
+                .Validate(
+                    options => options.BatchSize is >= 1 and <= 100,
+                    "Outbox processor batch size must be between 1 and 100")
+                .Validate(
+                    options => options.PollingIntervalSeconds > 0,
+                    "Outbox processor polling interval must be positive")
+                .Validate(
+                    options => options.MaxAttempts > 0,
+                    "Outbox processor max attempts must be positive")
+                .ValidateOnStart();
             services.AddSingleton<IDeletionConfirmationTokenService, DataProtectionDeletionConfirmationTokenService>();
             services.AddScoped<ITokenHasher, TokenHasher>();
             services.AddScoped<IRefreshTokenService, RefreshTokenService>();
@@ -117,6 +138,7 @@ namespace FitLead.Infrastructure
             {
                 client.BaseAddress = new Uri("https://api.uploadcare.com");
             });
+            services.AddHostedService<OutboxProcessor>();
 
             return services;
         }

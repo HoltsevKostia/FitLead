@@ -4,6 +4,10 @@ namespace FitLead.Application.Abstractions.Persistence
 {
     public interface IChatMessageReadRepository
     {
+        Task<ChatMessageDto?> GetMessageAsync(
+            Guid messageId,
+            CancellationToken cancellationToken);
+
         Task<IReadOnlyList<ChatMessageDto>> GetMessagesAsync(
             Guid chatId,
             int limit,

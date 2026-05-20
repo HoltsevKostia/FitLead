@@ -1,7 +1,9 @@
+using FitLead.Application.Common.Outbox;
 using FitLead.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,8 +43,16 @@ public sealed class CustomWebApplicationFactory(string connectionString)
                 ["Jwt:RsaPublicKeyPem"] = EscapePem(RsaKeys.PublicKeyPem),
                 ["Uploadcare:PublicKey"] = "test-public-key",
                 ["Uploadcare:SecretKey"] = "test-secret-key",
-                ["Uploadcare:UploadSignatureLifetimeMinutes"] = "30"
+                ["Uploadcare:UploadSignatureLifetimeMinutes"] = "30",
+                ["OutboxProcessor:Enabled"] = "false",
+                ["OutboxProcessor:PollingIntervalSeconds"] = "1"
             });
+        });
+
+        builder.ConfigureTestServices(services =>
+        {
+            services.AddScoped<IOutboxMessageHandler, SuccessfulTestOutboxMessageHandler>();
+            services.AddScoped<IOutboxMessageHandler, FailingTestOutboxMessageHandler>();
         });
     }
 

@@ -1,0 +1,12 @@
+namespace FitLead.Infrastructure.Outbox
+{
+    public sealed class OutboxProcessorOptions
+    {
+        public const string SectionName = "OutboxProcessor";
+
+        public bool Enabled { get; init; } = true;
+        public int BatchSize { get; init; } = 20;
+        public int PollingIntervalSeconds { get; init; } = 2;
+        public int MaxAttempts { get; init; } = 4;
+    }
+}
