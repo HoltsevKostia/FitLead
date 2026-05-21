@@ -2,17 +2,20 @@
 
 import type { Notification } from "@/entities/notification/model/types";
 import { notificationsApi } from "@/lib/api/clients/notifications-api";
+import { createNotificationConnection } from "@/lib/realtime/notification-connection";
 import { resolveSafeNextHref } from "@/shared/utils/resolve-safe-next-href";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const UI_TEXT = {
   label: "Сповіщення",
   title: "Сповіщення",
   markAllRead: "Прочитати всі",
-  empty: "Нових сповіщень немає",
+  empty: "Сповіщень немає",
   error: "Не вдалося завантажити сповіщення.",
 } as const;
+
+const NOTIFICATION_LIST_LIMIT = 10;
 
 const notificationTimeFormatter = new Intl.DateTimeFormat("uk-UA", {
   day: "2-digit",
@@ -47,6 +50,7 @@ function BellIcon() {
 export function NotificationBell() {
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const seenNotificationIdsRef = useRef<Set<string>>(new Set());
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isMarkingAllRead, setIsMarkingAllRead] = useState(false);
@@ -54,10 +58,54 @@ export function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
-  const hasUnreadNotifications = useMemo(
-    () => notifications.some((notification) => !notification.isRead),
-    [notifications],
-  );
+  const hasUnreadNotifications = unreadCount > 0;
+
+  useEffect(() => {
+    const connection = createNotificationConnection();
+    let isDisposed = false;
+
+    function handleNotificationCreated(notification: Notification) {
+      if (isDisposed) {
+        return;
+      }
+
+      if (seenNotificationIdsRef.current.has(notification.id)) {
+        return;
+      }
+
+      seenNotificationIdsRef.current.add(notification.id);
+
+      if (!notification.isRead) {
+        setUnreadCount((currentCount) => currentCount + 1);
+      }
+
+      setNotifications((currentNotifications) => {
+        if (currentNotifications.some((current) => current.id === notification.id)) {
+          return currentNotifications;
+        }
+
+        return [notification, ...currentNotifications].slice(0, NOTIFICATION_LIST_LIMIT);
+      });
+    }
+
+    async function startConnection() {
+      connection.on("NotificationCreated", handleNotificationCreated);
+
+      try {
+        await connection.start();
+      } catch {
+        // The bell falls back to HTTP polling when the dropdown opens.
+      }
+    }
+
+    const startPromise = startConnection();
+
+    return () => {
+      isDisposed = true;
+      connection.off("NotificationCreated", handleNotificationCreated);
+      void startPromise.finally(() => connection.stop());
+    };
+  }, []);
 
   useEffect(() => {
     let ignore = false;
@@ -94,9 +142,12 @@ export function NotificationBell() {
       setError(null);
 
       try {
-        const result = await notificationsApi.getNotifications(10);
+        const result = await notificationsApi.getNotifications(NOTIFICATION_LIST_LIMIT);
         if (!ignore) {
           setNotifications(result);
+          seenNotificationIdsRef.current = new Set(
+            result.map((notification) => notification.id),
+          );
         }
       } catch {
         if (!ignore) {
@@ -145,7 +196,7 @@ export function NotificationBell() {
     };
   }, [isOpen]);
 
-  async function handleOpenChange() {
+  function handleOpenChange() {
     setIsOpen((current) => !current);
   }
 

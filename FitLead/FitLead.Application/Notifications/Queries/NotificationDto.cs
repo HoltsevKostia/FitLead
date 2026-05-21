@@ -2,6 +2,7 @@ namespace FitLead.Application.Notifications.Queries
 {
     public sealed record NotificationDto(
         Guid Id,
+        Guid RecipientUserId,
         string Type,
         string Title,
         string? Body,

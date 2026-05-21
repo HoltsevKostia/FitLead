@@ -9,6 +9,11 @@ namespace FitLead.Application.Abstractions.Persistence
             int limit,
             CancellationToken cancellationToken);
 
+        Task<NotificationDto?> GetDetailsByIdForRecipientAsync(
+            Guid notificationId,
+            Guid recipientUserId,
+            CancellationToken cancellationToken);
+
         Task<int> GetUnreadCountAsync(
             Guid recipientUserId,
             CancellationToken cancellationToken);

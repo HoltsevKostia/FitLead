@@ -13,5 +13,10 @@ namespace FitLead.Application.Common.Outbox
         {
             public const string ProgramAssigned = "Training.ProgramAssigned";
         }
+
+        public static class Notifications
+        {
+            public const string Created = "Notification.Created";
+        }
     }
 }

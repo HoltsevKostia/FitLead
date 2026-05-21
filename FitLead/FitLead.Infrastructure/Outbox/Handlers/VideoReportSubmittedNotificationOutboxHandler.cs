@@ -2,6 +2,7 @@ using System.Text.Json;
 using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common.Outbox;
 using FitLead.Application.Messenger.VideoReports.Outbox;
+using FitLead.Application.Notifications.Outbox;
 using FitLead.Domain.Notifications;
 using FitLead.Domain.Outbox;
 
@@ -12,11 +13,14 @@ namespace FitLead.Infrastructure.Outbox.Handlers
         private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
 
         private readonly INotificationRepository _notificationRepository;
+        private readonly IOutbox _outbox;
 
         public VideoReportSubmittedNotificationOutboxHandler(
-            INotificationRepository notificationRepository)
+            INotificationRepository notificationRepository,
+            IOutbox outbox)
         {
             _notificationRepository = notificationRepository;
+            _outbox = outbox;
         }
 
         public string Type => OutboxEventTypes.Messenger.VideoReportSubmitted;
@@ -48,7 +52,7 @@ namespace FitLead.Infrastructure.Outbox.Handlers
                 payload.TrainerId,
                 NotificationType.VideoReportSubmitted,
                 "Новий відео-звіт",
-                payload.Title,
+                $"{payload.ClientName}: {payload.Title}",
                 $"/chats/{payload.ChatId}/reports/{payload.ReportId}",
                 payload.SubmittedAtUtc,
                 message.Id);
@@ -57,7 +61,16 @@ namespace FitLead.Infrastructure.Outbox.Handlers
                 throw new InvalidOperationException(notificationResult.Error.Message);
             }
 
-            await _notificationRepository.AddAsync(notificationResult.Value, cancellationToken);
+            var notification = notificationResult.Value;
+            await _notificationRepository.AddAsync(notification, cancellationToken);
+            await _outbox.EnqueueAsync(
+                OutboxEventTypes.Notifications.Created,
+                new NotificationCreatedOutboxPayload(
+                    notification.Id,
+                    notification.RecipientUserId,
+                    notification.CreatedAtUtc),
+                notification.CreatedAtUtc,
+                cancellationToken);
         }
     }
 }

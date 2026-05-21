@@ -32,6 +32,7 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                 .Select(notification => new NotificationProjection
                 {
                     Id = notification.Id,
+                    RecipientUserId = notification.RecipientUserId,
                     Type = notification.Type,
                     Title = notification.Title,
                     Body = notification.Body,
@@ -45,6 +46,34 @@ namespace FitLead.Infrastructure.Persistence.Repositories
             return projections
                 .Select(ToDto)
                 .ToList();
+        }
+
+        public async Task<NotificationDto?> GetDetailsByIdForRecipientAsync(
+            Guid notificationId,
+            Guid recipientUserId,
+            CancellationToken cancellationToken)
+        {
+            var projection = await _context.Notifications
+                .AsNoTracking()
+                .Where(notification => notification.Id == notificationId &&
+                                       notification.RecipientUserId == recipientUserId)
+                .Select(notification => new NotificationProjection
+                {
+                    Id = notification.Id,
+                    RecipientUserId = notification.RecipientUserId,
+                    Type = notification.Type,
+                    Title = notification.Title,
+                    Body = notification.Body,
+                    LinkUrl = notification.LinkUrl,
+                    IsRead = notification.IsRead,
+                    CreatedAtUtc = notification.CreatedAtUtc,
+                    ReadAtUtc = notification.ReadAtUtc
+                })
+                .FirstOrDefaultAsync(cancellationToken);
+
+            return projection is null
+                ? null
+                : ToDto(projection);
         }
 
         public async Task<int> GetUnreadCountAsync(
@@ -63,6 +92,7 @@ namespace FitLead.Infrastructure.Persistence.Repositories
         {
             return new NotificationDto(
                 projection.Id,
+                projection.RecipientUserId,
                 projection.Type.ToString(),
                 projection.Title,
                 projection.Body,
@@ -75,6 +105,7 @@ namespace FitLead.Infrastructure.Persistence.Repositories
         private sealed class NotificationProjection
         {
             public Guid Id { get; init; }
+            public Guid RecipientUserId { get; init; }
             public Domain.Notifications.NotificationType Type { get; init; }
             public required string Title { get; init; }
             public string? Body { get; init; }

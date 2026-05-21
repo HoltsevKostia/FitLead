@@ -140,6 +140,7 @@ namespace FitLead.Application.Messenger.VideoReports.Commands
                     chat.Id,
                     videoReportResult.Value.Id,
                     currentUser.Id,
+                    currentUser.FullName,
                     chat.TrainerId,
                     videoReportResult.Value.Title,
                     createdAtUtc),

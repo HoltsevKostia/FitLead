@@ -4,6 +4,7 @@ namespace FitLead.Application.Messenger.VideoReports.Outbox
         Guid ChatId,
         Guid ReportId,
         Guid ClientId,
+        string ClientName,
         Guid TrainerId,
         string Title,
         DateTime SubmittedAtUtc);

@@ -1,5 +1,6 @@
 export interface Notification {
   id: string;
+  recipientUserId: string;
   type: string;
   title: string;
   body: string | null;
