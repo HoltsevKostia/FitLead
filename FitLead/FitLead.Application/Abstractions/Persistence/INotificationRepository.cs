@@ -18,5 +18,9 @@ namespace FitLead.Application.Abstractions.Persistence
             Guid recipientUserId,
             NotificationType type,
             CancellationToken cancellationToken);
+
+        Task<IReadOnlyList<Notification>> GetUnreadByRecipientAsync(
+            Guid recipientUserId,
+            CancellationToken cancellationToken);
     }
 }

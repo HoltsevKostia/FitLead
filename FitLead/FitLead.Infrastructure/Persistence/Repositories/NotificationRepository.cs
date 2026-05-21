@@ -45,5 +45,15 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                                     notification.Type == type,
                     cancellationToken);
         }
+
+        public async Task<IReadOnlyList<Notification>> GetUnreadByRecipientAsync(
+            Guid recipientUserId,
+            CancellationToken cancellationToken)
+        {
+            return await _context.Notifications
+                .Where(notification => notification.RecipientUserId == recipientUserId &&
+                                       !notification.IsRead)
+                .ToListAsync(cancellationToken);
+        }
     }
 }
