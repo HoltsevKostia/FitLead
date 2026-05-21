@@ -1,12 +1,11 @@
 using System.Net;
-using System.Text.Json;
 using FitLead.Application.Common.Outbox;
 using FitLead.Application.Trainings.TrainingProgramAssignments.Commands;
+using FitLead.Application.Trainings.TrainingProgramAssignments.Outbox;
 using FitLead.Domain.Outbox;
 using FitLead.IntegrationTests.Helpers;
 using FitLead.IntegrationTests.Infrastructure;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 
 namespace FitLead.IntegrationTests.Features.TrainingPrograms;
 
@@ -29,40 +28,14 @@ public sealed class TrainingProgramAssignmentOutboxTests(IntegrationTestFixture 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         var assignment = await response.ReadRequiredJsonAsync<AssignTrainingProgramToClientResult>();
 
-        var outboxMessage = await Db.QueryAsync(async context =>
-        {
-            var messages = await context.OutboxMessages
-                .AsNoTracking()
-                .Where(message => message.Type == OutboxEventTypes.Training.ProgramAssigned)
-                .ToListAsync();
-
-            return messages.Single(message =>
-                HasProgramAssignedPayload(
-                    message.Payload,
-                    assignment.AssignmentId,
-                    programId,
-                    trainer.Id,
-                    client.Id,
-                    "Strength base"));
-        });
+        var outboxMessage = await Outbox.GetSingleAsync<TrainingProgramAssignedOutboxPayload>(
+            OutboxEventTypes.Training.ProgramAssigned,
+            payload => payload.AssignmentId == assignment.AssignmentId &&
+                       payload.TrainingProgramId == programId &&
+                       payload.TrainerId == trainer.Id &&
+                       payload.ClientId == client.Id &&
+                       payload.ProgramTitle == "Strength base");
 
         outboxMessage.Status.Should().NotBe(OutboxMessageStatus.Failed);
-    }
-
-    private static bool HasProgramAssignedPayload(
-        string payload,
-        Guid expectedAssignmentId,
-        Guid expectedProgramId,
-        Guid expectedTrainerId,
-        Guid expectedClientId,
-        string expectedProgramTitle)
-    {
-        using var document = JsonDocument.Parse(payload);
-
-        return document.RootElement.GetProperty("assignmentId").GetGuid() == expectedAssignmentId &&
-               document.RootElement.GetProperty("trainingProgramId").GetGuid() == expectedProgramId &&
-               document.RootElement.GetProperty("trainerId").GetGuid() == expectedTrainerId &&
-               document.RootElement.GetProperty("clientId").GetGuid() == expectedClientId &&
-               document.RootElement.GetProperty("programTitle").GetString() == expectedProgramTitle;
     }
 }

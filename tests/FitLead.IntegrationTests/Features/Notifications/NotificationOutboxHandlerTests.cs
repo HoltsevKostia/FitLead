@@ -3,6 +3,7 @@ using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
 using FitLead.Application.Common.Outbox;
 using FitLead.Application.Messenger.VideoReports.Outbox;
+using FitLead.Application.Notifications.Outbox;
 using FitLead.Application.Trainings.TrainingProgramAssignments.Outbox;
 using FitLead.Domain.Notifications;
 using FitLead.Domain.Outbox;
@@ -33,6 +34,7 @@ public sealed class NotificationOutboxHandlerTests : NotificationTestBase
                 chatId,
                 reportId,
                 client.Id,
+                "Client Demo",
                 trainer.Id,
                 "Squat check",
                 DateTime.UtcNow));
@@ -43,9 +45,15 @@ public sealed class NotificationOutboxHandlerTests : NotificationTestBase
         notification.RecipientUserId.Should().Be(trainer.Id);
         notification.Type.Should().Be(NotificationType.VideoReportSubmitted);
         notification.Title.Should().Be("Новий відео-звіт");
-        notification.Body.Should().Be("Squat check");
+        notification.Body.Should().Be("Client Demo: Squat check");
         notification.LinkUrl.Should().Be($"/chats/{chatId}/reports/{reportId}");
         notification.SourceEventId.Should().Be(message.Id);
+
+        var notificationCreated = await Outbox.GetSingleAsync<NotificationCreatedOutboxPayload>(
+            OutboxEventTypes.Notifications.Created,
+            payload => payload.NotificationId == notification.Id &&
+                       payload.RecipientUserId == trainer.Id);
+        notificationCreated.Status.Should().Be(OutboxMessageStatus.Pending);
     }
 
     [Fact]
@@ -74,6 +82,12 @@ public sealed class NotificationOutboxHandlerTests : NotificationTestBase
         notification.Body.Should().Be("Deadlift check");
         notification.LinkUrl.Should().Be($"/chats/{chatId}/reports/{reportId}");
         notification.SourceEventId.Should().Be(message.Id);
+
+        var notificationCreated = await Outbox.GetSingleAsync<NotificationCreatedOutboxPayload>(
+            OutboxEventTypes.Notifications.Created,
+            payload => payload.NotificationId == notification.Id &&
+                       payload.RecipientUserId == client.Id);
+        notificationCreated.Status.Should().Be(OutboxMessageStatus.Pending);
     }
 
     [Fact]
@@ -101,6 +115,12 @@ public sealed class NotificationOutboxHandlerTests : NotificationTestBase
         notification.Body.Should().Be("Strength base");
         notification.LinkUrl.Should().Be($"/client/training-programs/{assignmentId}");
         notification.SourceEventId.Should().Be(message.Id);
+
+        var notificationCreated = await Outbox.GetSingleAsync<NotificationCreatedOutboxPayload>(
+            OutboxEventTypes.Notifications.Created,
+            payload => payload.NotificationId == notification.Id &&
+                       payload.RecipientUserId == client.Id);
+        notificationCreated.Status.Should().Be(OutboxMessageStatus.Pending);
     }
 
     [Fact]
@@ -114,6 +134,7 @@ public sealed class NotificationOutboxHandlerTests : NotificationTestBase
                 Guid.NewGuid(),
                 Guid.NewGuid(),
                 client.Id,
+                "Client Demo",
                 trainer.Id,
                 "Squat check",
                 DateTime.UtcNow));

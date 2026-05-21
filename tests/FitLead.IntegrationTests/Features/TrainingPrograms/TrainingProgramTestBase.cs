@@ -15,10 +15,12 @@ public abstract class TrainingProgramTestBase : IntegrationTestBase
     protected TestExercises Exercises { get; }
     protected TestApiClients Api { get; }
     protected TestDb Db { get; }
+    protected TestOutbox Outbox { get; }
 
     protected TrainingProgramTestBase(IntegrationTestFixture fixture) : base(fixture)
     {
         Db = new TestDb(fixture);
+        Outbox = new TestOutbox(Db);
         Users = new TestUsers(fixture, Db);
         Workouts = new TestWorkouts(Db);
         Exercises = new TestExercises(Db);

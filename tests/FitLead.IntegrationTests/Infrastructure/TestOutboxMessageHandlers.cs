@@ -1,5 +1,8 @@
 using FitLead.Application.Common.Outbox;
+using FitLead.Application.Notifications.Queries;
+using FitLead.Application.Notifications.Realtime;
 using FitLead.Domain.Outbox;
+using System.Collections.Concurrent;
 
 namespace FitLead.IntegrationTests.Infrastructure;
 
@@ -30,5 +33,20 @@ public sealed class FailingTestOutboxMessageHandler : IOutboxMessageHandler
         CancellationToken cancellationToken)
     {
         throw new InvalidOperationException("Test outbox handler failure.");
+    }
+}
+
+public sealed class TestNotificationRealtimeNotifier : INotificationRealtimeNotifier
+{
+    private readonly ConcurrentBag<NotificationDto> _notifications = new();
+
+    public IReadOnlyCollection<NotificationDto> Notifications => _notifications.ToArray();
+
+    public Task NotificationCreatedAsync(
+        NotificationDto notification,
+        CancellationToken cancellationToken)
+    {
+        _notifications.Add(notification);
+        return Task.CompletedTask;
     }
 }

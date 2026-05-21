@@ -1,13 +1,13 @@
 using System.Net;
-using System.Text.Json;
 using FitLead.Application.Common.Outbox;
+using FitLead.Application.Messenger.ChatMessages.Outbox;
 using FitLead.Application.Messenger.ChatMessages.Queries;
+using FitLead.Application.Messenger.VideoReports.Outbox;
 using FitLead.Domain.Media.MediaAssets;
 using FitLead.Domain.Outbox;
 using FitLead.IntegrationTests.Helpers;
 using FitLead.IntegrationTests.Infrastructure;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 
 namespace FitLead.IntegrationTests.Features.Messenger;
 
@@ -34,81 +34,21 @@ public sealed class VideoReportOutboxTests : MessengerTestBase
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var chatMessage = await response.ReadRequiredJsonAsync<ChatMessageDto>();
 
-        var outboxMessage = await Db.QueryAsync(async context =>
-        {
-            var messages = await context.OutboxMessages
-                .AsNoTracking()
-                .Where(message => message.Type == OutboxEventTypes.Messenger.ChatMessageCreated)
-                .ToListAsync();
-
-            return messages.Single(message =>
-                HasChatMessageCreatedPayload(
-                    message.Payload,
-                    chat.Id,
-                    chatMessage.Id));
-        });
+        var outboxMessage = await Outbox.GetSingleAsync<ChatMessageCreatedOutboxPayload>(
+            OutboxEventTypes.Messenger.ChatMessageCreated,
+            payload => payload.ChatId == chat.Id &&
+                       payload.MessageId == chatMessage.Id);
 
         outboxMessage.Status.Should().NotBe(OutboxMessageStatus.Failed);
-        AssertChatMessageCreatedPayload(
-            outboxMessage.Payload,
-            chat.Id,
-            chatMessage.Id);
 
-        var submittedOutboxMessage = await Db.QueryAsync(async context =>
-        {
-            var messages = await context.OutboxMessages
-                .AsNoTracking()
-                .Where(message => message.Type == OutboxEventTypes.Messenger.VideoReportSubmitted)
-                .ToListAsync();
-
-            return messages.Single(message =>
-                HasVideoReportSubmittedPayload(
-                    message.Payload,
-                    chat.Id,
-                    chatMessage.VideoReport!.Id,
-                    client.Id,
-                    trainer.Id,
-                    "Squat check"));
-        });
+        var submittedOutboxMessage = await Outbox.GetSingleAsync<VideoReportSubmittedOutboxPayload>(
+            OutboxEventTypes.Messenger.VideoReportSubmitted,
+            payload => payload.ChatId == chat.Id &&
+                       payload.ReportId == chatMessage.VideoReport!.Id &&
+                       payload.ClientId == client.Id &&
+                       payload.TrainerId == trainer.Id &&
+                       payload.Title == "Squat check");
 
         submittedOutboxMessage.Status.Should().NotBe(OutboxMessageStatus.Failed);
-    }
-
-    private static bool HasChatMessageCreatedPayload(
-        string payload,
-        Guid expectedChatId,
-        Guid expectedMessageId)
-    {
-        using var document = JsonDocument.Parse(payload);
-
-        return document.RootElement.GetProperty("chatId").GetGuid() == expectedChatId &&
-               document.RootElement.GetProperty("messageId").GetGuid() == expectedMessageId;
-    }
-
-    private static void AssertChatMessageCreatedPayload(
-        string payload,
-        Guid expectedChatId,
-        Guid expectedMessageId)
-    {
-        using var document = JsonDocument.Parse(payload);
-        document.RootElement.GetProperty("chatId").GetGuid().Should().Be(expectedChatId);
-        document.RootElement.GetProperty("messageId").GetGuid().Should().Be(expectedMessageId);
-    }
-
-    private static bool HasVideoReportSubmittedPayload(
-        string payload,
-        Guid expectedChatId,
-        Guid expectedReportId,
-        Guid expectedClientId,
-        Guid expectedTrainerId,
-        string expectedTitle)
-    {
-        using var document = JsonDocument.Parse(payload);
-
-        return document.RootElement.GetProperty("chatId").GetGuid() == expectedChatId &&
-               document.RootElement.GetProperty("reportId").GetGuid() == expectedReportId &&
-               document.RootElement.GetProperty("clientId").GetGuid() == expectedClientId &&
-               document.RootElement.GetProperty("trainerId").GetGuid() == expectedTrainerId &&
-               document.RootElement.GetProperty("title").GetString() == expectedTitle;
     }
 }

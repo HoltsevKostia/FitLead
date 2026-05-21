@@ -1,4 +1,5 @@
 using FitLead.Application.Common.Outbox;
+using FitLead.Application.Notifications.Realtime;
 using FitLead.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -51,6 +52,9 @@ public sealed class CustomWebApplicationFactory(string connectionString)
 
         builder.ConfigureTestServices(services =>
         {
+            services.AddSingleton<TestNotificationRealtimeNotifier>();
+            services.AddScoped<INotificationRealtimeNotifier>(provider =>
+                provider.GetRequiredService<TestNotificationRealtimeNotifier>());
             services.AddScoped<IOutboxMessageHandler, SuccessfulTestOutboxMessageHandler>();
             services.AddScoped<IOutboxMessageHandler, FailingTestOutboxMessageHandler>();
         });

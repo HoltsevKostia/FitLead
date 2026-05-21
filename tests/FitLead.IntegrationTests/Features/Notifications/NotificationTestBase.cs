@@ -7,12 +7,14 @@ namespace FitLead.IntegrationTests.Features.Notifications;
 public abstract class NotificationTestBase : IntegrationTestBase
 {
     protected readonly TestDb Db;
+    protected readonly TestOutbox Outbox;
     protected readonly TestUsers Users;
     protected readonly TestApiClients Api;
 
     protected NotificationTestBase(IntegrationTestFixture fixture) : base(fixture)
     {
         Db = new TestDb(fixture);
+        Outbox = new TestOutbox(Db);
         Users = new TestUsers(fixture, Db);
         Api = new TestApiClients(fixture);
     }
