@@ -82,6 +82,9 @@ namespace FitLead.Infrastructure
             services.AddScoped<IOutboxMessageDispatcher, OutboxMessageDispatcher>();
             services.AddSingleton<IOutboxMessageProcessor, OutboxMessageProcessor>();
             services.AddScoped<IOutboxMessageHandler, ChatMessageCreatedOutboxHandler>();
+            services.AddScoped<IOutboxMessageHandler, VideoReportSubmittedNotificationOutboxHandler>();
+            services.AddScoped<IOutboxMessageHandler, VideoReportReviewedNotificationOutboxHandler>();
+            services.AddScoped<IOutboxMessageHandler, TrainingProgramAssignedNotificationOutboxHandler>();
             services.AddScoped<IInvitationLinkService, InvitationLinkService>();
             services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
             services.AddScoped(typeof(IPipelineBehavior<,>), typeof(DomainExceptionToResultBehavior<,>));

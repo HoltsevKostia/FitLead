@@ -53,6 +53,25 @@ public sealed class VideoReportOutboxTests : MessengerTestBase
             outboxMessage.Payload,
             chat.Id,
             chatMessage.Id);
+
+        var submittedOutboxMessage = await Db.QueryAsync(async context =>
+        {
+            var messages = await context.OutboxMessages
+                .AsNoTracking()
+                .Where(message => message.Type == OutboxEventTypes.Messenger.VideoReportSubmitted)
+                .ToListAsync();
+
+            return messages.Single(message =>
+                HasVideoReportSubmittedPayload(
+                    message.Payload,
+                    chat.Id,
+                    chatMessage.VideoReport!.Id,
+                    client.Id,
+                    trainer.Id,
+                    "Squat check"));
+        });
+
+        submittedOutboxMessage.Status.Should().NotBe(OutboxMessageStatus.Failed);
     }
 
     private static bool HasChatMessageCreatedPayload(
@@ -74,5 +93,22 @@ public sealed class VideoReportOutboxTests : MessengerTestBase
         using var document = JsonDocument.Parse(payload);
         document.RootElement.GetProperty("chatId").GetGuid().Should().Be(expectedChatId);
         document.RootElement.GetProperty("messageId").GetGuid().Should().Be(expectedMessageId);
+    }
+
+    private static bool HasVideoReportSubmittedPayload(
+        string payload,
+        Guid expectedChatId,
+        Guid expectedReportId,
+        Guid expectedClientId,
+        Guid expectedTrainerId,
+        string expectedTitle)
+    {
+        using var document = JsonDocument.Parse(payload);
+
+        return document.RootElement.GetProperty("chatId").GetGuid() == expectedChatId &&
+               document.RootElement.GetProperty("reportId").GetGuid() == expectedReportId &&
+               document.RootElement.GetProperty("clientId").GetGuid() == expectedClientId &&
+               document.RootElement.GetProperty("trainerId").GetGuid() == expectedTrainerId &&
+               document.RootElement.GetProperty("title").GetString() == expectedTitle;
     }
 }
