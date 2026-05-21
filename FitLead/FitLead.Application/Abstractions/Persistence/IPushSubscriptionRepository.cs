@@ -1,0 +1,15 @@
+using FitLead.Domain.Notifications.PushSubscriptions;
+
+namespace FitLead.Application.Abstractions.Persistence
+{
+    public interface IPushSubscriptionRepository
+    {
+        Task AddAsync(
+            PushSubscription subscription,
+            CancellationToken cancellationToken);
+
+        Task<PushSubscription?> GetByEndpointAsync(
+            string endpoint,
+            CancellationToken cancellationToken);
+    }
+}

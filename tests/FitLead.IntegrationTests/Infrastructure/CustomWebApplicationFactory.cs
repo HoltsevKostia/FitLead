@@ -45,6 +45,9 @@ public sealed class CustomWebApplicationFactory(string connectionString)
                 ["Uploadcare:PublicKey"] = "test-public-key",
                 ["Uploadcare:SecretKey"] = "test-secret-key",
                 ["Uploadcare:UploadSignatureLifetimeMinutes"] = "30",
+                ["Push:VapidPublicKey"] = "test-vapid-public-key",
+                ["Push:VapidPrivateKey"] = "test-vapid-private-key",
+                ["Push:Subject"] = "mailto:test@example.com",
                 ["OutboxProcessor:Enabled"] = "false",
                 ["OutboxProcessor:PollingIntervalSeconds"] = "1"
             });

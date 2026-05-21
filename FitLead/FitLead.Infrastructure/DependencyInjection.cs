@@ -15,6 +15,7 @@ using FitLead.Application.Modules.Exercises;
 using FitLead.Application.Modules.TrainingPrograms;
 using FitLead.Application.Modules.Users;
 using FitLead.Application.Modules.Workouts;
+using FitLead.Application.Notifications.Push;
 using FitLead.Infrastructure.Invitations;
 using FitLead.Application.Trainings.Exercises.Access;
 using FitLead.Application.Trainings.TrainingPrograms.Access;
@@ -28,6 +29,7 @@ using FitLead.Infrastructure.Modules.Users;
 using FitLead.Infrastructure.Modules.Workouts;
 using FitLead.Infrastructure.Media.Uploadcare;
 using FitLead.Infrastructure.Media.MediaAssets;
+using FitLead.Infrastructure.Notifications.Push;
 using FitLead.Infrastructure.Outbox;
 using FitLead.Infrastructure.Outbox.Handlers;
 using FitLead.Infrastructure.Persistence;
@@ -77,6 +79,7 @@ namespace FitLead.Infrastructure
             services.AddScoped<IMediaAssetReadRepository, MediaAssetReadRepository>();
             services.AddScoped<INotificationRepository, NotificationRepository>();
             services.AddScoped<INotificationReadRepository, NotificationReadRepository>();
+            services.AddScoped<IPushSubscriptionRepository, PushSubscriptionRepository>();
             services.AddScoped<IOutboxMessageRepository, OutboxMessageRepository>();
             services.AddScoped<IOutbox, Outbox.Outbox>();
             services.AddScoped<IOutboxMessageDispatcher, OutboxMessageDispatcher>();
@@ -122,6 +125,11 @@ namespace FitLead.Infrastructure
                     options => options.MaxAttempts > 0,
                     "Outbox processor max attempts must be positive")
                 .ValidateOnStart();
+            services
+                .AddOptions<PushOptions>()
+                .Bind(configuration.GetSection(PushOptions.SectionName));
+            services.AddScoped<IPushVapidConfiguration>(provider =>
+                provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<PushOptions>>().Value);
             services.AddSingleton<IDeletionConfirmationTokenService, DataProtectionDeletionConfirmationTokenService>();
             services.AddScoped<ITokenHasher, TokenHasher>();
             services.AddScoped<IRefreshTokenService, RefreshTokenService>();
