@@ -15,6 +15,7 @@ import { mediaAssetsApi } from "@/lib/api/clients/media-assets-api";
 const allowedExerciseMediaKinds = ["Image", "Video"] as const;
 const uploaderReadyTimeoutMs = 2000;
 const uploaderReadyCheckIntervalMs = 50;
+const unsupportedMediaMessage = "Додайте фото або відео.";
 
 type UploadResolve = (files: OutputFileEntry<"success">[]) => void;
 type UploadReject = (error: Error) => void;
@@ -110,6 +111,10 @@ export const ExerciseMediaUploader = forwardRef<
       return null;
     }
 
+    if (state.status === "failed" || state.failedCount > 0) {
+      throw new Error(unsupportedMediaMessage);
+    }
+
     if (state.totalCount > 1) {
       throw new Error("Додайте не більше одного файлу.");
     }
@@ -128,7 +133,7 @@ export const ExerciseMediaUploader = forwardRef<
       !uploadedMedia ||
       !(allowedExerciseMediaKinds as readonly string[]).includes(uploadedMedia.kind)
     ) {
-      throw new Error("Додайте фото або відео.");
+      throw new Error(unsupportedMediaMessage);
     }
 
     return mediaAssetsApi.register(uploadedMedia);

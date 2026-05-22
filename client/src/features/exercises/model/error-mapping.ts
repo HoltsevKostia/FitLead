@@ -1,8 +1,22 @@
 import { isApiError } from "@/lib/api/api-error";
 
+const knownClientErrorMessages = new Set([
+  "Не вдалося завантажити медіа.",
+  "Додайте фото або відео.",
+  "Додайте не більше одного файлу.",
+]);
+
 export function mapExerciseMutationError(error: unknown): string {
   if (!isApiError(error)) {
+    if (error instanceof Error && knownClientErrorMessages.has(error.message)) {
+      return error.message;
+    }
+
     return "Не вдалося виконати дію. Спробуй ще раз.";
+  }
+
+  if (error.status === 401) {
+    return "Сесія завершилася. Увійдіть знову та повторіть дію.";
   }
 
   if (error.errorCode === "exercise.not_found") {

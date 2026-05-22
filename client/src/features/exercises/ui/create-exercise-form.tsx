@@ -176,7 +176,7 @@ export function CreateExerciseForm({ onCreated, onCancel }: CreateExerciseFormPr
 
         <div className="space-y-2">
           <label className={fieldLabelClassName} htmlFor="create-exercise-muscle-group">
-            Група м'язів
+            {"Група м'язів"}
           </label>
           <select
             id="create-exercise-muscle-group"

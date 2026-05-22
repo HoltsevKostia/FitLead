@@ -155,22 +155,22 @@ export function ExerciseActions({ exercise }: ExerciseActionsProps) {
     setSubmitError(null);
   }
 
+  function resetEditForm() {
+    setName(exercise.name);
+    setDescription(exercise.description);
+    setSelectedMediaAsset(exercise.mediaAsset);
+    setFileCount(0);
+    uploaderRef.current?.clear();
+    setMuscleGroup(formatOptionalNumber(exercise.muscleGroup));
+    setEquipment(formatOptionalNumber(exercise.equipment));
+  }
+
   function handleEditToggle() {
-    setIsEditing((current) => {
-      const next = !current;
+    if (isEditing) {
+      resetEditForm();
+    }
 
-      if (!next) {
-        setName(exercise.name);
-        setDescription(exercise.description);
-        setSelectedMediaAsset(exercise.mediaAsset);
-        setFileCount(0);
-        uploaderRef.current?.clear();
-        setMuscleGroup(formatOptionalNumber(exercise.muscleGroup));
-        setEquipment(formatOptionalNumber(exercise.equipment));
-      }
-
-      return next;
-    });
+    setIsEditing(!isEditing);
     setSubmitError(null);
     setDeleteConflict(null);
   }
