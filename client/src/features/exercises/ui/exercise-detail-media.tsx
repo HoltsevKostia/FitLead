@@ -1,15 +1,13 @@
 /* eslint-disable @next/next/no-img-element */
 
-import { getExerciseMediaInfo } from "@/features/exercises/model/exercise-media";
+import type { MediaAssetPreview } from "@/entities/media-asset/model/types";
 
 interface ExerciseDetailMediaProps {
-  mediaUrl: string | null;
+  mediaAsset: MediaAssetPreview | null;
 }
 
-export function ExerciseDetailMedia({ mediaUrl }: ExerciseDetailMediaProps) {
-  const media = getExerciseMediaInfo(mediaUrl);
-
-  if (media.type === "none" || !media.url) {
+export function ExerciseDetailMedia({ mediaAsset }: ExerciseDetailMediaProps) {
+  if (!mediaAsset) {
     return (
       <div className="rounded-2xl border border-dashed border-border px-5 py-6 text-sm text-muted">
         Медіа не додано.
@@ -17,32 +15,31 @@ export function ExerciseDetailMedia({ mediaUrl }: ExerciseDetailMediaProps) {
     );
   }
 
-  if (media.type === "image") {
+  if (mediaAsset.kind === "Image") {
     return (
       <a
-        href={media.url}
+        href={mediaAsset.deliveryUrl}
         target="_blank"
         rel="noreferrer"
         className="block overflow-hidden rounded-2xl border border-border bg-surface"
       >
         <img
-          src={media.url}
+          src={mediaAsset.deliveryUrl}
           alt=""
           className="max-h-[520px] w-full object-contain"
-          referrerPolicy="no-referrer"
         />
       </a>
     );
   }
 
-  if (media.type === "video") {
+  if (mediaAsset.kind === "Video") {
     return (
       <video
         controls
         className="max-h-[520px] w-full rounded-2xl border border-border bg-black"
-        src={media.url}
+        src={mediaAsset.deliveryUrl}
       >
-        <a href={media.url} target="_blank" rel="noreferrer">
+        <a href={mediaAsset.deliveryUrl} target="_blank" rel="noreferrer">
           Відкрити медіа
         </a>
       </video>
@@ -51,19 +48,7 @@ export function ExerciseDetailMedia({ mediaUrl }: ExerciseDetailMediaProps) {
 
   return (
     <div className="rounded-2xl border border-border bg-surface px-5 py-6">
-      <p className="text-sm text-muted">
-        {media.type === "youtube"
-          ? "YouTube відео доступне за зовнішнім посиланням."
-          : "Медіа доступне за зовнішнім посиланням."}
-      </p>
-      <a
-        href={media.url}
-        target="_blank"
-        rel="noreferrer"
-        className="mt-4 inline-flex rounded-full bg-accent px-5 py-2 text-sm font-medium text-white transition hover:bg-accent-strong"
-      >
-        Відкрити медіа
-      </a>
+      <p className="text-sm text-muted">Медіа недоступне для перегляду.</p>
     </div>
   );
 }

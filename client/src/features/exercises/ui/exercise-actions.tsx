@@ -1,9 +1,10 @@
 "use client";
 
-import { type SubmitEvent, useState } from "react";
+import { type SubmitEvent, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Equipment, MuscleGroup, type Exercise } from "@/entities/exercise/model/types";
+import type { MediaAssetPreview } from "@/entities/media-asset/model/types";
 import {
   equipmentOptions,
   formatOptionalNumber,
@@ -19,6 +20,11 @@ import {
   type ExerciseDeleteConflict,
   readExerciseDeleteConflict,
 } from "@/features/exercises/model/delete-conflict";
+import {
+  ExerciseMediaUploader,
+  type ExerciseMediaUploaderRef,
+} from "@/features/exercises/ui/exercise-media-uploader";
+import { ExerciseMediaPreview } from "@/features/exercises/ui/exercise-media-preview";
 import { ExerciseDeleteConfirmation } from "@/features/exercises/ui/exercise-delete-confirmation";
 import { isApiError } from "@/lib/api/api-error";
 import { exercisesApi } from "@/lib/api/clients/exercises-api";
@@ -31,10 +37,13 @@ interface ExerciseActionsProps {
 
 export function ExerciseActions({ exercise }: ExerciseActionsProps) {
   const router = useRouter();
+  const uploaderRef = useRef<ExerciseMediaUploaderRef>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(exercise.name);
   const [description, setDescription] = useState(exercise.description);
-  const [mediaUrl, setMediaUrl] = useState(exercise.mediaUrl ?? "");
+  const [fileCount, setFileCount] = useState(0);
+  const [selectedMediaAsset, setSelectedMediaAsset] =
+    useState<MediaAssetPreview | null>(exercise.mediaAsset);
   const [muscleGroup, setMuscleGroup] = useState(formatOptionalNumber(exercise.muscleGroup));
   const [equipment, setEquipment] = useState(formatOptionalNumber(exercise.equipment));
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -60,13 +69,22 @@ export function ExerciseActions({ exercise }: ExerciseActionsProps) {
     setDeleteConflict(null);
 
     try {
+      const uploadedMedia = await uploaderRef.current?.uploadSelectedMedia();
+      const mediaAsset = uploadedMedia ?? selectedMediaAsset;
+
+      if (uploadedMedia) {
+        setSelectedMediaAsset(uploadedMedia);
+      }
+
       await exercisesApi.updateExercise(exercise.id, {
         name: trimmedName,
         description: description.trim(),
-        mediaUrl: mediaUrl.trim() || null,
+        mediaAssetId: mediaAsset?.id ?? null,
         muscleGroup: parseOptionalNumber<MuscleGroup>(muscleGroup),
         equipment: parseOptionalNumber<Equipment>(equipment),
       });
+      setFileCount(0);
+      uploaderRef.current?.clear();
       setIsEditing(false);
       router.refresh();
     } catch (error) {
@@ -137,20 +155,22 @@ export function ExerciseActions({ exercise }: ExerciseActionsProps) {
     setSubmitError(null);
   }
 
+  function resetEditForm() {
+    setName(exercise.name);
+    setDescription(exercise.description);
+    setSelectedMediaAsset(exercise.mediaAsset);
+    setFileCount(0);
+    uploaderRef.current?.clear();
+    setMuscleGroup(formatOptionalNumber(exercise.muscleGroup));
+    setEquipment(formatOptionalNumber(exercise.equipment));
+  }
+
   function handleEditToggle() {
-    setIsEditing((current) => {
-      const next = !current;
+    if (isEditing) {
+      resetEditForm();
+    }
 
-      if (!next) {
-        setName(exercise.name);
-        setDescription(exercise.description);
-        setMediaUrl(exercise.mediaUrl ?? "");
-        setMuscleGroup(formatOptionalNumber(exercise.muscleGroup));
-        setEquipment(formatOptionalNumber(exercise.equipment));
-      }
-
-      return next;
-    });
+    setIsEditing(!isEditing);
     setSubmitError(null);
     setDeleteConflict(null);
   }
@@ -224,20 +244,39 @@ export function ExerciseActions({ exercise }: ExerciseActionsProps) {
             />
           </div>
 
-          <div className="space-y-2">
-            <label className={fieldLabelClassName} htmlFor={`exercise-media-url-${exercise.id}`}>
-              Медіа-посилання
-            </label>
-            <input
-              id={`exercise-media-url-${exercise.id}`}
-              value={mediaUrl}
-              onChange={(event) => setMediaUrl(event.target.value)}
-              disabled={isSubmitting}
-              type="url"
-              maxLength={2048}
-              placeholder="https://..."
-              className={fieldInputClassName}
+          <div className="space-y-3">
+            <p className={fieldLabelClassName}>Медіа</p>
+            {selectedMediaAsset ? (
+              <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-white px-4 py-3">
+                <ExerciseMediaPreview mediaAsset={selectedMediaAsset} />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedMediaAsset(null);
+                    uploaderRef.current?.clear();
+                  }}
+                  disabled={isSubmitting}
+                  className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:bg-surface-strong disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  Прибрати медіа
+                </button>
+              </div>
+            ) : null}
+            <ExerciseMediaUploader
+              ref={uploaderRef}
+              onFileCountChange={setFileCount}
+              onUploadFailed={setSubmitError}
             />
+            {fileCount > 0 ? (
+              <button
+                type="button"
+                onClick={() => uploaderRef.current?.clear()}
+                disabled={isSubmitting}
+                className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:bg-surface-strong disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                Прибрати обраний файл
+              </button>
+            ) : null}
           </div>
 
           <div className="grid gap-3 md:grid-cols-2">

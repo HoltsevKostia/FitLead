@@ -1,4 +1,5 @@
 import type { Equipment, MuscleGroup } from "@/entities/exercise/model/types";
+import type { MediaAssetPreview } from "@/entities/media-asset/model/types";
 
 export interface Workout {
   id: string;
@@ -12,7 +13,7 @@ export interface WorkoutExerciseDetails {
   order: number;
   exerciseName: string;
   exerciseDescription: string;
-  exerciseMediaUrl: string | null;
+  exerciseMediaAsset: MediaAssetPreview | null;
   exerciseMuscleGroup: MuscleGroup | null;
   exerciseEquipment: Equipment | null;
   repetitions: number;

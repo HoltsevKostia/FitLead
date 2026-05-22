@@ -39,8 +39,7 @@ public sealed class ExerciseOwnershipTests
         var trainerId = Guid.NewGuid();
         var platformExercise = Exercise.CreatePlatformExercise(
             "Squat",
-            "Bodyweight squat",
-            "https://example.com/squat").Value;
+            "Bodyweight squat").Value;
 
         var result = Exercise.CopyFromPlatformExercise(trainerId, platformExercise);
 

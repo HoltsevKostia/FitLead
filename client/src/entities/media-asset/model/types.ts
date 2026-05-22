@@ -26,4 +26,14 @@ export interface MediaAsset {
   createdAtUtc: string;
 }
 
+export interface MediaAssetPreview {
+  id: string;
+  deliveryUrl: string;
+  fileName: string | null;
+  contentType: string;
+  sizeBytes: number;
+  kind: MediaAssetKind;
+  durationSeconds: number | null;
+}
+
 export type RegisterMediaAssetRequest = UploadedMediaAssetMetadata;

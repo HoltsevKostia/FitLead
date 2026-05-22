@@ -8,6 +8,7 @@ import {
 import { ExerciseMediaPreview } from "@/features/exercises/ui/exercise-media-preview";
 import { AddExerciseToWorkoutForm } from "@/features/workouts/ui/add-exercise-to-workout-form";
 import { WorkoutExerciseActions } from "@/features/workouts/ui/workout-exercise-actions";
+import { PlainText } from "@/shared/ui/plain-text";
 
 interface WorkoutDetailViewProps {
   workout: WorkoutDetails;
@@ -54,10 +55,13 @@ function WorkoutExerciseCard({
             <h2 className="text-xl font-semibold text-foreground">
               {exercise.exerciseName}
             </h2>
-            <p className="max-w-3xl text-sm leading-6 text-muted">
-              {exercise.exerciseDescription || "Опис поки не додано."}
-            </p>
-            <ExerciseMediaPreview mediaUrl={exercise.exerciseMediaUrl} />
+            <PlainText
+              className="max-w-3xl text-sm leading-6 text-muted"
+              fallback="Опис поки не додано."
+            >
+              {exercise.exerciseDescription}
+            </PlainText>
+            <ExerciseMediaPreview mediaAsset={exercise.exerciseMediaAsset} />
           </div>
 
           {exercise.trainerNote ? (
@@ -65,9 +69,9 @@ function WorkoutExerciseCard({
               <p className="text-xs font-semibold uppercase text-amber-900">
                 Нотатка тренера
               </p>
-              <p className="mt-1 whitespace-pre-line text-sm leading-6 text-amber-950">
+              <PlainText className="mt-1 text-sm leading-6 text-amber-950">
                 {exercise.trainerNote}
-              </p>
+              </PlainText>
             </div>
           ) : null}
         </div>

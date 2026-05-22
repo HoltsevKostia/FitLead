@@ -1,9 +1,10 @@
 "use client";
 
-import { type SubmitEvent, useState } from "react";
+import { type SubmitEvent, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Equipment, MuscleGroup } from "@/entities/exercise/model/types";
+import type { MediaAssetPreview } from "@/entities/media-asset/model/types";
 import {
   equipmentOptions,
   muscleGroupOptions,
@@ -14,6 +15,11 @@ import {
   muscleGroupLabels,
 } from "@/features/exercises/model/exercise-labels";
 import { mapExerciseMutationError } from "@/features/exercises/model/error-mapping";
+import {
+  ExerciseMediaUploader,
+  type ExerciseMediaUploaderRef,
+} from "@/features/exercises/ui/exercise-media-uploader";
+import { ExerciseMediaPreview } from "@/features/exercises/ui/exercise-media-preview";
 import { exercisesApi } from "@/lib/api/clients/exercises-api";
 import { FormAlert } from "@/shared/forms/form-alert";
 import { fieldInputClassName, fieldLabelClassName } from "@/shared/forms/field-styles";
@@ -25,9 +31,12 @@ interface CreateExerciseFormProps {
 
 export function CreateExerciseForm({ onCreated, onCancel }: CreateExerciseFormProps) {
   const router = useRouter();
+  const uploaderRef = useRef<ExerciseMediaUploaderRef>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [mediaUrl, setMediaUrl] = useState("");
+  const [fileCount, setFileCount] = useState(0);
+  const [selectedMediaAsset, setSelectedMediaAsset] =
+    useState<MediaAssetPreview | null>(null);
   const [muscleGroup, setMuscleGroup] = useState("");
   const [equipment, setEquipment] = useState("");
   const [nameError, setNameError] = useState<string | null>(null);
@@ -37,7 +46,9 @@ export function CreateExerciseForm({ onCreated, onCancel }: CreateExerciseFormPr
   function resetForm() {
     setName("");
     setDescription("");
-    setMediaUrl("");
+    setFileCount(0);
+    setSelectedMediaAsset(null);
+    uploaderRef.current?.clear();
     setMuscleGroup("");
     setEquipment("");
     setNameError(null);
@@ -63,10 +74,17 @@ export function CreateExerciseForm({ onCreated, onCancel }: CreateExerciseFormPr
     setSubmitError(null);
 
     try {
+      const uploadedMedia = await uploaderRef.current?.uploadSelectedMedia();
+      const mediaAsset = uploadedMedia ?? selectedMediaAsset;
+
+      if (uploadedMedia) {
+        setSelectedMediaAsset(uploadedMedia);
+      }
+
       await exercisesApi.createExercise({
         name: trimmedName,
         description: description.trim(),
-        mediaUrl: mediaUrl.trim() || null,
+        mediaAssetId: mediaAsset?.id ?? null,
         muscleGroup: parseOptionalNumber<MuscleGroup>(muscleGroup),
         equipment: parseOptionalNumber<Equipment>(equipment),
       });
@@ -121,25 +139,44 @@ export function CreateExerciseForm({ onCreated, onCancel }: CreateExerciseFormPr
           />
         </div>
 
-        <div className="space-y-2 md:col-span-2">
-          <label className={fieldLabelClassName} htmlFor="create-exercise-media-url">
-            Медіа-посилання
-          </label>
-          <input
-            id="create-exercise-media-url"
-            value={mediaUrl}
-            onChange={(event) => setMediaUrl(event.target.value)}
-            disabled={isSubmitting}
-            type="url"
-            maxLength={2048}
-            placeholder="https://..."
-            className={fieldInputClassName}
+        <div className="space-y-3 md:col-span-2">
+          <p className={fieldLabelClassName}>Медіа</p>
+          {selectedMediaAsset ? (
+            <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3">
+              <ExerciseMediaPreview mediaAsset={selectedMediaAsset} />
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedMediaAsset(null);
+                  uploaderRef.current?.clear();
+                }}
+                disabled={isSubmitting}
+                className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:bg-surface-strong disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                Прибрати медіа
+              </button>
+            </div>
+          ) : null}
+          <ExerciseMediaUploader
+            ref={uploaderRef}
+            onFileCountChange={setFileCount}
+            onUploadFailed={setSubmitError}
           />
+          {fileCount > 0 ? (
+            <button
+              type="button"
+              onClick={() => uploaderRef.current?.clear()}
+              disabled={isSubmitting}
+              className="rounded-full border border-border px-4 py-2 text-sm font-medium transition hover:bg-surface-strong disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              Прибрати обраний файл
+            </button>
+          ) : null}
         </div>
 
         <div className="space-y-2">
           <label className={fieldLabelClassName} htmlFor="create-exercise-muscle-group">
-            Група м&apos;язів
+            {"Група м'язів"}
           </label>
           <select
             id="create-exercise-muscle-group"

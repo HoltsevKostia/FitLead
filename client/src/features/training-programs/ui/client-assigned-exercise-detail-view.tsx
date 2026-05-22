@@ -7,6 +7,7 @@ import {
   muscleGroupLabels,
 } from "@/features/exercises/model/exercise-labels";
 import { ExerciseDetailMedia } from "@/features/exercises/ui/exercise-detail-media";
+import { PlainText } from "@/shared/ui/plain-text";
 
 interface ClientAssignedExerciseDetailViewProps {
   workout: ClientAssignedTrainingProgramWorkout;
@@ -61,18 +62,21 @@ export function ClientAssignedExerciseDetailView({
           <div className="space-y-3">
             <h2 className="text-lg font-semibold text-foreground">Опис</h2>
             <div className="rounded-2xl border border-border bg-white px-5 py-5">
-              <p className="whitespace-pre-line text-sm leading-7 text-muted">
-                {exercise.exerciseDescription || "Опис поки не додано."}
-              </p>
+              <PlainText
+                className="text-sm leading-7 text-muted"
+                fallback="Опис поки не додано."
+              >
+                {exercise.exerciseDescription}
+              </PlainText>
             </div>
           </div>
 
           {exercise.trainerNote ? (
             <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-5">
               <p className="text-xs font-semibold uppercase text-amber-900">Нотатка тренера</p>
-              <p className="mt-2 whitespace-pre-line text-sm leading-7 text-amber-950">
+              <PlainText className="mt-2 text-sm leading-7 text-amber-950">
                 {exercise.trainerNote}
-              </p>
+              </PlainText>
             </div>
           ) : null}
 
@@ -104,7 +108,7 @@ export function ClientAssignedExerciseDetailView({
 
         <div className="space-y-3">
           <h2 className="text-lg font-semibold text-foreground">Медіа</h2>
-          <ExerciseDetailMedia mediaUrl={exercise.exerciseMediaUrl} />
+          <ExerciseDetailMedia mediaAsset={exercise.exerciseMediaAsset} />
         </div>
       </div>
     </section>

@@ -13,6 +13,7 @@ import {
   muscleGroupLabels,
 } from "@/features/exercises/model/exercise-labels";
 import { ExerciseMediaPreview } from "@/features/exercises/ui/exercise-media-preview";
+import { PlainText } from "@/shared/ui/plain-text";
 
 interface ClientAssignedTrainingProgramDetailViewProps {
   program: ClientAssignedTrainingProgramDetails;
@@ -126,10 +127,13 @@ function ExerciseCard({
           >
             {exercise.exerciseName}
           </Link>
-          <p className="text-sm leading-6 text-muted">
-            {exercise.exerciseDescription || "Опис поки не додано."}
-          </p>
-          <ExerciseMediaPreview mediaUrl={exercise.exerciseMediaUrl} />
+          <PlainText
+            className="text-sm leading-6 text-muted"
+            fallback="Опис поки не додано."
+          >
+            {exercise.exerciseDescription}
+          </PlainText>
+          <ExerciseMediaPreview mediaAsset={exercise.exerciseMediaAsset} />
         </div>
 
         <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
@@ -154,9 +158,9 @@ function ExerciseCard({
         {exercise.trainerNote ? (
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
             <p className="text-xs font-semibold uppercase text-amber-900">Нотатка тренера</p>
-            <p className="mt-1 whitespace-pre-line text-sm leading-6 text-amber-950">
+            <PlainText className="mt-1 text-sm leading-6 text-amber-950">
               {exercise.trainerNote}
-            </p>
+            </PlainText>
           </div>
         ) : null}
       </div>

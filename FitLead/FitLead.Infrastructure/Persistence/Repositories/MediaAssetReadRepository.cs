@@ -18,25 +18,18 @@ namespace FitLead.Infrastructure.Persistence.Repositories
             Guid ownerUserId,
             CancellationToken cancellationToken)
         {
-            return await _context.MediaAssets
+            var mediaAssets = await _context.MediaAssets
                 .AsNoTracking()
                 .Where(mediaAsset =>
                     mediaAsset.OwnerUserId == ownerUserId &&
                     mediaAsset.Status == MediaAssetStatus.Active)
                 .OrderByDescending(mediaAsset => mediaAsset.CreatedAtUtc)
-                .Select(mediaAsset => new MediaAssetDto(
-                    mediaAsset.Id,
-                    mediaAsset.StorageProvider.ToString(),
-                    mediaAsset.StorageObjectId,
-                    mediaAsset.DeliveryUrl,
-                    mediaAsset.FileName,
-                    mediaAsset.ContentType,
-                    mediaAsset.SizeBytes,
-                    mediaAsset.Kind.ToString(),
-                    mediaAsset.DurationSeconds,
-                    mediaAsset.Status.ToString(),
-                    mediaAsset.CreatedAtUtc))
+                .ThenByDescending(mediaAsset => mediaAsset.Id)
                 .ToListAsync(cancellationToken);
+
+            return mediaAssets
+                .Select(MediaAssetProjectionMapper.ToDto)
+                .ToList();
         }
     }
 }

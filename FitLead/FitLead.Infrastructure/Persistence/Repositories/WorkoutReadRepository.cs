@@ -1,7 +1,6 @@
-﻿using FitLead.Application.Abstractions.Persistence;
+using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Trainings.Workouts.Queries;
 using Microsoft.EntityFrameworkCore;
-
 
 namespace FitLead.Infrastructure.Persistence.Repositories
 {
@@ -19,7 +18,10 @@ namespace FitLead.Infrastructure.Persistence.Repositories
             CancellationToken cancellationToken)
         {
             return await _context.Workouts
+                .AsNoTracking()
                 .Where(x => x.TrainerId == trainerId)
+                .OrderBy(x => x.Name)
+                .ThenBy(x => x.Id)
                 .Select(x => new WorkoutDto(
                     x.Id,
                     x.Name,
@@ -44,30 +46,35 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                 .FirstOrDefaultAsync(ct);
 
             if (workout is null)
+            {
                 return null;
+            }
 
             var exercises = await (
-                from we in _context.WorkoutExercises.AsNoTracking()
-                where we.WorkoutId == workoutId
-                join e in _context.Exercises.AsNoTracking()
-                    on we.ExerciseId equals e.Id
-                orderby we.Order
-                select new
-                {
-                    WorkoutExerciseId = we.Id,
-                    we.ExerciseId,
-                    we.Order,
-                    ExerciseName = e.Name,
-                    ExerciseDescription = e.Description,
-                    ExerciseMediaUrl = e.MediaUrl,
-                    ExerciseMuscleGroup = e.MuscleGroup,
-                    ExerciseEquipment = e.Equipment,
-                    we.Repetitions,
-                    we.Sets,
-                    we.LoadKg,
-                    we.RestSeconds,
-                    we.TrainerNote
-                })
+                    from workoutExercise in _context.WorkoutExercises.AsNoTracking()
+                    where workoutExercise.WorkoutId == workoutId
+                    join exercise in _context.Exercises.AsNoTracking()
+                        on workoutExercise.ExerciseId equals exercise.Id
+                    join mediaAsset in _context.MediaAssets.AsNoTracking()
+                        on exercise.MediaAssetId equals mediaAsset.Id into mediaAssets
+                    from mediaAsset in mediaAssets.DefaultIfEmpty()
+                    orderby workoutExercise.Order, workoutExercise.Id
+                    select new
+                    {
+                        WorkoutExerciseId = workoutExercise.Id,
+                        workoutExercise.ExerciseId,
+                        workoutExercise.Order,
+                        ExerciseName = exercise.Name,
+                        ExerciseDescription = exercise.Description,
+                        ExerciseMediaAsset = mediaAsset,
+                        ExerciseMuscleGroup = exercise.MuscleGroup,
+                        ExerciseEquipment = exercise.Equipment,
+                        workoutExercise.Repetitions,
+                        workoutExercise.Sets,
+                        workoutExercise.LoadKg,
+                        workoutExercise.RestSeconds,
+                        workoutExercise.TrainerNote
+                    })
                 .ToListAsync(ct);
 
             var exerciseDtos = exercises
@@ -77,7 +84,7 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                     x.Order,
                     x.ExerciseName,
                     x.ExerciseDescription,
-                    x.ExerciseMediaUrl?.Value,
+                    MediaAssetProjectionMapper.ToPreviewDto(x.ExerciseMediaAsset),
                     x.ExerciseMuscleGroup,
                     x.ExerciseEquipment,
                     x.Repetitions,

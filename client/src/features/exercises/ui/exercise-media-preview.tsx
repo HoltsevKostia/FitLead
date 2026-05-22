@@ -1,9 +1,9 @@
 /* eslint-disable @next/next/no-img-element */
 
-import { getExerciseMediaInfo } from "@/features/exercises/model/exercise-media";
+import type { MediaAssetPreview } from "@/entities/media-asset/model/types";
 
 interface ExerciseMediaPreviewProps {
-  mediaUrl: string | null;
+  mediaAsset: MediaAssetPreview | null;
 }
 
 function MediaBadge({ label }: { label: string }) {
@@ -14,42 +14,35 @@ function MediaBadge({ label }: { label: string }) {
   );
 }
 
-export function ExerciseMediaPreview({ mediaUrl }: ExerciseMediaPreviewProps) {
-  const media = getExerciseMediaInfo(mediaUrl);
-
-  if (media.type === "none" || !media.url) {
+export function ExerciseMediaPreview({ mediaAsset }: ExerciseMediaPreviewProps) {
+  if (!mediaAsset) {
     return null;
   }
 
-  if (media.type === "image") {
+  if (mediaAsset.kind === "Image") {
     return (
       <a
-        href={media.url}
+        href={mediaAsset.deliveryUrl}
         target="_blank"
         rel="noreferrer"
         className="block w-fit overflow-hidden rounded-lg border border-border bg-surface transition hover:border-accent"
         aria-label="Відкрити медіа вправи"
       >
         <img
-          src={media.url}
+          src={mediaAsset.deliveryUrl}
           alt=""
           className="h-16 w-24 object-cover"
           loading="lazy"
-          referrerPolicy="no-referrer"
         />
       </a>
     );
   }
 
-  const labelByType = {
-    youtube: "YouTube відео",
-    video: "Відео",
-    external: "Медіа",
-  } satisfies Record<typeof media.type, string>;
+  const label = mediaAsset.kind === "Video" ? "Відео" : "Медіа";
 
   return (
-    <a href={media.url} target="_blank" rel="noreferrer" className="w-fit">
-      <MediaBadge label={labelByType[media.type]} />
+    <a href={mediaAsset.deliveryUrl} target="_blank" rel="noreferrer" className="w-fit">
+      <MediaBadge label={label} />
     </a>
   );
 }

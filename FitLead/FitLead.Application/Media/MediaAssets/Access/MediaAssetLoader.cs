@@ -13,6 +13,12 @@ namespace FitLead.Application.Media.MediaAssets.Access
         private static readonly Error MediaAssetKindNotAllowed =
             Error.Validation("media_asset.kind_not_allowed_for_video_report", "Media asset kind is not allowed for video report");
 
+        private static readonly Error ExerciseMediaAssetKindNotAllowed =
+            Error.Validation("media_asset.kind_not_allowed_for_exercise", "Media asset kind is not allowed for exercise");
+
+        private static readonly Error MediaAssetInactive =
+            Error.Validation("media_asset.inactive", "Media asset is not active");
+
         private readonly IMediaAssetRepository _mediaAssetRepository;
 
         public MediaAssetLoader(IMediaAssetRepository mediaAssetRepository)
@@ -59,7 +65,40 @@ namespace FitLead.Application.Media.MediaAssets.Access
             return Result<IReadOnlyList<MediaAsset>>.Success(mediaAssets);
         }
 
+        public async Task<Result<MediaAsset>> GetOwnedAllowedForExerciseOrNotFoundAsync(
+            Guid ownerUserId,
+            Guid mediaAssetId,
+            CancellationToken cancellationToken)
+        {
+            var mediaAssetResult = await GetOwnedOrNotFoundAsync(
+                ownerUserId,
+                mediaAssetId,
+                cancellationToken);
+            if (mediaAssetResult.IsFailure)
+            {
+                return mediaAssetResult;
+            }
+
+            var mediaAsset = mediaAssetResult.Value;
+            if (mediaAsset.Status != MediaAssetStatus.Active)
+            {
+                return Result<MediaAsset>.Failure(MediaAssetInactive);
+            }
+
+            if (!IsAllowedForExercise(mediaAsset.Kind))
+            {
+                return Result<MediaAsset>.Failure(ExerciseMediaAssetKindNotAllowed);
+            }
+
+            return Result<MediaAsset>.Success(mediaAsset);
+        }
+
         private static bool IsAllowedForVideoReport(MediaAssetKind kind)
+        {
+            return kind is MediaAssetKind.Image or MediaAssetKind.Video;
+        }
+
+        private static bool IsAllowedForExercise(MediaAssetKind kind)
         {
             return kind is MediaAssetKind.Image or MediaAssetKind.Video;
         }

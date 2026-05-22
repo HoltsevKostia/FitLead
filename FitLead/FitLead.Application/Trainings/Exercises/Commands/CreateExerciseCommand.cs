@@ -7,7 +7,7 @@ namespace FitLead.Application.Trainings.Exercises.Commands
     public sealed record CreateExerciseCommand(
         string Name,
         string Description,
-        string? MediaUrl,
+        Guid? MediaAssetId,
         MuscleGroup? MuscleGroup,
         Equipment? Equipment
     ) : IRequest<Result<Guid>>;

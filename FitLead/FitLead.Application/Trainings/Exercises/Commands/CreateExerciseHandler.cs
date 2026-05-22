@@ -6,6 +6,7 @@ using FitLead.Application.Modules.Users;
 using FitLead.Domain.Users;
 using MediatR;
 using FitLead.Application.Identity;
+using FitLead.Application.Media.MediaAssets.Access;
 using FitLead.Domain.Trainings.Exercises;
 
 namespace FitLead.Application.Trainings.Exercises.Commands
@@ -15,17 +16,20 @@ namespace FitLead.Application.Trainings.Exercises.Commands
     {
         private readonly IUserContext _user;
         private readonly IUsersModule _usersModule;
+        private readonly IMediaAssetLoader _mediaAssetLoader;
         private readonly IExerciseRepository _exerciseRepository;
         private readonly IUnitOfWork _unitOfWork;
 
         public CreateExerciseHandler(
             IUserContext user,
             IUsersModule usersModule,
+            IMediaAssetLoader mediaAssetLoader,
             IExerciseRepository exerciseRepository,
             IUnitOfWork unitOfWork)
         {
             _user = user;
             _usersModule = usersModule;
+            _mediaAssetLoader = mediaAssetLoader;
             _exerciseRepository = exerciseRepository;
             _unitOfWork = unitOfWork;
         }
@@ -44,11 +48,23 @@ namespace FitLead.Application.Trainings.Exercises.Commands
             if (trainer.Role != UserRole.Trainer)
                 return Result<Guid>.Failure(Error.Forbidden("trainer.required", "User is not a trainer"));
 
+            if (request.MediaAssetId.HasValue)
+            {
+                var mediaAssetResult = await _mediaAssetLoader.GetOwnedAllowedForExerciseOrNotFoundAsync(
+                    _user.UserId,
+                    request.MediaAssetId.Value,
+                    cancellationToken);
+                if (mediaAssetResult.IsFailure)
+                {
+                    return Result<Guid>.Failure(mediaAssetResult.Error);
+                }
+            }
+
             var exerciseResult = Exercise.CreateTrainerExercise(
                 _user.UserId,
                 request.Name,
                 request.Description,
-                request.MediaUrl,
+                request.MediaAssetId,
                 request.MuscleGroup,
                 request.Equipment);
             if (exerciseResult.IsFailure)
