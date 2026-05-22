@@ -10,17 +10,17 @@ import { apiRequest } from "@/lib/api/http-client";
 
 export const trainingProgramsApi = {
   getTrainingPrograms(): Promise<TrainingProgram[]> {
-    return apiRequest<TrainingProgram[]>("/api/training-programs");
+    return apiRequest<TrainingProgram[]>("/training-programs");
   },
 
   getTrainingProgram(programId: string): Promise<TrainingProgram> {
     return apiRequest<TrainingProgram>(
-      `/api/training-programs/${encodeURIComponent(programId)}`,
+      `/training-programs/${encodeURIComponent(programId)}`,
     );
   },
 
   createTrainingProgram(request: CreateTrainingProgramRequest): Promise<string> {
-    return apiRequest<string>("/api/training-programs", {
+    return apiRequest<string>("/training-programs", {
       method: "POST",
       body: request,
     });
@@ -28,7 +28,7 @@ export const trainingProgramsApi = {
 
   getProgramWorkouts(programId: string): Promise<TrainingProgramWorkout[]> {
     return apiRequest<TrainingProgramWorkout[]>(
-      `/api/training-programs/${encodeURIComponent(programId)}/workouts`,
+      `/training-programs/${encodeURIComponent(programId)}/workouts`,
     );
   },
 
@@ -37,7 +37,7 @@ export const trainingProgramsApi = {
     request: AddTrainingProgramWorkoutRequest,
   ): Promise<void> {
     return apiRequest<void>(
-      `/api/training-programs/${encodeURIComponent(programId)}/workouts`,
+      `/training-programs/${encodeURIComponent(programId)}/workouts`,
       {
         method: "POST",
         body: request,
@@ -48,7 +48,7 @@ export const trainingProgramsApi = {
 
   removeWorkout(programId: string, trainingProgramWorkoutId: string): Promise<void> {
     return apiRequest<void>(
-      `/api/training-programs/${encodeURIComponent(programId)}/workouts/${encodeURIComponent(
+      `/training-programs/${encodeURIComponent(programId)}/workouts/${encodeURIComponent(
         trainingProgramWorkoutId,
       )}`,
       {
@@ -71,7 +71,7 @@ export const trainingProgramsApi = {
     expiresAtUtc: string | null;
   }> {
     return apiRequest(
-      `/api/training-programs/${encodeURIComponent(programId)}/assignments`,
+      `/training-programs/${encodeURIComponent(programId)}/assignments`,
       {
         method: "POST",
         body: request,
@@ -81,13 +81,13 @@ export const trainingProgramsApi = {
 
   getAssignments(programId: string): Promise<TrainingProgramAssignment[]> {
     return apiRequest<TrainingProgramAssignment[]>(
-      `/api/training-programs/${encodeURIComponent(programId)}/assignments`,
+      `/training-programs/${encodeURIComponent(programId)}/assignments`,
     );
   },
 
   revokeAssignment(programId: string, assignmentId: string): Promise<void> {
     return apiRequest<void>(
-      `/api/training-programs/${encodeURIComponent(programId)}/assignments/${encodeURIComponent(
+      `/training-programs/${encodeURIComponent(programId)}/assignments/${encodeURIComponent(
         assignmentId,
       )}/revoke`,
       {

@@ -110,3 +110,7 @@ export class ApiError extends Error {
 export function isApiError(error: unknown): error is ApiError {
   return error instanceof ApiError;
 }
+
+export function isUnauthorizedApiError(error: unknown): boolean {
+  return isApiError(error) && error.status === 401;
+}
