@@ -45,5 +45,18 @@ namespace FitLead.Api.Push
 
             return result.ToActionResult(this);
         }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost("subscriptions/current/revoke")]
+        public async Task<IActionResult> RevokeCurrentSubscription(
+            [FromBody] RevokePushSubscriptionRequest request,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new RevokePushSubscriptionCommand(request.Endpoint),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
     }
 }

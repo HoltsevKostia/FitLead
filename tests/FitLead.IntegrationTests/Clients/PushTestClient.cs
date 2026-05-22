@@ -33,4 +33,20 @@ public sealed class PushTestClient(HttpClient httpClient)
             cancellationToken,
             includeCsrfHeader);
     }
+
+    public Task<HttpResponseMessage> RevokeCurrentSubscriptionAsync(
+        string endpoint,
+        CancellationToken cancellationToken = default,
+        bool includeCsrfHeader = true)
+    {
+        return SendUnsafeJsonAsync(
+            HttpMethod.Post,
+            "/api/push/subscriptions/current/revoke",
+            new
+            {
+                endpoint
+            },
+            cancellationToken,
+            includeCsrfHeader);
+    }
 }

@@ -5,6 +5,7 @@ import {
   getPushNotificationAvailability,
   hasActivePushSubscription,
   subscribeToPushNotifications,
+  unsubscribeFromPushNotifications,
   type PushNotificationAvailability,
 } from "@/features/notifications/model/push-subscription";
 import { notificationsApi } from "@/lib/api/clients/notifications-api";
@@ -18,10 +19,11 @@ const UI_TEXT = {
   title: "Сповіщення",
   markAllRead: "Прочитати всі",
   enablePush: "Увімкнути push",
-  pushEnabled: "Push увімкнено",
+  disablePush: "Вимкнути push",
   pushDenied: "Дозвіл на push заблоковано",
   pushUnsupported: "Push недоступні у цьому браузері",
   pushError: "Не вдалося увімкнути push.",
+  pushDisableError: "Не вдалося вимкнути push.",
   empty: "Сповіщень немає",
   error: "Не вдалося завантажити сповіщення.",
 } as const;
@@ -39,6 +41,7 @@ type PushButtonState =
   | PushNotificationAvailability
   | "subscribing"
   | "subscribed"
+  | "unsubscribing"
   | "error";
 
 function formatNotificationTime(value: string): string {
@@ -69,8 +72,12 @@ function getPushButtonText(state: PushButtonState): string {
     return "Вмикаємо...";
   }
 
+  if (state === "unsubscribing") {
+    return "Вимикаємо...";
+  }
+
   if (state === "subscribed") {
-    return UI_TEXT.pushEnabled;
+    return UI_TEXT.disablePush;
   }
 
   if (state === "denied") {
@@ -104,7 +111,7 @@ export function NotificationBell() {
     pushButtonState === "unsupported" ||
     pushButtonState === "denied" ||
     pushButtonState === "subscribing" ||
-    pushButtonState === "subscribed";
+    pushButtonState === "unsubscribing";
 
   useEffect(() => {
     let ignore = false;
@@ -269,6 +276,11 @@ export function NotificationBell() {
   }
 
   async function handleEnablePush() {
+    if (pushButtonState === "subscribed") {
+      await handleDisablePush();
+      return;
+    }
+
     setPushButtonState("subscribing");
     setError(null);
 
@@ -279,6 +291,19 @@ export function NotificationBell() {
       const availability = getPushNotificationAvailability();
       setPushButtonState(availability === "available" ? "error" : availability);
       setError(UI_TEXT.pushError);
+    }
+  }
+
+  async function handleDisablePush() {
+    setPushButtonState("unsubscribing");
+    setError(null);
+
+    try {
+      await unsubscribeFromPushNotifications();
+      setPushButtonState("available");
+    } catch {
+      setPushButtonState("subscribed");
+      setError(UI_TEXT.pushDisableError);
     }
   }
 

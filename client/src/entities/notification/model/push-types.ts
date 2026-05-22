@@ -11,6 +11,10 @@ export interface RegisterPushSubscriptionRequest {
   userAgent: string | null;
 }
 
+export interface RevokePushSubscriptionRequest {
+  endpoint: string;
+}
+
 export interface PushSubscriptionRegistration {
   id: string;
   endpoint: string;

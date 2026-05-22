@@ -92,4 +92,53 @@ public sealed class PushSubscriptionTests : NotificationTestBase
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
+
+    [Fact]
+    public async Task RevokeCurrentSubscription_ShouldRevokeOwnSubscription()
+    {
+        var client = await Users.RegisterClientAsync("push-revoke-client");
+        var pushClient = await Api.PushAsync(client.Auth);
+        var endpoint = $"https://push.example.com/{Guid.NewGuid():D}";
+        var registerResponse = await pushClient.RegisterSubscriptionAsync(endpoint);
+        var created = await registerResponse.ReadRequiredJsonAsync<PushSubscriptionDto>();
+
+        var response = await pushClient.RevokeCurrentSubscriptionAsync(endpoint);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        var subscription = await Db.QueryAsync(context =>
+            context.PushSubscriptions.SingleAsync(x => x.Id == created.Id));
+        subscription.RevokedAtUtc.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task RevokeCurrentSubscription_ForAnotherUserSubscription_ShouldNotRevoke()
+    {
+        var owner = await Users.RegisterClientAsync("push-revoke-owner-client");
+        var anotherClient = await Users.RegisterClientAsync("push-revoke-another-client");
+        var ownerPushClient = await Api.PushAsync(owner.Auth);
+        var anotherPushClient = await Api.PushAsync(anotherClient.Auth);
+        var endpoint = $"https://push.example.com/{Guid.NewGuid():D}";
+        var registerResponse = await ownerPushClient.RegisterSubscriptionAsync(endpoint);
+        var created = await registerResponse.ReadRequiredJsonAsync<PushSubscriptionDto>();
+
+        var response = await anotherPushClient.RevokeCurrentSubscriptionAsync(endpoint);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        var subscription = await Db.QueryAsync(context =>
+            context.PushSubscriptions.SingleAsync(x => x.Id == created.Id));
+        subscription.RevokedAtUtc.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task RevokeCurrentSubscription_WithoutCsrf_ShouldReturnBadRequest()
+    {
+        var client = await Users.RegisterClientAsync("push-revoke-csrf-client");
+        var pushClient = await Api.PushAsync(client.Auth);
+
+        var response = await pushClient.RevokeCurrentSubscriptionAsync(
+            $"https://push.example.com/{Guid.NewGuid():D}",
+            includeCsrfHeader: false);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }

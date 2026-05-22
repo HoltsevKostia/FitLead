@@ -96,3 +96,25 @@ export async function subscribeToPushNotifications(): Promise<void> {
     userAgent: navigator.userAgent || null,
   });
 }
+
+export async function unsubscribeFromPushNotifications(): Promise<void> {
+  if (getPushNotificationAvailability() !== "available") {
+    return;
+  }
+
+  const registration = await navigator.serviceWorker.getRegistration("/sw.js");
+  if (!registration) {
+    return;
+  }
+
+  const subscription = await registration.pushManager.getSubscription();
+  if (!subscription) {
+    return;
+  }
+
+  await pushApi.revokeCurrentSubscription({
+    endpoint: subscription.endpoint,
+  });
+
+  await subscription.unsubscribe();
+}
