@@ -29,6 +29,9 @@ const UI_TEXT = {
 } as const;
 
 const NOTIFICATION_LIST_LIMIT = 10;
+const DROPDOWN_MAX_WIDTH = 352;
+const DROPDOWN_VIEWPORT_GAP = 16;
+const DROPDOWN_TOP_OFFSET = 12;
 
 const notificationTimeFormatter = new Intl.DateTimeFormat("uk-UA", {
   day: "2-digit",
@@ -43,6 +46,17 @@ type PushButtonState =
   | "subscribed"
   | "unsubscribing"
   | "error";
+
+interface DropdownPosition {
+  left: number;
+  top: number;
+  width: number;
+  maxHeight: number;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}
 
 function formatNotificationTime(value: string): string {
   return notificationTimeFormatter.format(new Date(value));
@@ -93,9 +107,16 @@ function getPushButtonText(state: PushButtonState): string {
 
 export function NotificationBell() {
   const router = useRouter();
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const seenNotificationIdsRef = useRef<Set<string>>(new Set());
   const [isOpen, setIsOpen] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState<DropdownPosition>({
+    left: DROPDOWN_VIEWPORT_GAP,
+    top: DROPDOWN_VIEWPORT_GAP,
+    width: DROPDOWN_MAX_WIDTH,
+    maxHeight: 320,
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [isMarkingAllRead, setIsMarkingAllRead] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -112,6 +133,43 @@ export function NotificationBell() {
     pushButtonState === "denied" ||
     pushButtonState === "subscribing" ||
     pushButtonState === "unsubscribing";
+
+  function updateDropdownPosition() {
+    const trigger = triggerRef.current;
+    if (!trigger) {
+      return;
+    }
+
+    const triggerRect = trigger.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const availableWidth = Math.max(
+      0,
+      viewportWidth - DROPDOWN_VIEWPORT_GAP * 2,
+    );
+    const width = Math.min(DROPDOWN_MAX_WIDTH, availableWidth);
+    const maxLeft = viewportWidth - width - DROPDOWN_VIEWPORT_GAP;
+    const preferredLeft = triggerRect.right - width;
+    const left = clamp(
+      preferredLeft,
+      DROPDOWN_VIEWPORT_GAP,
+      Math.max(maxLeft, DROPDOWN_VIEWPORT_GAP),
+    );
+    const preferredTop = triggerRect.bottom + DROPDOWN_TOP_OFFSET;
+    const top = clamp(
+      preferredTop,
+      DROPDOWN_VIEWPORT_GAP,
+      Math.max(viewportHeight - DROPDOWN_VIEWPORT_GAP, DROPDOWN_VIEWPORT_GAP),
+    );
+    const maxHeight = Math.max(220, viewportHeight - top - DROPDOWN_VIEWPORT_GAP);
+
+    setDropdownPosition({
+      left,
+      top,
+      width,
+      maxHeight,
+    });
+  }
 
   useEffect(() => {
     let ignore = false;
@@ -248,12 +306,15 @@ export function NotificationBell() {
     }
 
     function handlePointerDown(event: PointerEvent) {
+      const target = event.target as Node;
       if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
+        dropdownRef.current?.contains(target) ||
+        triggerRef.current?.contains(target)
       ) {
-        setIsOpen(false);
+        return;
       }
+
+      setIsOpen(false);
     }
 
     function handleKeyDown(event: KeyboardEvent) {
@@ -262,17 +323,34 @@ export function NotificationBell() {
       }
     }
 
+    function handleViewportChange() {
+      updateDropdownPosition();
+    }
+
+    const animationFrame = window.requestAnimationFrame(handleViewportChange);
+
     document.addEventListener("pointerdown", handlePointerDown);
     document.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("resize", handleViewportChange);
+    window.addEventListener("scroll", handleViewportChange, true);
 
     return () => {
+      window.cancelAnimationFrame(animationFrame);
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("resize", handleViewportChange);
+      window.removeEventListener("scroll", handleViewportChange, true);
     };
   }, [isOpen]);
 
   function handleOpenChange() {
-    setIsOpen((current) => !current);
+    setIsOpen((current) => {
+      if (!current) {
+        updateDropdownPosition();
+      }
+
+      return !current;
+    });
   }
 
   async function handleEnablePush() {
@@ -354,8 +432,9 @@ export function NotificationBell() {
   }
 
   return (
-    <div ref={dropdownRef} className="relative">
+    <div className="relative">
       <button
+        ref={triggerRef}
         type="button"
         onClick={handleOpenChange}
         className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-surface text-foreground transition hover:bg-surface-strong"
@@ -371,7 +450,16 @@ export function NotificationBell() {
       </button>
 
       {isOpen ? (
-        <div className="absolute right-0 z-20 mt-3 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-border bg-surface shadow-xl">
+        <div
+          ref={dropdownRef}
+          className="fixed z-20 overflow-hidden rounded-2xl border border-border bg-surface shadow-xl"
+          style={{
+            left: dropdownPosition.left,
+            top: dropdownPosition.top,
+            width: dropdownPosition.width,
+            maxHeight: dropdownPosition.maxHeight,
+          }}
+        >
           <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
             <p className="text-sm font-semibold">{UI_TEXT.title}</p>
             <button
@@ -395,7 +483,10 @@ export function NotificationBell() {
             </button>
           </div>
 
-          <div className="max-h-96 overflow-y-auto">
+          <div
+            className="overflow-y-auto"
+            style={{ maxHeight: Math.max(160, dropdownPosition.maxHeight - 116) }}
+          >
             {isLoading ? (
               <div className="space-y-3 p-4">
                 <div className="h-16 animate-pulse rounded-xl bg-surface-strong" />
