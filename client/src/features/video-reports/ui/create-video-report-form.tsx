@@ -19,6 +19,12 @@ interface CreateVideoReportFormProps {
   chat: ChatDetails;
 }
 
+function waitForUploadcareEventsToSettle(): Promise<void> {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, 400);
+  });
+}
+
 async function registerMediaAssets(media: Awaited<ReturnType<VideoReportMediaUploaderRef["uploadSelectedFiles"]>>): Promise<MediaAsset[]> {
   const registeredAssets: MediaAsset[] = [];
 
@@ -71,7 +77,7 @@ export function CreateVideoReportForm({ chat }: CreateVideoReportFormProps) {
         mediaAssetIds: mediaAssets.map((asset) => asset.id),
       });
 
-      uploaderRef.current?.clear();
+      await waitForUploadcareEventsToSettle();
       router.push(`/chats/${chat.id}`);
       router.refresh();
     } catch (error) {

@@ -53,4 +53,18 @@ public sealed class TestApiClients(IntegrationTestFixture fixture)
         await client.CopyAuthStateFromAsync(auth);
         return client;
     }
+
+    public async Task<NotificationsTestClient> NotificationsAsync(AuthTestClient auth)
+    {
+        var client = new NotificationsTestClient(fixture.CreateClient(handleCookies: false));
+        await client.CopyAuthStateFromAsync(auth);
+        return client;
+    }
+
+    public async Task<PushTestClient> PushAsync(AuthTestClient auth)
+    {
+        var client = new PushTestClient(fixture.CreateClient(handleCookies: false));
+        await client.CopyAuthStateFromAsync(auth);
+        return client;
+    }
 }

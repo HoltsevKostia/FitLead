@@ -11,12 +11,14 @@ namespace FitLead.IntegrationTests.Features.Messenger;
 public abstract class MessengerTestBase : IntegrationTestBase
 {
     protected readonly TestDb Db;
+    protected readonly TestOutbox Outbox;
     protected readonly TestUsers Users;
     protected readonly TestApiClients Api;
 
     protected MessengerTestBase(IntegrationTestFixture fixture) : base(fixture)
     {
         Db = new TestDb(fixture);
+        Outbox = new TestOutbox(Db);
         Users = new TestUsers(fixture, Db);
         Api = new TestApiClients(fixture);
     }

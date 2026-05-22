@@ -1,5 +1,3 @@
-using System.Security.Claims;
-using FitLead.Application.Identity;
 using FitLead.Application.Messenger.Chats.Access;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
@@ -23,7 +21,7 @@ namespace FitLead.Api.Hubs
 
         public async Task JoinChat(Guid chatId)
         {
-            var userId = GetRequiredDomainUserId();
+            var userId = Context.GetRequiredDomainUserId();
             var chatResult = await _chatLoader.GetAccessibleForUserOrNotFoundAsync(
                 userId,
                 chatId,
@@ -38,17 +36,6 @@ namespace FitLead.Api.Hubs
                 Context.ConnectionId,
                 ChatHubGroups.ForChat(chatId),
                 Context.ConnectionAborted);
-        }
-
-        private Guid GetRequiredDomainUserId()
-        {
-            var claim = Context.User?.FindFirstValue(CustomClaimTypes.DomainUserId);
-            if (!Guid.TryParse(claim, out var userId))
-            {
-                throw new HubException("Current user is missing");
-            }
-
-            return userId;
         }
     }
 }

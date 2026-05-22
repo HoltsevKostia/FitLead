@@ -1,4 +1,6 @@
 using FitLead.Application.Common.Outbox;
+using FitLead.Application.Notifications.Push;
+using FitLead.Application.Notifications.Realtime;
 using FitLead.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -44,6 +46,9 @@ public sealed class CustomWebApplicationFactory(string connectionString)
                 ["Uploadcare:PublicKey"] = "test-public-key",
                 ["Uploadcare:SecretKey"] = "test-secret-key",
                 ["Uploadcare:UploadSignatureLifetimeMinutes"] = "30",
+                ["Push:VapidPublicKey"] = "test-vapid-public-key",
+                ["Push:VapidPrivateKey"] = "test-vapid-private-key",
+                ["Push:Subject"] = "mailto:test@example.com",
                 ["OutboxProcessor:Enabled"] = "false",
                 ["OutboxProcessor:PollingIntervalSeconds"] = "1"
             });
@@ -51,6 +56,12 @@ public sealed class CustomWebApplicationFactory(string connectionString)
 
         builder.ConfigureTestServices(services =>
         {
+            services.AddSingleton<TestNotificationRealtimeNotifier>();
+            services.AddScoped<INotificationRealtimeNotifier>(provider =>
+                provider.GetRequiredService<TestNotificationRealtimeNotifier>());
+            services.AddSingleton<TestWebPushSender>();
+            services.AddScoped<IWebPushSender>(provider =>
+                provider.GetRequiredService<TestWebPushSender>());
             services.AddScoped<IOutboxMessageHandler, SuccessfulTestOutboxMessageHandler>();
             services.AddScoped<IOutboxMessageHandler, FailingTestOutboxMessageHandler>();
         });

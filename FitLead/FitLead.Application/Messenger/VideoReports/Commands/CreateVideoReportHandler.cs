@@ -6,6 +6,7 @@ using FitLead.Application.Media.MediaAssets.Access;
 using FitLead.Application.Messenger.ChatMessages.Outbox;
 using FitLead.Application.Messenger.ChatMessages.Queries;
 using FitLead.Application.Messenger.Chats.Access;
+using FitLead.Application.Messenger.VideoReports.Outbox;
 using FitLead.Application.Users.Access;
 using FitLead.Common.Errors;
 using FitLead.Common.Results;
@@ -131,6 +132,18 @@ namespace FitLead.Application.Messenger.VideoReports.Commands
                 new ChatMessageCreatedOutboxPayload(
                     messageResult.Value.ChatId,
                     messageResult.Value.Id),
+                createdAtUtc,
+                cancellationToken);
+            await _outbox.EnqueueAsync(
+                OutboxEventTypes.Messenger.VideoReportSubmitted,
+                new VideoReportSubmittedOutboxPayload(
+                    chat.Id,
+                    videoReportResult.Value.Id,
+                    currentUser.Id,
+                    currentUser.FullName,
+                    chat.TrainerId,
+                    videoReportResult.Value.Title,
+                    createdAtUtc),
                 createdAtUtc,
                 cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);

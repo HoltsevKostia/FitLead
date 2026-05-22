@@ -12,6 +12,8 @@ import { mapUploadcareFileToUploadedMediaAsset } from "@/features/media-assets/m
 import { UploadcareFileUploader } from "@/features/media-assets/ui/uploadcare-file-uploader";
 
 const allowedVideoReportKinds = ["Image", "Video"] as const;
+const uploaderReadyTimeoutMs = 2000;
+const uploaderReadyCheckIntervalMs = 50;
 
 interface VideoReportMediaUploaderProps {
   onFileCountChange: (fileCount: number) => void;
@@ -25,6 +27,9 @@ export interface VideoReportMediaUploaderHandle {
 
 type UploadResolve = (files: OutputFileEntry<"success">[]) => void;
 type UploadReject = (error: Error) => void;
+type UploaderApi = NonNullable<
+  ReturnType<InstanceType<typeof UploadCtxProvider>["getAPI"]>
+>;
 
 interface PendingUpload {
   resolve: UploadResolve;
@@ -43,11 +48,32 @@ export const VideoReportMediaUploader = forwardRef<
   const [fileCount, setFileCount] = useState(0);
 
   function getUploaderApi() {
-    return uploaderRef.current?.getAPI() ?? null;
+    try {
+      return uploaderRef.current?.getAPI() ?? null;
+    } catch {
+      return null;
+    }
   }
 
-  function getCollectionState(): OutputCollectionState | null {
-    return getUploaderApi()?.getOutputCollectionState() ?? null;
+  async function waitForUploaderApi(): Promise<UploaderApi | null> {
+    const startedAt = Date.now();
+
+    while (Date.now() - startedAt < uploaderReadyTimeoutMs) {
+      const api = getUploaderApi();
+      if (api) {
+        return api;
+      }
+
+      await new Promise((resolve) =>
+        window.setTimeout(resolve, uploaderReadyCheckIntervalMs),
+      );
+    }
+
+    return getUploaderApi();
+  }
+
+  function getCollectionState(api: UploaderApi): OutputCollectionState | null {
+    return api.getOutputCollectionState() ?? null;
   }
 
   function updateFileCount(state: OutputCollectionState) {
@@ -75,10 +101,15 @@ export const VideoReportMediaUploader = forwardRef<
   }
 
   async function uploadSelectedFiles(): Promise<UploadedMediaAssetMetadata[]> {
-    const api = getUploaderApi();
-    const state = getCollectionState();
+    const api = await waitForUploaderApi();
 
-    if (!api || !state || state.totalCount === 0) {
+    if (!api) {
+      throw new Error("Не вдалося завантажити медіа.");
+    }
+
+    const state = getCollectionState(api);
+
+    if (!state || state.totalCount === 0) {
       throw new Error("Додайте фото або відео.");
     }
 

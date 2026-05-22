@@ -287,6 +287,121 @@ namespace FitLead.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("FitLead.Domain.Notifications.Notification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Body")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LinkUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime?>("ReadAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("RecipientUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SourceEventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecipientUserId", "CreatedAtUtc")
+                        .HasDatabaseName("IX_notifications_recipient_created");
+
+                    b.HasIndex("RecipientUserId", "IsRead", "CreatedAtUtc")
+                        .HasDatabaseName("IX_notifications_recipient_read_created");
+
+                    b.HasIndex("SourceEventId", "RecipientUserId", "Type")
+                        .IsUnique()
+                        .HasDatabaseName("UX_notifications_source_event_recipient_type");
+
+                    b.ToTable("notifications", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_notifications_read_at_after_created", "\"ReadAtUtc\" IS NULL OR \"ReadAtUtc\" >= \"CreatedAtUtc\"");
+
+                            t.HasCheckConstraint("CK_notifications_read_state_valid", "(\"IsRead\" = false AND \"ReadAtUtc\" IS NULL) OR (\"IsRead\" = true AND \"ReadAtUtc\" IS NOT NULL)");
+
+                            t.HasCheckConstraint("CK_notifications_type_valid", "\"Type\" IN (1, 2, 3)");
+                        });
+                });
+
+            modelBuilder.Entity("FitLead.Domain.Notifications.PushSubscriptions.PushSubscription", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Auth")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Endpoint")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<DateTime?>("LastUsedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("P256dh")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<DateTime?>("RevokedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Endpoint")
+                        .IsUnique()
+                        .HasDatabaseName("UX_push_subscriptions_endpoint");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("IX_push_subscriptions_user_id");
+
+                    b.HasIndex("UserId", "RevokedAtUtc")
+                        .HasDatabaseName("IX_push_subscriptions_user_revoked");
+
+                    b.ToTable("push_subscriptions", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_push_subscriptions_last_used_at_after_created", "\"LastUsedAtUtc\" IS NULL OR \"LastUsedAtUtc\" >= \"CreatedAtUtc\"");
+
+                            t.HasCheckConstraint("CK_push_subscriptions_revoked_at_after_created", "\"RevokedAtUtc\" IS NULL OR \"RevokedAtUtc\" >= \"CreatedAtUtc\"");
+                        });
+                });
+
             modelBuilder.Entity("FitLead.Domain.Outbox.OutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")
@@ -971,6 +1086,24 @@ namespace FitLead.Infrastructure.Migrations
                         .WithMany("Media")
                         .HasForeignKey("VideoReportId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FitLead.Domain.Notifications.Notification", b =>
+                {
+                    b.HasOne("FitLead.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("RecipientUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FitLead.Domain.Notifications.PushSubscriptions.PushSubscription", b =>
+                {
+                    b.HasOne("FitLead.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
