@@ -130,6 +130,7 @@ namespace FitLead.Infrastructure
                 .Bind(configuration.GetSection(PushOptions.SectionName));
             services.AddScoped<IPushVapidConfiguration>(provider =>
                 provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<PushOptions>>().Value);
+            services.AddScoped<IWebPushSender, WebPushSender>();
             services.AddSingleton<IDeletionConfirmationTokenService, DataProtectionDeletionConfirmationTokenService>();
             services.AddScoped<ITokenHasher, TokenHasher>();
             services.AddScoped<IRefreshTokenService, RefreshTokenService>();

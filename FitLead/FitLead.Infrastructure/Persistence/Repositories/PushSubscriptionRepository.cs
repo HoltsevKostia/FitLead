@@ -29,5 +29,15 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                     subscription => subscription.Endpoint == endpoint,
                     cancellationToken);
         }
+
+        public async Task<IReadOnlyList<PushSubscription>> GetActiveByUserIdAsync(
+            Guid userId,
+            CancellationToken cancellationToken)
+        {
+            return await _context.PushSubscriptions
+                .Where(subscription => subscription.UserId == userId &&
+                                       subscription.RevokedAtUtc == null)
+                .ToListAsync(cancellationToken);
+        }
     }
 }

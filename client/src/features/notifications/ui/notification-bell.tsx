@@ -1,6 +1,12 @@
 "use client";
 
 import type { Notification } from "@/entities/notification/model/types";
+import {
+  getPushNotificationAvailability,
+  hasActivePushSubscription,
+  subscribeToPushNotifications,
+  type PushNotificationAvailability,
+} from "@/features/notifications/model/push-subscription";
 import { notificationsApi } from "@/lib/api/clients/notifications-api";
 import { createNotificationConnection } from "@/lib/realtime/notification-connection";
 import { resolveSafeNextHref } from "@/shared/utils/resolve-safe-next-href";
@@ -11,6 +17,11 @@ const UI_TEXT = {
   label: "Сповіщення",
   title: "Сповіщення",
   markAllRead: "Прочитати всі",
+  enablePush: "Увімкнути push",
+  pushEnabled: "Push увімкнено",
+  pushDenied: "Дозвіл на push заблоковано",
+  pushUnsupported: "Push недоступні у цьому браузері",
+  pushError: "Не вдалося увімкнути push.",
   empty: "Сповіщень немає",
   error: "Не вдалося завантажити сповіщення.",
 } as const;
@@ -23,6 +34,12 @@ const notificationTimeFormatter = new Intl.DateTimeFormat("uk-UA", {
   hour: "2-digit",
   minute: "2-digit",
 });
+
+type PushButtonState =
+  | PushNotificationAvailability
+  | "subscribing"
+  | "subscribed"
+  | "error";
 
 function formatNotificationTime(value: string): string {
   return notificationTimeFormatter.format(new Date(value));
@@ -47,6 +64,26 @@ function BellIcon() {
   );
 }
 
+function getPushButtonText(state: PushButtonState): string {
+  if (state === "subscribing") {
+    return "Вмикаємо...";
+  }
+
+  if (state === "subscribed") {
+    return UI_TEXT.pushEnabled;
+  }
+
+  if (state === "denied") {
+    return UI_TEXT.pushDenied;
+  }
+
+  if (state === "unsupported") {
+    return UI_TEXT.pushUnsupported;
+  }
+
+  return UI_TEXT.enablePush;
+}
+
 export function NotificationBell() {
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement | null>(null);
@@ -57,8 +94,40 @@ export function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [pushButtonState, setPushButtonState] = useState<PushButtonState>(() =>
+    getPushNotificationAvailability(),
+  );
 
   const hasUnreadNotifications = unreadCount > 0;
+
+  const isPushButtonDisabled =
+    pushButtonState === "unsupported" ||
+    pushButtonState === "denied" ||
+    pushButtonState === "subscribing" ||
+    pushButtonState === "subscribed";
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function syncPushState() {
+      const availability = getPushNotificationAvailability();
+      if (availability !== "available") {
+        setPushButtonState(availability);
+        return;
+      }
+
+      const hasSubscription = await hasActivePushSubscription();
+      if (!ignore) {
+        setPushButtonState(hasSubscription ? "subscribed" : "available");
+      }
+    }
+
+    void syncPushState();
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   useEffect(() => {
     const connection = createNotificationConnection();
@@ -94,7 +163,6 @@ export function NotificationBell() {
       try {
         await connection.start();
       } catch {
-        // The bell falls back to HTTP polling when the dropdown opens.
       }
     }
 
@@ -200,6 +268,20 @@ export function NotificationBell() {
     setIsOpen((current) => !current);
   }
 
+  async function handleEnablePush() {
+    setPushButtonState("subscribing");
+    setError(null);
+
+    try {
+      await subscribeToPushNotifications();
+      setPushButtonState("subscribed");
+    } catch {
+      const availability = getPushNotificationAvailability();
+      setPushButtonState(availability === "available" ? "error" : availability);
+      setError(UI_TEXT.pushError);
+    }
+  }
+
   async function handleNotificationClick(notification: Notification) {
     const href = resolveSafeNextHref(notification.linkUrl, "/dashboard");
 
@@ -274,6 +356,17 @@ export function NotificationBell() {
               className="text-xs font-medium text-accent transition hover:text-accent-strong disabled:cursor-not-allowed disabled:text-muted"
             >
               {UI_TEXT.markAllRead}
+            </button>
+          </div>
+
+          <div className="border-b border-border px-4 py-3">
+            <button
+              type="button"
+              onClick={() => void handleEnablePush()}
+              disabled={isPushButtonDisabled}
+              className="w-full rounded-xl border border-border px-3 py-2 text-sm font-medium transition hover:bg-surface-strong disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {getPushButtonText(pushButtonState)}
             </button>
           </div>
 

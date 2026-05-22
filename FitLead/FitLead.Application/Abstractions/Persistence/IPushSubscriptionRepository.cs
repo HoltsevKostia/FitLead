@@ -11,5 +11,9 @@ namespace FitLead.Application.Abstractions.Persistence
         Task<PushSubscription?> GetByEndpointAsync(
             string endpoint,
             CancellationToken cancellationToken);
+
+        Task<IReadOnlyList<PushSubscription>> GetActiveByUserIdAsync(
+            Guid userId,
+            CancellationToken cancellationToken);
     }
 }
