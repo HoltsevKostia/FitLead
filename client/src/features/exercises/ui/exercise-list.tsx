@@ -8,6 +8,7 @@ import {
 import { CopyExerciseAction } from "@/features/exercises/ui/copy-exercise-action";
 import { ExerciseActions } from "@/features/exercises/ui/exercise-actions";
 import { ExerciseMediaPreview } from "@/features/exercises/ui/exercise-media-preview";
+import { PlainText } from "@/shared/ui/plain-text";
 
 interface ExerciseListProps {
   exercises: Exercise[];
@@ -64,9 +65,12 @@ export function ExerciseList({
 
                   <div className="space-y-2">
                     <h2 className="text-xl font-semibold text-foreground">{exercise.name}</h2>
-                    <p className="max-w-3xl text-sm leading-6 text-muted">
-                      {exercise.description || "Опис поки не додано."}
-                    </p>
+                    <PlainText
+                      className="max-w-3xl text-sm leading-6 text-muted"
+                      fallback="Опис поки не додано."
+                    >
+                      {exercise.description}
+                    </PlainText>
                     <ExerciseMediaPreview mediaUrl={exercise.mediaUrl} />
                   </div>
                 </div>

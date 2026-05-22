@@ -6,6 +6,7 @@ import {
 } from "@/features/exercises/model/exercise-labels";
 import { getExerciseMediaInfo } from "@/features/exercises/model/exercise-media";
 import { fieldInputClassName } from "@/shared/forms/field-styles";
+import { PlainText } from "@/shared/ui/plain-text";
 
 export type ExercisePickerSource = "all" | "my" | "platform";
 
@@ -170,9 +171,12 @@ export function ExercisePickerList({
                       </span>
                     ) : null}
                   </div>
-                  <p className="line-clamp-2 text-sm leading-6 text-muted">
-                    {exercise.description || "Опис поки не додано."}
-                  </p>
+                  <PlainText
+                    className="line-clamp-2 text-sm leading-6 text-muted"
+                    fallback="Опис поки не додано."
+                  >
+                    {exercise.description}
+                  </PlainText>
                 </div>
 
                 <ExerciseMediaIndicator mediaUrl={exercise.mediaUrl} />
