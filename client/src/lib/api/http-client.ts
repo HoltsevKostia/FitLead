@@ -11,6 +11,14 @@ export interface ApiRequestOptions extends Omit<RequestInit, "body" | "credentia
 }
 
 function buildApiUrl(path: string): string {
+  if (path === "/api") {
+    return "/api/backend";
+  }
+
+  if (path.startsWith("/api/")) {
+    return `/api/backend${path.slice("/api".length)}`;
+  }
+
   return new URL(path, apiEnv.baseUrl).toString();
 }
 
