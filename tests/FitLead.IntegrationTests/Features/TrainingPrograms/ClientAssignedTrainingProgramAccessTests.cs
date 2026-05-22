@@ -1,4 +1,5 @@
 using System.Net;
+using FitLead.Domain.Media.MediaAssets;
 using FitLead.Application.Trainings.TrainingProgramAssignments.Commands;
 using FitLead.Application.Trainings.TrainingProgramAssignments.Queries;
 using FitLead.Domain.Trainings.TrainingProgramAssignments;
@@ -68,11 +69,12 @@ public sealed class ClientAssignedTrainingProgramAccessTests(IntegrationTestFixt
         var clientPrograms = await Api.ClientTrainingProgramsAsync(client.Auth);
         var programId = await CreateProgramAsync(trainerPrograms, "Details Program", weeksCount: 2, daysPerWeek: 3);
         var workoutId = await Workouts.CreateWorkoutAsync(trainer.Id, "Details Workout");
+        var mediaAsset = await MediaAssets.CreateAsync(trainer.Id, MediaAssetKind.Image);
         var exerciseId = await Exercises.CreateTrainerExerciseAsync(
             trainer.Id,
             "Push Up",
             "Bodyweight press",
-            mediaUrl: "https://example.com/push-up.png");
+            mediaAssetId: mediaAsset.Id);
         var trainerWorkouts = await Api.WorkoutsAsync(trainer.Auth);
         (await trainerWorkouts.AddExerciseAsync(
             workoutId,
@@ -105,6 +107,8 @@ public sealed class ClientAssignedTrainingProgramAccessTests(IntegrationTestFixt
         var exercise = workout.Exercises.Should().ContainSingle().Subject;
         exercise.ExerciseId.Should().Be(exerciseId);
         exercise.ExerciseName.Should().Be("Push Up");
+        exercise.ExerciseMediaAsset.Should().NotBeNull();
+        exercise.ExerciseMediaAsset!.Id.Should().Be(mediaAsset.Id);
         exercise.Repetitions.Should().Be(12);
         exercise.Sets.Should().Be(3);
         exercise.RestSeconds.Should().Be(60);

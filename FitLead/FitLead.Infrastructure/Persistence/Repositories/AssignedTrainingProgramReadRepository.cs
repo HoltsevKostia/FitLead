@@ -20,22 +20,36 @@ namespace FitLead.Infrastructure.Persistence.Repositories
             Guid trainingProgramId,
             CancellationToken cancellationToken)
         {
-            return await (
-                from assignment in _context.AssignedTrainingPrograms
-                join client in _context.DomainUsers
-                    on assignment.ClientId equals client.Id
-                where assignment.TrainingProgramId == trainingProgramId
-                orderby assignment.Status, assignment.AssignedAtUtc descending
-                select new TrainingProgramAssignmentDto(
+            var assignments = await (
+                    from assignment in _context.AssignedTrainingPrograms.AsNoTracking()
+                    join client in _context.DomainUsers.AsNoTracking()
+                        on assignment.ClientId equals client.Id
+                    where assignment.TrainingProgramId == trainingProgramId
+                    orderby assignment.Status, assignment.AssignedAtUtc descending, assignment.Id
+                    select new
+                    {
+                        assignment.Id,
+                        ClientId = client.Id,
+                        ClientName = client.FullName,
+                        assignment.Status,
+                        assignment.AccessSource,
+                        assignment.AssignedAtUtc,
+                        assignment.ExpiresAtUtc,
+                        assignment.RevokedAtUtc
+                    })
+                .ToListAsync(cancellationToken);
+
+            return assignments
+                .Select(assignment => new TrainingProgramAssignmentDto(
                     assignment.Id,
-                    client.Id,
-                    client.FullName,
+                    assignment.ClientId,
+                    assignment.ClientName,
                     assignment.Status.ToString(),
                     assignment.AccessSource.ToString(),
                     assignment.AssignedAtUtc,
                     assignment.ExpiresAtUtc,
                     assignment.RevokedAtUtc))
-                .ToListAsync(cancellationToken);
+                .ToList();
         }
 
         public async Task<IReadOnlyList<ClientAssignedTrainingProgramDto>> GetAccessibleByClientIdAsync(
@@ -44,25 +58,25 @@ namespace FitLead.Infrastructure.Persistence.Repositories
             CancellationToken cancellationToken)
         {
             return await (
-                from assignment in _context.AssignedTrainingPrograms
-                join program in _context.TrainingPrograms
-                    on assignment.TrainingProgramId equals program.Id
-                join trainer in _context.DomainUsers
-                    on assignment.TrainerId equals trainer.Id
-                where assignment.ClientId == clientId &&
-                      assignment.Status == AssignedProgramStatus.Active &&
-                      (!assignment.ExpiresAtUtc.HasValue || assignment.ExpiresAtUtc > utcNow)
-                orderby assignment.AssignedAtUtc descending
-                select new ClientAssignedTrainingProgramDto(
-                    assignment.Id,
-                    program.Id,
-                    program.Title,
-                    trainer.Id,
-                    trainer.FullName,
-                    program.WeeksCount,
-                    program.DaysPerWeek,
-                    assignment.AssignedAtUtc,
-                    assignment.ExpiresAtUtc))
+                    from assignment in _context.AssignedTrainingPrograms.AsNoTracking()
+                    join program in _context.TrainingPrograms.AsNoTracking()
+                        on assignment.TrainingProgramId equals program.Id
+                    join trainer in _context.DomainUsers.AsNoTracking()
+                        on assignment.TrainerId equals trainer.Id
+                    where assignment.ClientId == clientId &&
+                          assignment.Status == AssignedProgramStatus.Active &&
+                          (!assignment.ExpiresAtUtc.HasValue || assignment.ExpiresAtUtc > utcNow)
+                    orderby assignment.AssignedAtUtc descending, assignment.Id
+                    select new ClientAssignedTrainingProgramDto(
+                        assignment.Id,
+                        program.Id,
+                        program.Title,
+                        trainer.Id,
+                        trainer.FullName,
+                        program.WeeksCount,
+                        program.DaysPerWeek,
+                        assignment.AssignedAtUtc,
+                        assignment.ExpiresAtUtc))
                 .ToListAsync(cancellationToken);
         }
 
@@ -73,27 +87,27 @@ namespace FitLead.Infrastructure.Persistence.Repositories
             CancellationToken cancellationToken)
         {
             var details = await (
-                from assignment in _context.AssignedTrainingPrograms
-                join program in _context.TrainingPrograms
-                    on assignment.TrainingProgramId equals program.Id
-                join trainer in _context.DomainUsers
-                    on assignment.TrainerId equals trainer.Id
-                where assignment.Id == assignmentId &&
-                      assignment.ClientId == clientId &&
-                      assignment.Status == AssignedProgramStatus.Active &&
-                      (!assignment.ExpiresAtUtc.HasValue || assignment.ExpiresAtUtc > utcNow)
-                select new
-                {
-                    AssignmentId = assignment.Id,
-                    ProgramId = program.Id,
-                    program.Title,
-                    TrainerId = trainer.Id,
-                    TrainerName = trainer.FullName,
-                    program.WeeksCount,
-                    program.DaysPerWeek,
-                    assignment.AssignedAtUtc,
-                    assignment.ExpiresAtUtc
-                })
+                    from assignment in _context.AssignedTrainingPrograms.AsNoTracking()
+                    join program in _context.TrainingPrograms.AsNoTracking()
+                        on assignment.TrainingProgramId equals program.Id
+                    join trainer in _context.DomainUsers.AsNoTracking()
+                        on assignment.TrainerId equals trainer.Id
+                    where assignment.Id == assignmentId &&
+                          assignment.ClientId == clientId &&
+                          assignment.Status == AssignedProgramStatus.Active &&
+                          (!assignment.ExpiresAtUtc.HasValue || assignment.ExpiresAtUtc > utcNow)
+                    select new
+                    {
+                        AssignmentId = assignment.Id,
+                        ProgramId = program.Id,
+                        program.Title,
+                        TrainerId = trainer.Id,
+                        TrainerName = trainer.FullName,
+                        program.WeeksCount,
+                        program.DaysPerWeek,
+                        assignment.AssignedAtUtc,
+                        assignment.ExpiresAtUtc
+                    })
                 .FirstOrDefaultAsync(cancellationToken);
 
             if (details is null)
@@ -102,20 +116,23 @@ namespace FitLead.Infrastructure.Persistence.Repositories
             }
 
             var workouts = await (
-                from tpw in _context.TrainingProgramWorkouts
-                join workout in _context.Workouts
-                    on tpw.WorkoutId equals workout.Id
-                where tpw.TrainingProgramId == details.ProgramId
-                orderby tpw.WeekNumber, tpw.DayNumber, tpw.OrderInDay
-                select new ClientAssignedTrainingProgramWorkoutDto(
-                    tpw.Id,
-                    workout.Id,
-                    workout.Name,
-                    workout.TrainerId,
-                    tpw.WeekNumber,
-                    tpw.DayNumber,
-                    tpw.OrderInDay,
-                    Array.Empty<WorkoutExerciseDetailsDto>()))
+                    from trainingProgramWorkout in _context.TrainingProgramWorkouts.AsNoTracking()
+                    join workout in _context.Workouts.AsNoTracking()
+                        on trainingProgramWorkout.WorkoutId equals workout.Id
+                    where trainingProgramWorkout.TrainingProgramId == details.ProgramId
+                    orderby trainingProgramWorkout.WeekNumber,
+                        trainingProgramWorkout.DayNumber,
+                        trainingProgramWorkout.OrderInDay,
+                        trainingProgramWorkout.Id
+                    select new ClientAssignedTrainingProgramWorkoutDto(
+                        trainingProgramWorkout.Id,
+                        workout.Id,
+                        workout.Name,
+                        workout.TrainerId,
+                        trainingProgramWorkout.WeekNumber,
+                        trainingProgramWorkout.DayNumber,
+                        trainingProgramWorkout.OrderInDay,
+                        Array.Empty<WorkoutExerciseDetailsDto>()))
                 .ToListAsync(cancellationToken);
 
             if (workouts.Count > 0)
@@ -125,29 +142,31 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                     .ToArray();
 
                 var exercises = await (
-                    from workoutExercise in _context.WorkoutExercises.AsNoTracking()
-                    join exercise in _context.Exercises.AsNoTracking()
-                        on workoutExercise.ExerciseId equals exercise.Id
-                    where workoutIds.Contains(workoutExercise.WorkoutId)
-                    orderby workoutExercise.Order
-                    select new
-                    {
-                        workoutExercise.WorkoutId,
-                        Exercise = new WorkoutExerciseDetailsDto(
-                            workoutExercise.Id,
+                        from workoutExercise in _context.WorkoutExercises.AsNoTracking()
+                        join exercise in _context.Exercises.AsNoTracking()
+                            on workoutExercise.ExerciseId equals exercise.Id
+                        join mediaAsset in _context.MediaAssets.AsNoTracking()
+                            on exercise.MediaAssetId equals mediaAsset.Id into mediaAssets
+                        from mediaAsset in mediaAssets.DefaultIfEmpty()
+                        where workoutIds.Contains(workoutExercise.WorkoutId)
+                        orderby workoutExercise.Order, workoutExercise.Id
+                        select new
+                        {
+                            workoutExercise.WorkoutId,
+                            WorkoutExerciseId = workoutExercise.Id,
                             workoutExercise.ExerciseId,
                             workoutExercise.Order,
-                            exercise.Name,
-                            exercise.Description,
-                            exercise.MediaUrl != null ? exercise.MediaUrl.Value : null,
-                            exercise.MuscleGroup,
-                            exercise.Equipment,
+                            ExerciseName = exercise.Name,
+                            ExerciseDescription = exercise.Description,
+                            ExerciseMediaAsset = mediaAsset,
+                            ExerciseMuscleGroup = exercise.MuscleGroup,
+                            ExerciseEquipment = exercise.Equipment,
                             workoutExercise.Repetitions,
                             workoutExercise.Sets,
                             workoutExercise.LoadKg,
                             workoutExercise.RestSeconds,
-                            workoutExercise.TrainerNote)
-                    })
+                            workoutExercise.TrainerNote
+                        })
                     .ToListAsync(cancellationToken);
 
                 var exercisesByWorkout = exercises
@@ -155,7 +174,20 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                     .ToDictionary(
                         group => group.Key,
                         group => (IReadOnlyList<WorkoutExerciseDetailsDto>)group
-                            .Select(exercise => exercise.Exercise)
+                            .Select(exercise => new WorkoutExerciseDetailsDto(
+                                exercise.WorkoutExerciseId,
+                                exercise.ExerciseId,
+                                exercise.Order,
+                                exercise.ExerciseName,
+                                exercise.ExerciseDescription,
+                                MediaAssetProjectionMapper.ToPreviewDto(exercise.ExerciseMediaAsset),
+                                exercise.ExerciseMuscleGroup,
+                                exercise.ExerciseEquipment,
+                                exercise.Repetitions,
+                                exercise.Sets,
+                                exercise.LoadKg,
+                                exercise.RestSeconds,
+                                exercise.TrainerNote))
                             .ToList());
 
                 workouts = workouts

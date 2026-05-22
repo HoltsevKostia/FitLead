@@ -1,3 +1,4 @@
+using FitLead.Application.Media.MediaAssets.Queries;
 using FitLead.Domain.Trainings.Exercises;
 
 namespace FitLead.Application.Trainings.Exercises.Queries
@@ -6,7 +7,7 @@ namespace FitLead.Application.Trainings.Exercises.Queries
         Guid Id,
         string Name,
         string Description,
-        string? MediaUrl,
+        MediaAssetPreviewDto? MediaAsset,
         MuscleGroup? MuscleGroup,
         Equipment? Equipment,
         ExerciseSource Source,

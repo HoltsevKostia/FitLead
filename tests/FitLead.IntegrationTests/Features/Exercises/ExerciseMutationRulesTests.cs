@@ -1,4 +1,5 @@
 using System.Net;
+using FitLead.Domain.Media.MediaAssets;
 using FitLead.IntegrationTests.Helpers;
 using FitLead.IntegrationTests.Infrastructure;
 using FluentAssertions;
@@ -10,6 +11,7 @@ public sealed class ExerciseMutationRulesTests : IntegrationTestBase
 {
     private readonly TestUsers _users;
     private readonly TestExercises _exercises;
+    private readonly TestMediaAssets _mediaAssets;
     private readonly TestWorkouts _workouts;
     private readonly TestApiClients _api;
 
@@ -18,26 +20,96 @@ public sealed class ExerciseMutationRulesTests : IntegrationTestBase
         var db = new TestDb(fixture);
         _users = new TestUsers(fixture, db);
         _exercises = new TestExercises(db);
+        _mediaAssets = new TestMediaAssets(db);
         _workouts = new TestWorkouts(db);
         _api = new TestApiClients(fixture);
+    }
+
+    [Fact]
+    public async Task Create_WithOwnedImageMediaAsset_ShouldCreateExerciseWithMediaAsset()
+    {
+        var trainer = await _users.RegisterTrainerAsync("exercise-create-media");
+        var mediaAsset = await _mediaAssets.CreateAsync(trainer.Id, MediaAssetKind.Image);
+        var client = await _api.ExercisesAsync(trainer.Auth);
+
+        var response = await client.CreateAsync(mediaAssetId: mediaAsset.Id);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var exerciseId = await response.ReadRequiredJsonAsync<Guid>();
+        var exercise = await _exercises.GetRequiredAsync(exerciseId);
+        exercise.MediaAssetId.Should().Be(mediaAsset.Id);
+    }
+
+    [Fact]
+    public async Task Create_WithAudioMediaAsset_ShouldReturnValidationError()
+    {
+        var trainer = await _users.RegisterTrainerAsync("exercise-create-audio");
+        var mediaAsset = await _mediaAssets.CreateAsync(trainer.Id, MediaAssetKind.Audio);
+        var client = await _api.ExercisesAsync(trainer.Auth);
+
+        var response = await client.CreateAsync(mediaAssetId: mediaAsset.Id);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var problem = await response.ReadProblemDetailsAsync();
+        problem.ErrorCode.Should().Be("media_asset.kind_not_allowed_for_exercise");
+    }
+
+    [Fact]
+    public async Task Create_WithAnotherTrainerMediaAsset_ShouldReturnNotFound()
+    {
+        var trainer = await _users.RegisterTrainerAsync("exercise-create-foreign-media");
+        var otherTrainer = await _users.RegisterTrainerAsync("exercise-create-foreign-owner");
+        var mediaAsset = await _mediaAssets.CreateAsync(otherTrainer.Id, MediaAssetKind.Image);
+        var client = await _api.ExercisesAsync(trainer.Auth);
+
+        var response = await client.CreateAsync(mediaAssetId: mediaAsset.Id);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        var problem = await response.ReadProblemDetailsAsync();
+        problem.ErrorCode.Should().Be("media_asset.not_found");
     }
 
     [Fact]
     public async Task Update_WithOwnExercise_ShouldUpdateExercise()
     {
         var trainer = await _users.RegisterTrainerAsync("exercise-update-own");
+        var mediaAsset = await _mediaAssets.CreateAsync(trainer.Id, MediaAssetKind.Video);
         var exerciseId = await _exercises.CreateTrainerExerciseAsync(trainer.Id, "Власна вправа");
         var client = await _api.ExercisesAsync(trainer.Auth);
 
         var response = await client.UpdateAsync(
             exerciseId,
             name: "Оновлена власна вправа",
-            description: "Новий опис");
+            description: "Новий опис",
+            mediaAssetId: mediaAsset.Id);
 
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
         var exercise = await _exercises.GetRequiredAsync(exerciseId);
         exercise.Name.Should().Be("Оновлена власна вправа");
         exercise.Description.Should().Be("Новий опис");
+        exercise.MediaAssetId.Should().Be(mediaAsset.Id);
+    }
+
+    [Fact]
+    public async Task Update_WithNullMediaAsset_ShouldClearExerciseMediaAsset()
+    {
+        var trainer = await _users.RegisterTrainerAsync("exercise-clear-media");
+        var mediaAsset = await _mediaAssets.CreateAsync(trainer.Id, MediaAssetKind.Image);
+        var exerciseId = await _exercises.CreateTrainerExerciseAsync(
+            trainer.Id,
+            "Вправа з медіа",
+            mediaAssetId: mediaAsset.Id);
+        var client = await _api.ExercisesAsync(trainer.Auth);
+
+        var response = await client.UpdateAsync(
+            exerciseId,
+            name: "Вправа без медіа",
+            description: "Опис",
+            mediaAssetId: null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        var exercise = await _exercises.GetRequiredAsync(exerciseId);
+        exercise.MediaAssetId.Should().BeNull();
     }
 
     [Fact]

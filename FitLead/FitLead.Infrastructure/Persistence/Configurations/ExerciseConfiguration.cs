@@ -1,4 +1,5 @@
-﻿using FitLead.Domain.Trainings.Exercises;
+using FitLead.Domain.Media.MediaAssets;
+using FitLead.Domain.Trainings.Exercises;
 using FitLead.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -38,6 +39,8 @@ namespace FitLead.Infrastructure.Persistence.Configurations
 
             builder.Property(x => x.CopiedFromExerciseId);
 
+            builder.Property(x => x.MediaAssetId);
+
             builder.Property(x => x.MuscleGroup)
                 .HasConversion<int?>();
 
@@ -54,6 +57,11 @@ namespace FitLead.Infrastructure.Persistence.Configurations
                 .HasForeignKey(x => x.CopiedFromExerciseId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.HasOne<MediaAsset>()
+                .WithMany()
+                .HasForeignKey(x => x.MediaAssetId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             builder.Property(x => x.Name)
                 .IsRequired()
                 .HasMaxLength(200);
@@ -61,15 +69,10 @@ namespace FitLead.Infrastructure.Persistence.Configurations
             builder.Property(x => x.Description)
                 .IsRequired();
 
-            builder.Property(x => x.MediaUrl)
-                .HasConversion(
-                    mediaUrl => mediaUrl == null ? null : mediaUrl.Value,
-                    value => value == null ? null : MediaUrl.Create(value).Value)
-                .HasMaxLength(MediaUrl.MaxLength);
-
             builder.HasIndex(x => x.OwnerTrainerId);
             builder.HasIndex(x => x.Source);
             builder.HasIndex(x => x.CopiedFromExerciseId);
+            builder.HasIndex(x => x.MediaAssetId);
             builder.HasIndex(x => x.MuscleGroup);
             builder.HasIndex(x => x.Equipment);
 
