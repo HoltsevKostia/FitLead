@@ -69,7 +69,7 @@ export function ExerciseDetailView({ exercise }: ExerciseDetailViewProps) {
 
         <div className="space-y-3">
           <h2 className="text-lg font-semibold text-foreground">Медіа</h2>
-          <ExerciseDetailMedia mediaUrl={exercise.mediaUrl} />
+          <ExerciseDetailMedia mediaAsset={exercise.mediaAsset} />
         </div>
       </div>
     </section>

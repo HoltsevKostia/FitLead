@@ -71,7 +71,7 @@ export function ExerciseList({
                     >
                       {exercise.description}
                     </PlainText>
-                    <ExerciseMediaPreview mediaUrl={exercise.mediaUrl} />
+                    <ExerciseMediaPreview mediaAsset={exercise.mediaAsset} />
                   </div>
                 </div>
 

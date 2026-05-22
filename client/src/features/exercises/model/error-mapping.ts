@@ -21,6 +21,21 @@ export function mapExerciseMutationError(error: unknown): string {
     return "До бібліотеки можна копіювати лише вправи платформи.";
   }
 
+  if (
+    error.errorCode === "media_asset.not_found" ||
+    error.errorCode === "media_asset.not_owned" ||
+    error.errorCode === "exercise.media_asset_not_found"
+  ) {
+    return "Обране медіа не знайдено або у вас немає доступу до нього.";
+  }
+
+  if (
+    error.errorCode === "exercise.media_asset_kind_not_allowed" ||
+    error.errorCode === "media_asset.kind_not_allowed"
+  ) {
+    return "Для вправи можна додати лише фото або відео.";
+  }
+
   if (error.status === 400) {
     return "Перевірте дані вправи і спробуйте ще раз.";
   }

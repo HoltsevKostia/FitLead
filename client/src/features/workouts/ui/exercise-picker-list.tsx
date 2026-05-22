@@ -1,10 +1,10 @@
 import { ExerciseSource, type Exercise } from "@/entities/exercise/model/types";
+import type { MediaAssetPreview } from "@/entities/media-asset/model/types";
 import {
   equipmentLabels,
   exerciseSourceLabels,
   muscleGroupLabels,
 } from "@/features/exercises/model/exercise-labels";
-import { getExerciseMediaInfo } from "@/features/exercises/model/exercise-media";
 import { fieldInputClassName } from "@/shared/forms/field-styles";
 import { PlainText } from "@/shared/ui/plain-text";
 
@@ -47,23 +47,20 @@ function getFilteredExercises(
   });
 }
 
-function ExerciseMediaIndicator({ mediaUrl }: { mediaUrl: string | null }) {
-  const media = getExerciseMediaInfo(mediaUrl);
-
-  if (media.type === "none") {
+function ExerciseMediaIndicator({ mediaAsset }: { mediaAsset: MediaAssetPreview | null }) {
+  if (!mediaAsset) {
     return null;
   }
 
   const labelByType = {
-    image: "Зображення",
-    youtube: "YouTube",
-    video: "Відео",
-    external: "Медіа",
-  } satisfies Record<typeof media.type, string>;
+    Image: "Зображення",
+    Video: "Відео",
+    Audio: "Медіа",
+  } satisfies Record<MediaAssetPreview["kind"], string>;
 
   return (
     <span className="w-fit rounded-full border border-indigo-200 bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-800">
-      {labelByType[media.type]}
+      {labelByType[mediaAsset.kind]}
     </span>
   );
 }
@@ -179,7 +176,7 @@ export function ExercisePickerList({
                   </PlainText>
                 </div>
 
-                <ExerciseMediaIndicator mediaUrl={exercise.mediaUrl} />
+                <ExerciseMediaIndicator mediaAsset={exercise.mediaAsset} />
               </div>
             </button>
           );

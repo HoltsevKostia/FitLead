@@ -74,7 +74,7 @@ function ExerciseSummaryCard({
             >
               {exercise.exerciseDescription}
             </PlainText>
-            <ExerciseMediaPreview mediaUrl={exercise.exerciseMediaUrl} />
+            <ExerciseMediaPreview mediaAsset={exercise.exerciseMediaAsset} />
           </div>
 
           {exercise.trainerNote ? (

@@ -1,3 +1,5 @@
+import type { MediaAssetPreview } from "@/entities/media-asset/model/types";
+
 export enum ExerciseSource {
   Platform = 1,
   Trainer = 2,
@@ -33,7 +35,7 @@ export interface Exercise {
   id: string;
   name: string;
   description: string;
-  mediaUrl: string | null;
+  mediaAsset: MediaAssetPreview | null;
   muscleGroup: MuscleGroup | null;
   equipment: Equipment | null;
   source: ExerciseSource;
@@ -46,7 +48,7 @@ export type ExerciseListSource = "all" | "platform" | "my";
 export interface CreateExerciseRequest {
   name: string;
   description: string;
-  mediaUrl: string | null;
+  mediaAssetId: string | null;
   muscleGroup: MuscleGroup | null;
   equipment: Equipment | null;
 }
@@ -54,7 +56,7 @@ export interface CreateExerciseRequest {
 export interface UpdateExerciseRequest {
   name: string;
   description: string;
-  mediaUrl: string | null;
+  mediaAssetId: string | null;
   muscleGroup: MuscleGroup | null;
   equipment: Equipment | null;
 }

@@ -133,7 +133,7 @@ function ExerciseCard({
           >
             {exercise.exerciseDescription}
           </PlainText>
-          <ExerciseMediaPreview mediaUrl={exercise.exerciseMediaUrl} />
+          <ExerciseMediaPreview mediaAsset={exercise.exerciseMediaAsset} />
         </div>
 
         <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
