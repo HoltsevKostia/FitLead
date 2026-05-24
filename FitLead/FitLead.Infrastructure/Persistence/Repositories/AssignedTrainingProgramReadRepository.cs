@@ -2,6 +2,7 @@ using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Trainings.TrainingProgramAssignments.Queries;
 using FitLead.Application.Trainings.Workouts.Queries;
 using FitLead.Domain.Trainings.TrainingProgramAssignments;
+using FitLead.Domain.Trainings.WorkoutLogs;
 using Microsoft.EntityFrameworkCore;
 
 namespace FitLead.Infrastructure.Persistence.Repositories
@@ -119,25 +120,68 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                     from trainingProgramWorkout in _context.TrainingProgramWorkouts.AsNoTracking()
                     join workout in _context.Workouts.AsNoTracking()
                         on trainingProgramWorkout.WorkoutId equals workout.Id
+                    join workoutLog in _context.WorkoutLogs.AsNoTracking()
+                        on new
+                        {
+                            AssignedTrainingProgramId = details.AssignmentId,
+                            TrainingProgramWorkoutId = trainingProgramWorkout.Id
+                        }
+                        equals new
+                        {
+                            workoutLog.AssignedTrainingProgramId,
+                            workoutLog.TrainingProgramWorkoutId
+                        }
+                        into workoutLogs
+                    from workoutLog in workoutLogs.DefaultIfEmpty()
                     where trainingProgramWorkout.TrainingProgramId == details.ProgramId
                     orderby trainingProgramWorkout.WeekNumber,
                         trainingProgramWorkout.DayNumber,
                         trainingProgramWorkout.OrderInDay,
                         trainingProgramWorkout.Id
-                    select new ClientAssignedTrainingProgramWorkoutDto(
+                    select new
+                    {
                         trainingProgramWorkout.Id,
-                        workout.Id,
-                        workout.Name,
+                        WorkoutId = workout.Id,
+                        WorkoutName = workout.Name,
                         workout.TrainerId,
                         trainingProgramWorkout.WeekNumber,
                         trainingProgramWorkout.DayNumber,
                         trainingProgramWorkout.OrderInDay,
-                        Array.Empty<WorkoutExerciseDetailsDto>()))
+                        LogId = workoutLog == null ? (Guid?)null : workoutLog.Id,
+                        LogStatus = workoutLog == null ? (WorkoutLogStatus?)null : workoutLog.Status,
+                        LogPerformedAtUtc = workoutLog == null ? null : workoutLog.PerformedAtUtc,
+                        LogClientNote = workoutLog == null ? null : workoutLog.ClientNote,
+                        LogDifficultyRating = workoutLog == null ? null : workoutLog.DifficultyRating,
+                        LogCreatedAtUtc = workoutLog == null ? (DateTime?)null : workoutLog.CreatedAtUtc,
+                        LogUpdatedAtUtc = workoutLog == null ? null : workoutLog.UpdatedAtUtc
+                    })
                 .ToListAsync(cancellationToken);
 
-            if (workouts.Count > 0)
+            var workoutDtos = workouts
+                .Select(workout => new ClientAssignedTrainingProgramWorkoutDto(
+                    workout.Id,
+                    workout.WorkoutId,
+                    workout.WorkoutName,
+                    workout.TrainerId,
+                    workout.WeekNumber,
+                    workout.DayNumber,
+                    workout.OrderInDay,
+                    workout.LogId.HasValue
+                        ? new WorkoutLogPreviewDto(
+                            workout.LogId.Value,
+                            workout.LogStatus!.Value.ToString(),
+                            workout.LogPerformedAtUtc,
+                            workout.LogClientNote,
+                            workout.LogDifficultyRating,
+                            workout.LogCreatedAtUtc!.Value,
+                            workout.LogUpdatedAtUtc)
+                        : null,
+                    Array.Empty<WorkoutExerciseDetailsDto>()))
+                .ToList();
+
+            if (workoutDtos.Count > 0)
             {
-                var workoutIds = workouts
+                var workoutIds = workoutDtos
                     .Select(workout => workout.WorkoutId)
                     .ToArray();
 
@@ -190,14 +234,14 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                                 exercise.TrainerNote))
                             .ToList());
 
-                workouts = workouts
+                workoutDtos = workoutDtos
                     .Select(workout => workout with
                     {
                         Exercises = exercisesByWorkout.TryGetValue(workout.WorkoutId, out var workoutExercises)
                             ? workoutExercises
                             : Array.Empty<WorkoutExerciseDetailsDto>()
                     })
-                    .ToList();
+                .ToList();
             }
 
             return new ClientAssignedTrainingProgramDetailsDto(
@@ -210,7 +254,7 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                 details.DaysPerWeek,
                 details.AssignedAtUtc,
                 details.ExpiresAtUtc,
-                workouts);
+                workoutDtos);
         }
     }
 }

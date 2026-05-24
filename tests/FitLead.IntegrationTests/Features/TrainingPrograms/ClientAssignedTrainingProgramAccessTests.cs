@@ -3,6 +3,7 @@ using FitLead.Domain.Media.MediaAssets;
 using FitLead.Application.Trainings.TrainingProgramAssignments.Commands;
 using FitLead.Application.Trainings.TrainingProgramAssignments.Queries;
 using FitLead.Domain.Trainings.TrainingProgramAssignments;
+using FitLead.Domain.Trainings.WorkoutLogs;
 using FitLead.IntegrationTests.Helpers;
 using FitLead.IntegrationTests.Infrastructure;
 using FluentAssertions;
@@ -104,6 +105,7 @@ public sealed class ClientAssignedTrainingProgramAccessTests(IntegrationTestFixt
         workout.WeekNumber.Should().Be(2);
         workout.DayNumber.Should().Be(3);
         workout.OrderInDay.Should().Be(1);
+        workout.Log.Should().BeNull();
         var exercise = workout.Exercises.Should().ContainSingle().Subject;
         exercise.ExerciseId.Should().Be(exerciseId);
         exercise.ExerciseName.Should().Be("Push Up");
@@ -113,6 +115,48 @@ public sealed class ClientAssignedTrainingProgramAccessTests(IntegrationTestFixt
         exercise.Sets.Should().Be(3);
         exercise.RestSeconds.Should().Be(60);
         exercise.TrainerNote.Should().Be("Keep a straight line");
+    }
+
+    [Fact]
+    public async Task ClientAssignedProgramDetails_ShouldReturnWorkoutLogPreview()
+    {
+        var trainer = await Users.RegisterTrainerAsync("client-program-log-trainer");
+        var client = await Users.RegisterClientAsync("client-program-log-client");
+        await CreateTrainerClientRelationshipAsync(trainer.Id, client.Id);
+
+        var trainerPrograms = await Api.TrainingProgramsAsync(trainer.Auth);
+        var clientPrograms = await Api.ClientTrainingProgramsAsync(client.Auth);
+        var programId = await CreateProgramAsync(trainerPrograms, "Logged Program");
+        var workoutId = await Workouts.CreateWorkoutAsync(trainer.Id, "Logged Workout");
+        (await trainerPrograms.AddWorkoutAsync(programId, workoutId))
+            .StatusCode.Should().Be(HttpStatusCode.NoContent);
+        var programWorkout = (await ReadProgramWorkoutsAsync(trainerPrograms, programId))
+            .Should()
+            .ContainSingle()
+            .Subject;
+        var assignResponse = await trainerPrograms.AssignToClientAsync(programId, client.Id);
+        var assignment = await assignResponse.ReadRequiredJsonAsync<AssignTrainingProgramToClientResult>();
+        var performedAtUtc = DateTime.UtcNow.AddHours(-1);
+
+        var logResponse = await clientPrograms.UpsertWorkoutLogAsync(
+            assignment.AssignmentId,
+            programWorkout.Id,
+            nameof(WorkoutLogStatus.Completed),
+            performedAtUtc,
+            clientNote: "Solid session",
+            difficultyRating: 7);
+        logResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var response = await clientPrograms.GetAssignedProgramDetailsAsync(assignment.AssignmentId);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var details = await response.ReadRequiredJsonAsync<ClientAssignedTrainingProgramDetailsDto>();
+        var log = details.Workouts.Should().ContainSingle().Subject.Log;
+        log.Should().NotBeNull();
+        log!.Status.Should().Be(nameof(WorkoutLogStatus.Completed));
+        log.PerformedAtUtc.Should().BeCloseTo(performedAtUtc, TimeSpan.FromMilliseconds(1));
+        log.ClientNote.Should().Be("Solid session");
+        log.DifficultyRating.Should().Be(7);
     }
 
     [Fact]
