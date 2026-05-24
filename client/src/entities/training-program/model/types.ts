@@ -45,6 +45,16 @@ export interface TrainingProgramWorkout {
   orderInDay: number;
 }
 
+export interface WorkoutLogPreview {
+  id: string;
+  status: string;
+  performedAtUtc: string | null;
+  clientNote: string | null;
+  difficultyRating: number | null;
+  createdAtUtc: string;
+  updatedAtUtc: string | null;
+}
+
 export interface ClientAssignedTrainingProgram {
   assignmentId: string;
   programId: string;
@@ -58,6 +68,7 @@ export interface ClientAssignedTrainingProgram {
 }
 
 export interface ClientAssignedTrainingProgramWorkout extends TrainingProgramWorkout {
+  log: WorkoutLogPreview | null;
   exercises: WorkoutExerciseDetails[];
 }
 

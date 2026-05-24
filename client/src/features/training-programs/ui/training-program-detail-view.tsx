@@ -137,7 +137,7 @@ export function TrainingProgramDetailView({
         Назад до програм
       </Link>
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         <h1 className="text-3xl font-semibold tracking-tight">{program.title}</h1>
         <p className="max-w-3xl text-muted">
           {program.weeksCount} тиж. · {program.daysPerWeek} дн./тиждень
@@ -155,7 +155,7 @@ export function TrainingProgramDetailView({
           id="week-select"
           value={selectedWeek}
           onChange={(event) => setSelectedWeek(Number(event.target.value))}
-          className="w-full rounded-2xl border border-border bg-white px-4 py-3 outline-none transition focus:border-accent md:hidden"
+          className="w-full rounded-lg border border-border bg-white px-4 py-3 outline-none transition focus:border-accent md:hidden"
         >
           {weeks.map((weekNumber) => (
             <option key={weekNumber} value={weekNumber}>
@@ -164,7 +164,9 @@ export function TrainingProgramDetailView({
           ))}
         </select>
 
-        <div className="hidden flex-wrap gap-2 md:flex" role="tablist" aria-label="Тижні програми">
+        <div className="hidden items-center gap-2 md:flex">
+          <span className="text-sm font-medium text-foreground">Тиждень:</span>
+          <div className="flex flex-wrap gap-2" role="tablist" aria-label="Тижні програми">
           {weeks.map((weekNumber) => {
             const isSelected = selectedWeek === weekNumber;
 
@@ -175,16 +177,17 @@ export function TrainingProgramDetailView({
                 role="tab"
                 aria-selected={isSelected}
                 onClick={() => setSelectedWeek(weekNumber)}
-                className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
+                className={`h-9 min-w-9 rounded-lg border px-3 text-sm font-medium transition ${
                   isSelected
                     ? "border-accent bg-accent text-white"
                     : "border-border bg-white text-foreground hover:bg-surface-strong"
                 }`}
               >
-                Тиждень {weekNumber}
+                {weekNumber}
               </button>
             );
           })}
+          </div>
         </div>
       </div>
 

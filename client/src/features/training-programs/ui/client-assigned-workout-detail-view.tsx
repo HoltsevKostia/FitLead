@@ -27,12 +27,12 @@ function formatLoad(loadKg: number | null): string {
 
 function ExerciseSummaryCard({
   assignmentId,
-  workoutId,
+  programWorkoutId,
   exerciseReturnHref,
   exercise,
 }: {
   assignmentId: string;
-  workoutId: string;
+  programWorkoutId: string;
   exerciseReturnHref: string;
   exercise: WorkoutExerciseDetails;
 }) {
@@ -60,7 +60,7 @@ function ExerciseSummaryCard({
             <Link
               href={buildClientExercisePath(
                 assignmentId,
-                workoutId,
+                programWorkoutId,
                 exercise.workoutExerciseId,
                 exerciseReturnHref,
               )}
@@ -142,7 +142,7 @@ export function ClientAssignedWorkoutDetailView({
             <ExerciseSummaryCard
               key={exercise.workoutExerciseId}
               assignmentId={assignmentId}
-              workoutId={workout.workoutId}
+              programWorkoutId={workout.id}
               exerciseReturnHref={currentHref}
               exercise={exercise}
             />
