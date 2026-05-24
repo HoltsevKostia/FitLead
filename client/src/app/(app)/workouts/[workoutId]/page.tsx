@@ -10,6 +10,9 @@ interface WorkoutDetailsPageProps {
   params: Promise<{
     workoutId: string;
   }>;
+  searchParams: Promise<{
+    returnTo?: string;
+  }>;
 }
 
 function TrainerOnlyNotice() {
@@ -40,7 +43,18 @@ async function getVisibleWorkoutOrNotFound(workoutId: string): Promise<WorkoutDe
   }
 }
 
-export default async function WorkoutDetailsPage({ params }: WorkoutDetailsPageProps) {
+function getSafeReturnPath(value: string | undefined, fallback: string): string {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+    return fallback;
+  }
+
+  return value;
+}
+
+export default async function WorkoutDetailsPage({
+  params,
+  searchParams,
+}: WorkoutDetailsPageProps) {
   const currentUser = await getCurrentUser();
 
   if (!currentUser || currentUser.role !== "Trainer") {
@@ -48,7 +62,10 @@ export default async function WorkoutDetailsPage({ params }: WorkoutDetailsPageP
   }
 
   const { workoutId } = await params;
+  const { returnTo } = await searchParams;
   const workout = await getVisibleWorkoutOrNotFound(workoutId);
+  const backHref = getSafeReturnPath(returnTo, "/workouts");
+  const currentHref = `/workouts/${workoutId}?returnTo=${encodeURIComponent(backHref)}`;
 
-  return <WorkoutDetailView workout={workout} />;
+  return <WorkoutDetailView workout={workout} backHref={backHref} currentHref={currentHref} />;
 }

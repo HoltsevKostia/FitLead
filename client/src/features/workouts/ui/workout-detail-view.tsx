@@ -12,6 +12,8 @@ import { PlainText } from "@/shared/ui/plain-text";
 
 interface WorkoutDetailViewProps {
   workout: WorkoutDetails;
+  backHref?: string;
+  currentHref?: string;
 }
 
 function formatLoad(loadKg: number | null): string {
@@ -24,9 +26,11 @@ function formatLoad(loadKg: number | null): string {
 
 function WorkoutExerciseCard({
   workoutId,
+  currentHref,
   exercise,
 }: {
   workoutId: string;
+  currentHref: string;
   exercise: WorkoutExerciseDetails;
 }) {
   return (
@@ -100,7 +104,7 @@ function WorkoutExerciseCard({
 
       <div className="mt-4">
         <Link
-          href={`/exercises/${exercise.exerciseId}`}
+          href={`/exercises/${exercise.exerciseId}?returnTo=${encodeURIComponent(currentHref)}`}
           className="text-sm font-medium text-accent hover:text-accent-strong"
         >
           Переглянути вправу
@@ -112,13 +116,17 @@ function WorkoutExerciseCard({
   );
 }
 
-export function WorkoutDetailView({ workout }: WorkoutDetailViewProps) {
+export function WorkoutDetailView({
+  workout,
+  backHref = "/workouts",
+  currentHref = `/workouts/${workout.id}`,
+}: WorkoutDetailViewProps) {
   const exercises = [...workout.exercises].sort((first, second) => first.order - second.order);
 
   return (
     <section className="space-y-6">
-      <Link href="/workouts" className="text-sm font-medium text-accent hover:text-accent-strong">
-        Назад до тренувань
+      <Link href={backHref} className="text-sm font-medium text-accent hover:text-accent-strong">
+        Назад
       </Link>
 
       <div className="space-y-3">
@@ -141,6 +149,7 @@ export function WorkoutDetailView({ workout }: WorkoutDetailViewProps) {
             <WorkoutExerciseCard
               key={exercise.workoutExerciseId}
               workoutId={workout.id}
+              currentHref={currentHref}
               exercise={exercise}
             />
           ))}

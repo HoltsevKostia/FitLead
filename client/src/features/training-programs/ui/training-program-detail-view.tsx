@@ -37,11 +37,22 @@ function getEntriesForDay(
     .sort((first, second) => first.orderInDay - second.orderInDay);
 }
 
+function buildTrainingProgramHref(programId: string, weekNumber: number): string {
+  return `/training-programs/${programId}?week=${weekNumber}`;
+}
+
+function buildWorkoutHref(programId: string, workoutId: string, weekNumber: number): string {
+  const returnTo = buildTrainingProgramHref(programId, weekNumber);
+  return `/workouts/${workoutId}?returnTo=${encodeURIComponent(returnTo)}`;
+}
+
 function WorkoutCard({
   programId,
+  selectedWeek,
   entry,
 }: {
   programId: string;
+  selectedWeek: number;
   entry: TrainingProgramWorkout;
 }) {
   return (
@@ -59,7 +70,7 @@ function WorkoutCard({
 
         <div className="flex flex-col gap-2 sm:items-end">
           <Link
-            href={`/workouts/${entry.workoutId}`}
+            href={buildWorkoutHref(programId, entry.workoutId, selectedWeek)}
             className="w-fit rounded-full border border-border px-3 py-2 text-sm font-medium text-foreground transition hover:bg-surface-strong"
           >
             Відкрити
@@ -100,7 +111,12 @@ function DayCard({
       ) : (
         <div className="space-y-3">
           {entries.map((entry) => (
-            <WorkoutCard key={entry.id} programId={programId} entry={entry} />
+            <WorkoutCard
+              key={entry.id}
+              programId={programId}
+              selectedWeek={weekNumber}
+              entry={entry}
+            />
           ))}
         </div>
       )}
@@ -134,7 +150,7 @@ export function TrainingProgramDetailView({
         href="/training-programs"
         className="text-sm font-medium text-accent hover:text-accent-strong"
       >
-        Назад до програм
+        Назад
       </Link>
 
       <div className="space-y-2">

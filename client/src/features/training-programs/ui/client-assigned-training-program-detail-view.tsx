@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import type {
   ClientAssignedTrainingProgramDetails,
   ClientAssignedTrainingProgramWorkout,
+  WorkoutLogPreview,
 } from "@/entities/training-program/model/types";
 
 interface ClientAssignedTrainingProgramDetailViewProps {
@@ -60,6 +61,59 @@ function buildWorkoutHref(
   return `/client/training-programs/${assignmentId}/workouts/${programWorkoutId}?returnTo=${encodeURIComponent(returnTo)}`;
 }
 
+function formatLogDate(value: string): string {
+  return new Intl.DateTimeFormat("uk-UA", {
+    day: "2-digit",
+    month: "2-digit",
+  }).format(new Date(value));
+}
+
+function getLogStatusLabel(log: WorkoutLogPreview | null): string {
+  if (!log) {
+    return "Очікує виконання";
+  }
+
+  if (log.status === "Completed") {
+    return "Виконано";
+  }
+
+  if (log.status === "Skipped") {
+    return "Пропущено";
+  }
+
+  return log.status;
+}
+
+function getLogStatusClassName(log: WorkoutLogPreview | null): string {
+  if (!log) {
+    return "border-sky-200 bg-sky-50 text-sky-700";
+  }
+
+  if (log.status === "Completed") {
+    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  }
+
+  if (log.status === "Skipped") {
+    return "border-amber-200 bg-amber-50 text-amber-800";
+  }
+
+  return "border-border bg-surface text-muted";
+}
+
+function getCompletedLogSummary(log: WorkoutLogPreview | null): string | null {
+  if (!log || log.status !== "Completed" || !log.performedAtUtc) {
+    return null;
+  }
+
+  const parts = [formatLogDate(log.performedAtUtc)];
+
+  if (log.difficultyRating !== null) {
+    parts.push(`Складність ${log.difficultyRating}/10`);
+  }
+
+  return parts.join(" · ");
+}
+
 function WorkoutCard({
   assignmentId,
   selectedWeek,
@@ -70,6 +124,7 @@ function WorkoutCard({
   workout: ClientAssignedTrainingProgramWorkout;
 }) {
   const exerciseCount = workout.exercises.length;
+  const logSummary = getCompletedLogSummary(workout.log);
 
   return (
     <article className="rounded-lg border border-border bg-white px-4 py-4">
@@ -90,6 +145,16 @@ function WorkoutCard({
             <p className="mt-1 text-sm text-muted">
               {exerciseCount > 0 ? `${exerciseCount} вправ` : "Вправи поки не додано"}
             </p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span
+                className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${getLogStatusClassName(
+                  workout.log,
+                )}`}
+              >
+                {getLogStatusLabel(workout.log)}
+              </span>
+              {logSummary ? <span className="text-xs text-muted">{logSummary}</span> : null}
+            </div>
           </div>
         </div>
 
