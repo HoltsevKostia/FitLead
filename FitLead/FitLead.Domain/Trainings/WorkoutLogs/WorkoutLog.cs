@@ -120,16 +120,16 @@ namespace FitLead.Domain.Trainings.WorkoutLogs
                 return validationResult;
             }
 
-            var noteResult = NormalizeClientNote(clientNote, operation: "update");
+            var noteResult = NormalizeClientNote(clientNote, operation: "update", out var normalizedClientNote);
             if (noteResult.IsFailure)
             {
-                return Result.Failure(noteResult.Error);
+                return noteResult;
             }
 
             Status = status;
             PerformedAtUtc = status == WorkoutLogStatus.Completed ? performedAtUtc : null;
             DifficultyRating = status == WorkoutLogStatus.Completed ? difficultyRating : null;
-            ClientNote = noteResult.Value;
+            ClientNote = normalizedClientNote;
             UpdatedAtUtc = updatedAtUtc;
 
             return Result.Success();
@@ -186,7 +186,7 @@ namespace FitLead.Domain.Trainings.WorkoutLogs
                 return Result<WorkoutLog>.Failure(validationResult.Error);
             }
 
-            var noteResult = NormalizeClientNote(clientNote, operation: "create");
+            var noteResult = NormalizeClientNote(clientNote, operation: "create", out var normalizedClientNote);
             if (noteResult.IsFailure)
             {
                 return Result<WorkoutLog>.Failure(noteResult.Error);
@@ -201,7 +201,7 @@ namespace FitLead.Domain.Trainings.WorkoutLogs
                     trainerId,
                     status,
                     status == WorkoutLogStatus.Completed ? performedAtUtc : null,
-                    noteResult.Value,
+                    normalizedClientNote,
                     status == WorkoutLogStatus.Completed ? difficultyRating : null,
                     createdAtUtc));
         }
@@ -254,23 +254,26 @@ namespace FitLead.Domain.Trainings.WorkoutLogs
             return Result.Success();
         }
 
-        private static Result<string?> NormalizeClientNote(string? value, string operation)
+        private static Result NormalizeClientNote(string? value, string operation, out string? normalizedValue)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
-                return Result<string?>.Success(null);
+                normalizedValue = null;
+                return Result.Success();
             }
 
             var trimmedValue = value.Trim();
             if (trimmedValue.Length > MaxClientNoteLength)
             {
-                return Result<string?>.Failure(
+                normalizedValue = null;
+                return Result.Failure(
                     DomainError.Validation(
                         $"workout_log.{operation}.client_note_too_long",
                         $"ClientNote cannot exceed {MaxClientNoteLength} characters"));
             }
 
-            return Result<string?>.Success(trimmedValue);
+            normalizedValue = trimmedValue;
+            return Result.Success();
         }
     }
 }
