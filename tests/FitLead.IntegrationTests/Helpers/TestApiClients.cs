@@ -33,6 +33,13 @@ public sealed class TestApiClients(IntegrationTestFixture fixture)
         return client;
     }
 
+    public async Task<ClientProfilesTestClient> ClientProfilesAsync(AuthTestClient auth)
+    {
+        var client = new ClientProfilesTestClient(fixture.CreateClient(handleCookies: false));
+        await client.CopyAuthStateFromAsync(auth);
+        return client;
+    }
+
     public async Task<TrainerClientsTestClient> TrainerClientsAsync(AuthTestClient auth)
     {
         var client = new TrainerClientsTestClient(fixture.CreateClient(handleCookies: false));
