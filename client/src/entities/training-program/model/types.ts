@@ -45,6 +45,19 @@ export interface TrainingProgramWorkout {
   orderInDay: number;
 }
 
+export type WorkoutLogStatus = "Completed" | "Skipped";
+
+export type LogWorkoutRequest =
+  | {
+      status: "Completed";
+      difficultyRating?: number;
+      clientNote?: string;
+    }
+  | {
+      status: "Skipped";
+      clientNote?: string;
+    };
+
 export interface WorkoutLogPreview {
   id: string;
   status: string;

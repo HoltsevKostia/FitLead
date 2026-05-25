@@ -7,6 +7,7 @@ import {
   muscleGroupLabels,
 } from "@/features/exercises/model/exercise-labels";
 import { ExerciseMediaPreview } from "@/features/exercises/ui/exercise-media-preview";
+import { WorkoutLogSection } from "@/features/workout-logs/ui/workout-log-section";
 import { buildClientExercisePath } from "@/features/training-programs/model/client-assigned-program-navigation";
 import { PlainText } from "@/shared/ui/plain-text";
 
@@ -159,6 +160,12 @@ export function ClientAssignedWorkoutDetailView({
           </div>
         </div>
       )}
+
+      <WorkoutLogSection
+        assignmentId={assignmentId}
+        programWorkoutId={workout.id}
+        log={workout.log}
+      />
     </section>
   );
 }
