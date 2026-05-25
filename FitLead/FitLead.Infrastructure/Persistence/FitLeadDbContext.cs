@@ -1,4 +1,5 @@
 using FitLead.Domain.Invitations;
+using FitLead.Domain.Clients.BodyMetrics;
 using FitLead.Domain.Clients.ClientProfiles;
 using FitLead.Domain.Media.MediaAssets;
 using FitLead.Domain.Messenger.ChatMessages;
@@ -30,6 +31,7 @@ namespace FitLead.Infrastructure.Persistence
 
         public DbSet<TrainingProgram> TrainingPrograms => Set<TrainingProgram>();
         public DbSet<User> DomainUsers => Set<User>();
+        public DbSet<ClientBodyMetricEntry> ClientBodyMetricEntries => Set<ClientBodyMetricEntry>();
         public DbSet<ClientProfile> ClientProfiles => Set<ClientProfile>();
         public DbSet<TrainerClient> TrainerClients => Set<TrainerClient>();
         public DbSet<Exercise> Exercises => Set<Exercise>();
