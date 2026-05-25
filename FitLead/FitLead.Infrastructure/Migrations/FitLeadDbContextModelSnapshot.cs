@@ -626,6 +626,73 @@ namespace FitLead.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("FitLead.Domain.Trainings.WorkoutLogs.WorkoutLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AssignedTrainingProgramId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ClientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ClientNote")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("DifficultyRating")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("PerformedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TrainerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TrainingProgramWorkoutId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientId")
+                        .HasDatabaseName("IX_workout_logs_client_id");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_workout_logs_status");
+
+                    b.HasIndex("TrainerId")
+                        .HasDatabaseName("IX_workout_logs_trainer_id");
+
+                    b.HasIndex("TrainingProgramWorkoutId");
+
+                    b.HasIndex("AssignedTrainingProgramId", "TrainingProgramWorkoutId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_workout_logs_assignment_program_workout");
+
+                    b.ToTable("workout_logs", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_workout_logs_completed_performed_at_required", "\"Status\" <> 1 OR \"PerformedAtUtc\" IS NOT NULL");
+
+                            t.HasCheckConstraint("CK_workout_logs_difficulty_rating_range", "\"DifficultyRating\" IS NULL OR (\"DifficultyRating\" BETWEEN 1 AND 10)");
+
+                            t.HasCheckConstraint("CK_workout_logs_skipped_fields_null", "\"Status\" <> 2 OR (\"PerformedAtUtc\" IS NULL AND \"DifficultyRating\" IS NULL)");
+
+                            t.HasCheckConstraint("CK_workout_logs_status_valid", "\"Status\" IN (1, 2)");
+
+                            t.HasCheckConstraint("CK_workout_logs_updated_at_after_created", "\"UpdatedAtUtc\" IS NULL OR \"UpdatedAtUtc\" >= \"CreatedAtUtc\"");
+                        });
+                });
+
             modelBuilder.Entity("FitLead.Domain.Trainings.Workouts.Workout", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1168,6 +1235,33 @@ namespace FitLead.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("WorkoutId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FitLead.Domain.Trainings.WorkoutLogs.WorkoutLog", b =>
+                {
+                    b.HasOne("FitLead.Domain.Trainings.TrainingProgramAssignments.AssignedTrainingProgram", null)
+                        .WithMany()
+                        .HasForeignKey("AssignedTrainingProgramId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FitLead.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FitLead.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("TrainerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FitLead.Domain.Trainings.TrainingPrograms.TrainingProgramWorkout", null)
+                        .WithMany()
+                        .HasForeignKey("TrainingProgramWorkoutId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 

@@ -8,10 +8,10 @@ export function getSafeReturnPath(value: string | undefined, fallback: string): 
 
 export function buildClientWorkoutPath(
   assignmentId: string,
-  workoutId: string,
+  programWorkoutId: string,
   returnTo?: string,
 ): string {
-  const path = `/client/training-programs/${assignmentId}/workouts/${workoutId}`;
+  const path = `/client/training-programs/${assignmentId}/workouts/${programWorkoutId}`;
 
   if (!returnTo) {
     return path;
@@ -22,11 +22,11 @@ export function buildClientWorkoutPath(
 
 export function buildClientExercisePath(
   assignmentId: string,
-  workoutId: string,
+  programWorkoutId: string,
   workoutExerciseId: string,
   returnTo?: string,
 ): string {
-  const path = `/client/training-programs/${assignmentId}/workouts/${workoutId}/exercises/${workoutExerciseId}`;
+  const path = `/client/training-programs/${assignmentId}/workouts/${programWorkoutId}/exercises/${workoutExerciseId}`;
 
   if (!returnTo) {
     return path;

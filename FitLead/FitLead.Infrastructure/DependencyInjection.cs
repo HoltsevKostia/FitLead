@@ -19,6 +19,7 @@ using FitLead.Application.Notifications.Push;
 using FitLead.Infrastructure.Invitations;
 using FitLead.Application.Trainings.Exercises.Access;
 using FitLead.Application.Trainings.TrainingPrograms.Access;
+using FitLead.Application.Trainings.WorkoutLogs.Access;
 using FitLead.Application.Trainings.Workouts.Access;
 using FitLead.Application.Users.Access;
 using FitLead.Infrastructure.Deletion;
@@ -67,6 +68,8 @@ namespace FitLead.Infrastructure
             services.AddScoped<IExerciseReadRepository, ExerciseReadRepository>();
             services.AddScoped<IWorkoutRepository, WorkoutRepository>();
             services.AddScoped<IWorkoutReadRepository, WorkoutReadRepository>();
+            services.AddScoped<IWorkoutLogRepository, WorkoutLogRepository>();
+            services.AddScoped<IWorkoutLogAccessRepository, WorkoutLogAccessRepository>();
             services.AddScoped<IInvitationRepository, InvitationRepository>();
             services.AddScoped<IInvitationReadRepository, InvitationReadRepository>();
             services.AddScoped<IChatRepository, ChatRepository>();
@@ -142,6 +145,7 @@ namespace FitLead.Infrastructure
             services.AddScoped<IUsersModule, UsersModule>();
             services.AddScoped<IWorkoutsModule, WorkoutsModule>();
             services.AddScoped<IWorkoutLoader, WorkoutLoader>();
+            services.AddScoped<IWorkoutLogAccessLoader, WorkoutLogAccessLoader>();
             services.AddScoped<IExerciseLoader, ExerciseLoader>();
             services.AddScoped<ITrainingProgramLoader, TrainingProgramLoader>();
             services.AddScoped<IChatLoader, ChatLoader>();

@@ -7,14 +7,14 @@ import { apiRequest } from "@/lib/api/http-client";
 
 export const usersApi = {
   getTrainerClients(): Promise<TrainerClient[]> {
-    return apiRequest<TrainerClient[]>("/api/users/clients");
+    return apiRequest<TrainerClient[]>("/users/clients");
   },
 
   getTrainerClientsOverview(): Promise<TrainerClientOverview[]> {
-    return apiRequest<TrainerClientOverview[]>("/api/trainer/clients");
+    return apiRequest<TrainerClientOverview[]>("/trainer/clients");
   },
 
   getMyTrainer(): Promise<ClientTrainer> {
-    return apiRequest<ClientTrainer>("/api/users/my-trainer");
+    return apiRequest<ClientTrainer>("/users/my-trainer");
   },
 };

@@ -12,6 +12,7 @@ import { PlainText } from "@/shared/ui/plain-text";
 
 interface ExerciseDetailViewProps {
   exercise: Exercise;
+  backHref?: string;
 }
 
 function getSourceBadgeClass(source: ExerciseSource): string {
@@ -22,11 +23,11 @@ function getSourceBadgeClass(source: ExerciseSource): string {
   return "border-emerald-200 bg-emerald-50 text-emerald-800";
 }
 
-export function ExerciseDetailView({ exercise }: ExerciseDetailViewProps) {
+export function ExerciseDetailView({ exercise, backHref = "/exercises" }: ExerciseDetailViewProps) {
   return (
     <section className="space-y-6">
-      <Link href="/exercises" className="text-sm font-medium text-accent hover:text-accent-strong">
-        Назад до вправ
+      <Link href={backHref} className="text-sm font-medium text-accent hover:text-accent-strong">
+        Назад
       </Link>
 
       <div className="space-y-4">

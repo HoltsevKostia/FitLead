@@ -10,5 +10,6 @@ namespace FitLead.Application.Trainings.TrainingProgramAssignments.Queries
         int WeekNumber,
         int DayNumber,
         int OrderInDay,
+        WorkoutLogPreviewDto? Log,
         IReadOnlyList<WorkoutExerciseDetailsDto> Exercises);
 }

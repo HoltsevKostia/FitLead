@@ -9,16 +9,16 @@ export const notificationsApi = {
     const params = new URLSearchParams();
     params.set("limit", limit.toString());
 
-    return apiRequest<Notification[]>(`/api/notifications?${params.toString()}`);
+    return apiRequest<Notification[]>(`/notifications?${params.toString()}`);
   },
 
   getUnreadCount(): Promise<UnreadNotificationCount> {
-    return apiRequest<UnreadNotificationCount>("/api/notifications/unread-count");
+    return apiRequest<UnreadNotificationCount>("/notifications/unread-count");
   },
 
   markRead(notificationId: string): Promise<void> {
     return apiRequest<void>(
-      `/api/notifications/${encodeURIComponent(notificationId)}/read`,
+      `/notifications/${encodeURIComponent(notificationId)}/read`,
       {
         method: "POST",
         responseType: "void",
@@ -27,7 +27,7 @@ export const notificationsApi = {
   },
 
   markAllRead(): Promise<void> {
-    return apiRequest<void>("/api/notifications/read-all", {
+    return apiRequest<void>("/notifications/read-all", {
       method: "POST",
       responseType: "void",
     });

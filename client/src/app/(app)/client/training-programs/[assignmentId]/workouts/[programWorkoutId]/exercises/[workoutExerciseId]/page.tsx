@@ -17,7 +17,7 @@ import { isApiError } from "@/lib/api/api-error";
 interface ClientAssignedExerciseDetailsPageProps {
   params: Promise<{
     assignmentId: string;
-    workoutId: string;
+    programWorkoutId: string;
     workoutExerciseId: string;
   }>;
   searchParams: Promise<{
@@ -62,10 +62,10 @@ export default async function ClientAssignedExerciseDetailsPage({
     return <ClientOnlyNotice />;
   }
 
-  const { assignmentId, workoutId, workoutExerciseId } = await params;
+  const { assignmentId, programWorkoutId, workoutExerciseId } = await params;
   const { returnTo } = await searchParams;
   const program = await getAssignedProgramOrNotFound(assignmentId);
-  const workout = findAssignedWorkout(program, workoutId);
+  const workout = findAssignedWorkout(program, programWorkoutId);
 
   if (!workout) {
     notFound();
@@ -79,7 +79,7 @@ export default async function ClientAssignedExerciseDetailsPage({
 
   const fallback = buildClientWorkoutPath(
     assignmentId,
-    workout.workoutId,
+    workout.id,
     `/client/training-programs/${assignmentId}?week=${workout.weekNumber}`,
   );
   const backHref = getSafeReturnPath(returnTo, fallback);

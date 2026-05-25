@@ -11,17 +11,17 @@ export interface UploadcareUploadSignature {
 
 export const mediaAssetsApi = {
   getMyAssets(): Promise<MediaAsset[]> {
-    return apiRequest<MediaAsset[]>("/api/media/assets");
+    return apiRequest<MediaAsset[]>("/media/assets");
   },
 
   register(request: RegisterMediaAssetRequest): Promise<MediaAsset> {
-    return apiRequest<MediaAsset>("/api/media/assets", {
+    return apiRequest<MediaAsset>("/media/assets", {
       method: "POST",
       body: request,
     });
   },
 
   getUploadSignature(): Promise<UploadcareUploadSignature> {
-    return apiRequest<UploadcareUploadSignature>("/api/media/upload-signature");
+    return apiRequest<UploadcareUploadSignature>("/media/upload-signature");
   },
 };

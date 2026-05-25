@@ -17,13 +17,13 @@ interface SubmitVideoReportFeedbackRequest {
 
 export const chatsApi = {
   getOrCreateWithClient(clientId: string): Promise<Chat> {
-    return apiRequest<Chat>(`/api/chats/with-client/${encodeURIComponent(clientId)}`, {
+    return apiRequest<Chat>(`/chats/with-client/${encodeURIComponent(clientId)}`, {
       method: "POST",
     });
   },
 
   getOrCreateWithTrainer(trainerId: string): Promise<Chat> {
-    return apiRequest<Chat>(`/api/chats/with-trainer/${encodeURIComponent(trainerId)}`, {
+    return apiRequest<Chat>(`/chats/with-trainer/${encodeURIComponent(trainerId)}`, {
       method: "POST",
     });
   },
@@ -33,7 +33,7 @@ export const chatsApi = {
     request: SendTextMessageRequest,
   ): Promise<ChatMessage> {
     return apiRequest<ChatMessage>(
-      `/api/chats/${encodeURIComponent(chatId)}/messages`,
+      `/chats/${encodeURIComponent(chatId)}/messages`,
       {
         method: "POST",
         body: request,
@@ -46,7 +46,7 @@ export const chatsApi = {
     request: CreateVideoReportRequest,
   ): Promise<ChatMessage> {
     return apiRequest<ChatMessage>(
-      `/api/chats/${encodeURIComponent(chatId)}/video-reports`,
+      `/chats/${encodeURIComponent(chatId)}/video-reports`,
       {
         method: "POST",
         body: request,
@@ -60,7 +60,7 @@ export const chatsApi = {
     request: SubmitVideoReportFeedbackRequest,
   ): Promise<void> {
     return apiRequest<void>(
-      `/api/chats/${encodeURIComponent(chatId)}/video-reports/${encodeURIComponent(reportId)}/feedback`,
+      `/chats/${encodeURIComponent(chatId)}/video-reports/${encodeURIComponent(reportId)}/feedback`,
       {
         method: "POST",
         body: request,
@@ -86,7 +86,7 @@ export const chatsApi = {
     const query = params.toString();
 
     return apiRequest<ChatMessageHistory>(
-      `/api/chats/${encodeURIComponent(chatId)}/messages${query ? `?${query}` : ""}`,
+      `/chats/${encodeURIComponent(chatId)}/messages${query ? `?${query}` : ""}`,
     );
   },
 };

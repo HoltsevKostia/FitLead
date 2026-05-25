@@ -37,11 +37,22 @@ function getEntriesForDay(
     .sort((first, second) => first.orderInDay - second.orderInDay);
 }
 
+function buildTrainingProgramHref(programId: string, weekNumber: number): string {
+  return `/training-programs/${programId}?week=${weekNumber}`;
+}
+
+function buildWorkoutHref(programId: string, workoutId: string, weekNumber: number): string {
+  const returnTo = buildTrainingProgramHref(programId, weekNumber);
+  return `/workouts/${workoutId}?returnTo=${encodeURIComponent(returnTo)}`;
+}
+
 function WorkoutCard({
   programId,
+  selectedWeek,
   entry,
 }: {
   programId: string;
+  selectedWeek: number;
   entry: TrainingProgramWorkout;
 }) {
   return (
@@ -59,7 +70,7 @@ function WorkoutCard({
 
         <div className="flex flex-col gap-2 sm:items-end">
           <Link
-            href={`/workouts/${entry.workoutId}`}
+            href={buildWorkoutHref(programId, entry.workoutId, selectedWeek)}
             className="w-fit rounded-full border border-border px-3 py-2 text-sm font-medium text-foreground transition hover:bg-surface-strong"
           >
             Відкрити
@@ -100,7 +111,12 @@ function DayCard({
       ) : (
         <div className="space-y-3">
           {entries.map((entry) => (
-            <WorkoutCard key={entry.id} programId={programId} entry={entry} />
+            <WorkoutCard
+              key={entry.id}
+              programId={programId}
+              selectedWeek={weekNumber}
+              entry={entry}
+            />
           ))}
         </div>
       )}
@@ -134,10 +150,10 @@ export function TrainingProgramDetailView({
         href="/training-programs"
         className="text-sm font-medium text-accent hover:text-accent-strong"
       >
-        Назад до програм
+        Назад
       </Link>
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         <h1 className="text-3xl font-semibold tracking-tight">{program.title}</h1>
         <p className="max-w-3xl text-muted">
           {program.weeksCount} тиж. · {program.daysPerWeek} дн./тиждень
@@ -155,7 +171,7 @@ export function TrainingProgramDetailView({
           id="week-select"
           value={selectedWeek}
           onChange={(event) => setSelectedWeek(Number(event.target.value))}
-          className="w-full rounded-2xl border border-border bg-white px-4 py-3 outline-none transition focus:border-accent md:hidden"
+          className="w-full rounded-lg border border-border bg-white px-4 py-3 outline-none transition focus:border-accent md:hidden"
         >
           {weeks.map((weekNumber) => (
             <option key={weekNumber} value={weekNumber}>
@@ -164,7 +180,9 @@ export function TrainingProgramDetailView({
           ))}
         </select>
 
-        <div className="hidden flex-wrap gap-2 md:flex" role="tablist" aria-label="Тижні програми">
+        <div className="hidden items-center gap-2 md:flex">
+          <span className="text-sm font-medium text-foreground">Тиждень:</span>
+          <div className="flex flex-wrap gap-2" role="tablist" aria-label="Тижні програми">
           {weeks.map((weekNumber) => {
             const isSelected = selectedWeek === weekNumber;
 
@@ -175,16 +193,17 @@ export function TrainingProgramDetailView({
                 role="tab"
                 aria-selected={isSelected}
                 onClick={() => setSelectedWeek(weekNumber)}
-                className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
+                className={`h-9 min-w-9 rounded-lg border px-3 text-sm font-medium transition ${
                   isSelected
                     ? "border-accent bg-accent text-white"
                     : "border-border bg-white text-foreground hover:bg-surface-strong"
                 }`}
               >
-                Тиждень {weekNumber}
+                {weekNumber}
               </button>
             );
           })}
+          </div>
         </div>
       </div>
 

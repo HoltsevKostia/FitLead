@@ -9,6 +9,7 @@ using FitLead.Domain.Outbox;
 using FitLead.Domain.Trainings.Exercises;
 using FitLead.Domain.Trainings.TrainingProgramAssignments;
 using FitLead.Domain.Trainings.TrainingPrograms;
+using FitLead.Domain.Trainings.WorkoutLogs;
 using FitLead.Domain.Trainings.Workouts;
 using FitLead.Domain.Users;
 using FitLead.Infrastructure.Identity;
@@ -43,6 +44,7 @@ namespace FitLead.Infrastructure.Persistence
         public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
         public DbSet<AssignedTrainingProgram> AssignedTrainingPrograms => Set<AssignedTrainingProgram>();
         public DbSet<TrainingProgramWorkout> TrainingProgramWorkouts => Set<TrainingProgramWorkout>();
+        public DbSet<WorkoutLog> WorkoutLogs => Set<WorkoutLog>();
         public DbSet<UserIdentityLink> UserIdentityLinks => Set<UserIdentityLink>();
         public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
