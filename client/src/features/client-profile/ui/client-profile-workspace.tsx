@@ -8,6 +8,7 @@ import type {
   UpdateClientProfileRequest,
 } from "@/entities/client-profile/model/types";
 import { mapClientProfileMutationError } from "@/features/client-profile/model/error-mapping";
+import { BodyMetricsTab } from "@/features/client-profile/ui/body-metrics-tab";
 import { clientProfileApi } from "@/lib/api/clients/client-profile-api";
 import { FormAlert } from "@/shared/forms/form-alert";
 import {
@@ -350,9 +351,11 @@ export function ClientProfileWorkspace({
             {isSubmitting ? "Зберігаємо..." : "Зберегти"}
           </button>
         </form>
-      ) : (
-        <div />
-      )}
+      ) : null}
+
+      {activeTab === "metrics" ? <BodyMetricsTab /> : null}
+
+      {activeTab === "photos" ? <div /> : null}
     </section>
   );
 }
