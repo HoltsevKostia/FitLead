@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { getCurrentUser } from "@/features/auth/server/get-current-user";
+import { getTrainerClientOverviewSummary } from "@/features/users/server/get-trainer-client-overview-summary";
 import { getTrainerClientWorkspace } from "@/features/users/server/get-trainer-client-workspace";
 import { TrainerClientWorkspace } from "@/features/users/ui/trainer-client-workspace";
 import { isApiError, isUnauthorizedApiError } from "@/lib/api/api-error";
@@ -12,6 +13,19 @@ interface ClientWorkspacePageProps {
   searchParams: Promise<{
     tab?: string;
   }>;
+}
+
+const availableTabs = new Set([
+  "overview",
+  "programs",
+  "workout-logs",
+  "progress",
+  "video-reports",
+  "profile",
+]);
+
+function getActiveTab(value: string | undefined): string {
+  return value && availableTabs.has(value) ? value : "overview";
 }
 
 function TrainerOnlyNotice() {
@@ -43,6 +57,22 @@ async function getTrainerClientWorkspaceOrNotFound(clientId: string) {
   }
 }
 
+async function getTrainerClientOverviewOrNotFound(clientId: string) {
+  try {
+    return await getTrainerClientOverviewSummary(clientId);
+  } catch (error) {
+    if (isApiError(error) && error.status === 404) {
+      notFound();
+    }
+
+    if (isUnauthorizedApiError(error)) {
+      throw error;
+    }
+
+    throw error;
+  }
+}
+
 export default async function ClientWorkspacePage({
   params,
   searchParams,
@@ -55,7 +85,18 @@ export default async function ClientWorkspacePage({
 
   const { clientId } = await params;
   const { tab } = await searchParams;
+  const activeTab = getActiveTab(tab);
   const client = await getTrainerClientWorkspaceOrNotFound(clientId);
+  const overview =
+    activeTab === "overview"
+      ? await getTrainerClientOverviewOrNotFound(clientId)
+      : null;
 
-  return <TrainerClientWorkspace client={client} activeTab={tab} />;
+  return (
+    <TrainerClientWorkspace
+      client={client}
+      activeTab={activeTab}
+      overview={overview}
+    />
+  );
 }

@@ -2,12 +2,17 @@
 
 import Link from "next/link";
 
-import type { TrainerClientWorkspace as TrainerClientWorkspaceModel } from "@/entities/user/model/types";
+import type {
+  TrainerClientOverviewSummary,
+  TrainerClientWorkspace as TrainerClientWorkspaceModel,
+} from "@/entities/user/model/types";
 import { OpenChatButton } from "@/features/chats/ui/open-chat-button";
+import { TrainerClientOverviewTab } from "@/features/users/ui/trainer-client-overview-tab";
 
 interface TrainerClientWorkspaceProps {
   client: TrainerClientWorkspaceModel;
   activeTab?: string;
+  overview?: TrainerClientOverviewSummary | null;
 }
 
 const tabs = [
@@ -23,9 +28,24 @@ function getActiveTab(value: string | null): string {
   return tabs.some((tab) => tab.id === value) ? value! : tabs[0].id;
 }
 
+function TabContent({
+  activeTab,
+  overview,
+}: {
+  activeTab: string;
+  overview: TrainerClientOverviewSummary | null;
+}) {
+  if (activeTab === "overview") {
+    return <TrainerClientOverviewTab overview={overview} />;
+  }
+
+  return null;
+}
+
 export function TrainerClientWorkspace({
   client,
   activeTab: selectedTab,
+  overview = null,
 }: TrainerClientWorkspaceProps) {
   const activeTab = getActiveTab(selectedTab ?? null);
 
@@ -83,6 +103,8 @@ export function TrainerClientWorkspace({
           );
         })}
       </nav>
+
+      <TabContent activeTab={activeTab} overview={overview} />
     </section>
   );
 }
