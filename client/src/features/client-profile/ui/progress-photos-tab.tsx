@@ -6,7 +6,7 @@ import type { ProgressPhoto } from "@/entities/progress-photo/model/types";
 import { mapProgressPhotoMutationError } from "@/features/client-profile/model/progress-photo-error-mapping";
 import { ProgressPhotoForm } from "@/features/client-profile/ui/progress-photo-form";
 import { ProgressPhotoCard } from "@/features/client-profile/ui/progress-photo-card";
-import { ProgressPhotoLightbox } from "@/features/client-profile/ui/progress-photo-lightbox";
+import { MediaLightbox } from "@/features/media-assets/ui/media-lightbox";
 import { progressPhotosApi } from "@/lib/api/clients/progress-photos-api";
 import { FormAlert } from "@/shared/forms/form-alert";
 
@@ -20,6 +20,30 @@ function sortPhotos(photos: ProgressPhoto[]): ProgressPhoto[] {
 
     return right.createdAtUtc.localeCompare(left.createdAtUtc);
   });
+}
+
+const labelText: Record<ProgressPhoto["label"], string> = {
+  Front: "Спереду",
+  Side: "Збоку",
+  Back: "Ззаду",
+  Other: "Інше",
+};
+
+function getLabelText(label: ProgressPhoto["label"]): string {
+  return labelText[label] ?? "Фото";
+}
+
+function formatDate(value: string): string {
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("uk-UA", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(new Date(year, month - 1, day));
 }
 
 export function ProgressPhotosTab() {
@@ -126,8 +150,11 @@ export function ProgressPhotosTab() {
       </section>
 
       {openedPhoto ? (
-        <ProgressPhotoLightbox
-          photo={openedPhoto}
+        <MediaLightbox
+          asset={openedPhoto.mediaAsset}
+          title={formatDate(openedPhoto.takenAt)}
+          subtitle={getLabelText(openedPhoto.label)}
+          note={openedPhoto.note}
           onClose={() => setOpenedPhoto(null)}
         />
       ) : null}
