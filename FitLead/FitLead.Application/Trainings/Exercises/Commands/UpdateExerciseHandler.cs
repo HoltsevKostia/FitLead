@@ -1,6 +1,7 @@
 using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
 using FitLead.Application.Identity;
+using FitLead.Application.Media.MediaAssets.Access;
 using FitLead.Application.Trainings.Exercises.Access;
 using FitLead.Common.Results;
 using MediatR;
@@ -12,15 +13,18 @@ namespace FitLead.Application.Trainings.Exercises.Commands
     {
         private readonly IExerciseLoader _exerciseLoader;
         private readonly IUserContext _userContext;
+        private readonly IMediaAssetLoader _mediaAssetLoader;
         private readonly IUnitOfWork _unitOfWork;
 
         public UpdateExerciseHandler(
             IExerciseLoader exerciseLoader,
             IUserContext userContext,
+            IMediaAssetLoader mediaAssetLoader,
             IUnitOfWork unitOfWork)
         {
             _exerciseLoader = exerciseLoader;
             _userContext = userContext;
+            _mediaAssetLoader = mediaAssetLoader;
             _unitOfWork = unitOfWork;
         }
 
@@ -34,11 +38,24 @@ namespace FitLead.Application.Trainings.Exercises.Commands
                 return Result.Failure(exerciseResult.Error);
 
             var exercise = exerciseResult.Value;
+
+            if (request.MediaAssetId.HasValue)
+            {
+                var mediaAssetResult = await _mediaAssetLoader.GetOwnedAllowedForExerciseOrNotFoundAsync(
+                    _userContext.UserId,
+                    request.MediaAssetId.Value,
+                    cancellationToken);
+                if (mediaAssetResult.IsFailure)
+                {
+                    return Result.Failure(mediaAssetResult.Error);
+                }
+            }
+
             var updateResult = exercise.UpdateByTrainer(
                 _userContext.UserId,
                 request.Name,
                 request.Description,
-                request.MediaUrl,
+                request.MediaAssetId,
                 request.MuscleGroup,
                 request.Equipment);
             if (updateResult.IsFailure)

@@ -8,18 +8,18 @@ import { apiRequest } from "@/lib/api/http-client";
 
 export const workoutsApi = {
   getWorkouts(): Promise<Workout[]> {
-    return apiRequest<Workout[]>("/api/workouts");
+    return apiRequest<Workout[]>("/workouts");
   },
 
   createWorkout(request: CreateWorkoutRequest): Promise<string> {
-    return apiRequest<string>("/api/workouts", {
+    return apiRequest<string>("/workouts", {
       method: "POST",
       body: request,
     });
   },
 
   addExercise(workoutId: string, request: AddWorkoutExerciseRequest): Promise<string> {
-    return apiRequest<string>(`/api/workouts/${encodeURIComponent(workoutId)}/exercises`, {
+    return apiRequest<string>(`/workouts/${encodeURIComponent(workoutId)}/exercises`, {
       method: "POST",
       body: request,
     });
@@ -31,7 +31,7 @@ export const workoutsApi = {
     request: UpdateWorkoutExerciseRequest,
   ): Promise<void> {
     return apiRequest<void>(
-      `/api/workouts/${encodeURIComponent(workoutId)}/exercises/${encodeURIComponent(workoutExerciseId)}`,
+      `/workouts/${encodeURIComponent(workoutId)}/exercises/${encodeURIComponent(workoutExerciseId)}`,
       {
         method: "PUT",
         body: request,
@@ -42,7 +42,7 @@ export const workoutsApi = {
 
   removeExercise(workoutId: string, workoutExerciseId: string): Promise<void> {
     return apiRequest<void>(
-      `/api/workouts/${encodeURIComponent(workoutId)}/exercises/${encodeURIComponent(workoutExerciseId)}`,
+      `/workouts/${encodeURIComponent(workoutId)}/exercises/${encodeURIComponent(workoutExerciseId)}`,
       {
         method: "DELETE",
         responseType: "void",

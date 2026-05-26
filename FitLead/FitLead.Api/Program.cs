@@ -4,6 +4,7 @@ using FitLead.Api.Hubs;
 using FitLead.Api.Identity;
 using FitLead.Application.Identity;
 using FitLead.Application.Messenger.ChatMessages.Realtime;
+using FitLead.Application.Notifications.Realtime;
 using FitLead.Application.Trainings.TrainingPrograms.Commands;
 using FitLead.Infrastructure;
 using FitLead.Infrastructure.Identity;
@@ -192,6 +193,7 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IAuthTokenIssuer, AuthTokenIssuer>();
 builder.Services.AddScoped<IChatRealtimeNotifier, SignalRChatRealtimeNotifier>();
+builder.Services.AddScoped<INotificationRealtimeNotifier, SignalRNotificationRealtimeNotifier>();
 
 var app = builder.Build();
 
@@ -224,6 +226,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<ChatHub>("/hubs/chat");
+app.MapHub<NotificationHub>("/hubs/notifications");
 
 app.Run();
 

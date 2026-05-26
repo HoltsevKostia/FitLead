@@ -8,18 +8,18 @@ import { apiRequest } from "@/lib/api/http-client";
 
 export const exercisesApi = {
   getExercises(source: ExerciseListSource = "all"): Promise<Exercise[]> {
-    return apiRequest<Exercise[]>(`/api/exercises?source=${source}`);
+    return apiRequest<Exercise[]>(`/exercises?source=${source}`);
   },
 
   createExercise(request: CreateExerciseRequest): Promise<string> {
-    return apiRequest<string>("/api/exercises", {
+    return apiRequest<string>("/exercises", {
       method: "POST",
       body: request,
     });
   },
 
   updateExercise(exerciseId: string, request: UpdateExerciseRequest): Promise<void> {
-    return apiRequest<void>(`/api/exercises/${encodeURIComponent(exerciseId)}`, {
+    return apiRequest<void>(`/exercises/${encodeURIComponent(exerciseId)}`, {
       method: "PUT",
       body: request,
       responseType: "void",
@@ -27,7 +27,7 @@ export const exercisesApi = {
   },
 
   deleteExercise(exerciseId: string): Promise<void> {
-    return apiRequest<void>(`/api/exercises/${encodeURIComponent(exerciseId)}`, {
+    return apiRequest<void>(`/exercises/${encodeURIComponent(exerciseId)}`, {
       method: "DELETE",
       responseType: "void",
     });
@@ -35,7 +35,7 @@ export const exercisesApi = {
 
   confirmDeleteExercise(exerciseId: string, confirmationToken: string): Promise<void> {
     return apiRequest<void>(
-      `/api/exercises/${encodeURIComponent(exerciseId)}/deletion-confirmations`,
+      `/exercises/${encodeURIComponent(exerciseId)}/deletion-confirmations`,
       {
         method: "POST",
         body: { token: confirmationToken },
@@ -46,7 +46,7 @@ export const exercisesApi = {
 
   copyToMyLibrary(exerciseId: string): Promise<string> {
     return apiRequest<string>(
-      `/api/exercises/${encodeURIComponent(exerciseId)}/copy-to-my-library`,
+      `/exercises/${encodeURIComponent(exerciseId)}/copy-to-my-library`,
       {
         method: "POST",
       },

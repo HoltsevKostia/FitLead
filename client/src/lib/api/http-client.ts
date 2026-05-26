@@ -11,7 +11,19 @@ export interface ApiRequestOptions extends Omit<RequestInit, "body" | "credentia
 }
 
 function buildApiUrl(path: string): string {
-  return new URL(path, apiEnv.baseUrl).toString();
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+
+  if (normalizedPath.startsWith("/auth/")) {
+    return new URL(normalizedPath, apiEnv.baseUrl).toString();
+  }
+
+  if (normalizedPath === "/api" || normalizedPath.startsWith("/api/")) {
+    throw new Error(
+      "Browser apiRequest business paths must not include the /api prefix. Use /exercises instead of /api/exercises.",
+    );
+  }
+
+  return `/api/backend${normalizedPath}`;
 }
 
 function isBodyInit(value: unknown): value is BodyInit {

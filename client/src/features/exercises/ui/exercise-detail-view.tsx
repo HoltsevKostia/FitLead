@@ -8,9 +8,11 @@ import {
   muscleGroupLabels,
 } from "@/features/exercises/model/exercise-labels";
 import { ExerciseDetailMedia } from "@/features/exercises/ui/exercise-detail-media";
+import { PlainText } from "@/shared/ui/plain-text";
 
 interface ExerciseDetailViewProps {
   exercise: Exercise;
+  backHref?: string;
 }
 
 function getSourceBadgeClass(source: ExerciseSource): string {
@@ -21,11 +23,11 @@ function getSourceBadgeClass(source: ExerciseSource): string {
   return "border-emerald-200 bg-emerald-50 text-emerald-800";
 }
 
-export function ExerciseDetailView({ exercise }: ExerciseDetailViewProps) {
+export function ExerciseDetailView({ exercise, backHref = "/exercises" }: ExerciseDetailViewProps) {
   return (
     <section className="space-y-6">
-      <Link href="/exercises" className="text-sm font-medium text-accent hover:text-accent-strong">
-        Назад до вправ
+      <Link href={backHref} className="text-sm font-medium text-accent hover:text-accent-strong">
+        Назад
       </Link>
 
       <div className="space-y-4">
@@ -57,15 +59,18 @@ export function ExerciseDetailView({ exercise }: ExerciseDetailViewProps) {
         <div className="space-y-3">
           <h2 className="text-lg font-semibold text-foreground">Опис</h2>
           <div className="rounded-2xl border border-border bg-white px-5 py-5">
-            <p className="whitespace-pre-line text-sm leading-7 text-muted">
-              {exercise.description || "Опис поки не додано."}
-            </p>
+            <PlainText
+              className="text-sm leading-7 text-muted"
+              fallback="Опис поки не додано."
+            >
+              {exercise.description}
+            </PlainText>
           </div>
         </div>
 
         <div className="space-y-3">
           <h2 className="text-lg font-semibold text-foreground">Медіа</h2>
-          <ExerciseDetailMedia mediaUrl={exercise.mediaUrl} />
+          <ExerciseDetailMedia mediaAsset={exercise.mediaAsset} />
         </div>
       </div>
     </section>

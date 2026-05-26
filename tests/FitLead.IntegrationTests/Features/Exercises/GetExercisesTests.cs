@@ -1,5 +1,6 @@
 using System.Net;
 using FitLead.Application.Trainings.Exercises.Queries;
+using FitLead.Domain.Media.MediaAssets;
 using FitLead.Domain.Trainings.Exercises;
 using FitLead.Infrastructure.Persistence.Seeding;
 using FitLead.IntegrationTests.Helpers;
@@ -14,12 +15,14 @@ public sealed class GetExercisesTests : IntegrationTestBase
     private readonly TestDb _db;
     private readonly TestUsers _users;
     private readonly TestExercises _exercises;
+    private readonly TestMediaAssets _mediaAssets;
 
     public GetExercisesTests(IntegrationTestFixture fixture) : base(fixture)
     {
         _db = new TestDb(fixture);
         _users = new TestUsers(fixture, _db);
         _exercises = new TestExercises(_db);
+        _mediaAssets = new TestMediaAssets(_db);
     }
 
     [Fact]
@@ -76,5 +79,35 @@ public sealed class GetExercisesTests : IntegrationTestBase
             x.Source == ExerciseSource.Trainer &&
             x.IsEditable);
         my.Should().OnlyContain(x => x.Source == ExerciseSource.Trainer);
+    }
+
+    [Fact]
+    public async Task GetExercises_WithMediaAsset_ShouldReturnMediaAssetPreviewInListAndDetails()
+    {
+        var trainer = await _users.RegisterTrainerAsync("exercise-read-media");
+        var mediaAsset = await _mediaAssets.CreateAsync(trainer.Id, MediaAssetKind.Video);
+        var exerciseId = await _exercises.CreateTrainerExerciseAsync(
+            trainer.Id,
+            "Р’РїСЂР°РІР° Р· РІС–РґРµРѕ",
+            mediaAssetId: mediaAsset.Id);
+
+        var listResponse = await trainer.Auth.GetAsync("/api/exercises?source=my");
+        var detailsResponse = await trainer.Auth.GetAsync($"/api/exercises/{exerciseId:D}");
+
+        listResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        detailsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var exercises = await listResponse.ReadRequiredJsonAsync<List<ExerciseDto>>();
+        var listExercise = exercises.Should().ContainSingle(x => x.Id == exerciseId).Subject;
+        listExercise.MediaAsset.Should().NotBeNull();
+        listExercise.MediaAsset!.Id.Should().Be(mediaAsset.Id);
+        listExercise.MediaAsset.Kind.Should().Be("Video");
+        listExercise.MediaAsset.DeliveryUrl.Should().Be(mediaAsset.DeliveryUrl);
+
+        var details = await detailsResponse.ReadRequiredJsonAsync<ExerciseDto>();
+        details.MediaAsset.Should().NotBeNull();
+        details.MediaAsset!.Id.Should().Be(mediaAsset.Id);
+        details.MediaAsset.Kind.Should().Be("Video");
+        details.MediaAsset.DeliveryUrl.Should().Be(mediaAsset.DeliveryUrl);
     }
 }

@@ -1,7 +1,9 @@
 using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
+using FitLead.Application.Common.Outbox;
 using FitLead.Application.Common.Time;
 using FitLead.Application.Messenger.Chats.Access;
+using FitLead.Application.Messenger.VideoReports.Outbox;
 using FitLead.Application.Messenger.VideoReports.Queries;
 using FitLead.Application.Users.Access;
 using FitLead.Common.Errors;
@@ -18,6 +20,7 @@ namespace FitLead.Application.Messenger.VideoReports.Commands
         private readonly ICurrentUserLoader _currentUserLoader;
         private readonly IVideoReportRepository _videoReportRepository;
         private readonly IVideoReportReadRepository _videoReportReadRepository;
+        private readonly IOutbox _outbox;
         private readonly IClock _clock;
         private readonly IUnitOfWork _unitOfWork;
 
@@ -26,6 +29,7 @@ namespace FitLead.Application.Messenger.VideoReports.Commands
             ICurrentUserLoader currentUserLoader,
             IVideoReportRepository videoReportRepository,
             IVideoReportReadRepository videoReportReadRepository,
+            IOutbox outbox,
             IClock clock,
             IUnitOfWork unitOfWork)
         {
@@ -33,6 +37,7 @@ namespace FitLead.Application.Messenger.VideoReports.Commands
             _currentUserLoader = currentUserLoader;
             _videoReportRepository = videoReportRepository;
             _videoReportReadRepository = videoReportReadRepository;
+            _outbox = outbox;
             _clock = clock;
             _unitOfWork = unitOfWork;
         }
@@ -73,12 +78,24 @@ namespace FitLead.Application.Messenger.VideoReports.Commands
                     Error.NotFound("video_report.not_found", "Video report not found"));
             }
 
-            var reviewResult = report.Review(request.Text, _clock.UtcNow);
+            var reviewedAtUtc = _clock.UtcNow;
+            var reviewResult = report.Review(request.Text, reviewedAtUtc);
             if (reviewResult.IsFailure)
             {
                 return Result<VideoReportDetailsDto>.Failure(reviewResult.Error);
             }
 
+            await _outbox.EnqueueAsync(
+                OutboxEventTypes.Messenger.VideoReportReviewed,
+                new VideoReportReviewedOutboxPayload(
+                    report.ChatId,
+                    report.Id,
+                    report.ClientId,
+                    report.TrainerId,
+                    report.Title,
+                    reviewedAtUtc),
+                reviewedAtUtc,
+                cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             var details = await _videoReportReadRepository.GetDetailsAsync(

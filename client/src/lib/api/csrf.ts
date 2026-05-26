@@ -31,17 +31,16 @@ export function isUnsafeMethod(method: string): boolean {
   return !safeMethods.has(method.toUpperCase());
 }
 
-export async function ensureCsrfToken(): Promise<string> {
-  const existingToken = readCookie(CSRF_COOKIE_NAME);
-  if (existingToken) {
-    return existingToken;
-  }
-
-  await fetch(buildApiUrl("/auth/csrf-token"), {
+async function issueCsrfToken(): Promise<string> {
+  const response = await fetch(buildApiUrl("/auth/csrf-token"), {
     method: "GET",
     credentials: "include",
     cache: "no-store",
   });
+
+  if (!response.ok) {
+    throw new Error("CSRF token could not be issued.");
+  }
 
   const issuedToken = readCookie(CSRF_COOKIE_NAME);
   if (!issuedToken) {
@@ -51,17 +50,14 @@ export async function ensureCsrfToken(): Promise<string> {
   return issuedToken;
 }
 
+export function readCsrfToken(): string | null {
+  return readCookie(CSRF_COOKIE_NAME);
+}
+
+export function ensureCsrfToken(): Promise<string> {
+  return issueCsrfToken();
+}
+
 export async function refreshCsrfToken(): Promise<string> {
-  await fetch(buildApiUrl("/auth/csrf-token"), {
-    method: "GET",
-    credentials: "include",
-    cache: "no-store",
-  });
-
-  const issuedToken = readCookie(CSRF_COOKIE_NAME);
-  if (!issuedToken) {
-    throw new Error("CSRF token cookie was not issued or is not readable by the frontend.");
-  }
-
-  return issuedToken;
+  return issueCsrfToken();
 }

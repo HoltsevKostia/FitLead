@@ -1,8 +1,22 @@
 import { isApiError } from "@/lib/api/api-error";
 
+const knownClientErrorMessages = new Set([
+  "Не вдалося завантажити медіа.",
+  "Додайте фото або відео.",
+  "Додайте не більше одного файлу.",
+]);
+
 export function mapExerciseMutationError(error: unknown): string {
   if (!isApiError(error)) {
+    if (error instanceof Error && knownClientErrorMessages.has(error.message)) {
+      return error.message;
+    }
+
     return "Не вдалося виконати дію. Спробуй ще раз.";
+  }
+
+  if (error.status === 401) {
+    return "Сесія завершилася. Увійдіть знову та повторіть дію.";
   }
 
   if (error.errorCode === "exercise.not_found") {
@@ -19,6 +33,21 @@ export function mapExerciseMutationError(error: unknown): string {
 
   if (error.errorCode === "exercise.copy.source_must_be_platform") {
     return "До бібліотеки можна копіювати лише вправи платформи.";
+  }
+
+  if (
+    error.errorCode === "media_asset.not_found" ||
+    error.errorCode === "media_asset.not_owned" ||
+    error.errorCode === "exercise.media_asset_not_found"
+  ) {
+    return "Обране медіа не знайдено або у вас немає доступу до нього.";
+  }
+
+  if (
+    error.errorCode === "exercise.media_asset_kind_not_allowed" ||
+    error.errorCode === "media_asset.kind_not_allowed"
+  ) {
+    return "Для вправи можна додати лише фото або відео.";
   }
 
   if (error.status === 400) {

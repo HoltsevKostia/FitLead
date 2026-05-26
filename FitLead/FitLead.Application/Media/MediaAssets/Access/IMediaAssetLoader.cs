@@ -14,5 +14,10 @@ namespace FitLead.Application.Media.MediaAssets.Access
             Guid ownerUserId,
             IReadOnlyCollection<Guid> mediaAssetIds,
             CancellationToken cancellationToken);
+
+        Task<Result<MediaAsset>> GetOwnedAllowedForExerciseOrNotFoundAsync(
+            Guid ownerUserId,
+            Guid mediaAssetId,
+            CancellationToken cancellationToken);
     }
 }

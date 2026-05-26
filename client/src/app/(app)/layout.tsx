@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/features/auth/server/get-current-user";
 import { LogoutButton } from "@/features/auth/ui/logout-button";
+import { NotificationBell } from "@/features/notifications/ui/notification-bell";
 
 const trainerLinks = [
   { href: "/dashboard", label: "Панель" },
@@ -18,6 +19,7 @@ const clientLinks = [
   { href: "/dashboard", label: "Панель" },
   { href: "/chats", label: "Чати" },
   { href: "/client/training-programs", label: "Мої програми" },
+  { href: "/client/profile", label: "Профіль" },
 ];
 
 export default async function AppLayout({
@@ -39,7 +41,10 @@ export default async function AppLayout({
         <div className="grid min-w-0 gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
           <aside className="card min-w-0 p-5">
             <div className="mb-6">
-              <p className="text-sm uppercase tracking-[0.2em] text-muted">FitLead</p>
+              <div className="flex items-start justify-between gap-3">
+                <p className="text-sm uppercase tracking-[0.2em] text-muted">FitLead</p>
+                <NotificationBell />
+              </div>
               <h2 className="mt-2 text-2xl font-semibold">Кабінет</h2>
               <p className="mt-2 break-words text-sm text-muted">{currentUser.email}</p>
               <p className="mt-1 text-sm text-muted">

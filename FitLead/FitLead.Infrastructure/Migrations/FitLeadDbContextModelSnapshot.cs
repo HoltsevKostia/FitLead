@@ -22,6 +22,165 @@ namespace FitLead.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("FitLead.Domain.Clients.BodyMetrics.ClientBodyMetricEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("ArmCm")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)");
+
+                    b.Property<decimal?>("BodyFatPercent")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)");
+
+                    b.Property<decimal?>("ChestCm")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)");
+
+                    b.Property<Guid>("ClientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal?>("HipsCm")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateOnly>("RecordedAt")
+                        .HasColumnType("date");
+
+                    b.Property<decimal?>("ThighCm")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal?>("WaistCm")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)");
+
+                    b.Property<decimal?>("WeightKg")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientId", "RecordedAt")
+                        .IsUnique()
+                        .HasDatabaseName("UX_client_body_metric_entries_client_id_recorded_at");
+
+                    b.ToTable("client_body_metric_entries", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_client_body_metric_entries_body_fat_range", "\"BodyFatPercent\" IS NULL OR (\"BodyFatPercent\" BETWEEN 1 AND 80)");
+
+                            t.HasCheckConstraint("CK_client_body_metric_entries_measurements_range", "(\"ChestCm\" IS NULL OR (\"ChestCm\" BETWEEN 1 AND 300)) AND (\"WaistCm\" IS NULL OR (\"WaistCm\" BETWEEN 1 AND 300)) AND (\"HipsCm\" IS NULL OR (\"HipsCm\" BETWEEN 1 AND 300)) AND (\"ArmCm\" IS NULL OR (\"ArmCm\" BETWEEN 1 AND 300)) AND (\"ThighCm\" IS NULL OR (\"ThighCm\" BETWEEN 1 AND 300))");
+
+                            t.HasCheckConstraint("CK_client_body_metric_entries_not_empty", "\"WeightKg\" IS NOT NULL OR \"BodyFatPercent\" IS NOT NULL OR \"ChestCm\" IS NOT NULL OR \"WaistCm\" IS NOT NULL OR \"HipsCm\" IS NOT NULL OR \"ArmCm\" IS NOT NULL OR \"ThighCm\" IS NOT NULL OR \"Note\" IS NOT NULL");
+
+                            t.HasCheckConstraint("CK_client_body_metric_entries_updated_at_after_created", "\"UpdatedAtUtc\" IS NULL OR \"UpdatedAtUtc\" >= \"CreatedAtUtc\"");
+
+                            t.HasCheckConstraint("CK_client_body_metric_entries_weight_range", "\"WeightKg\" IS NULL OR (\"WeightKg\" BETWEEN 1 AND 500)");
+                        });
+                });
+
+            modelBuilder.Entity("FitLead.Domain.Clients.ClientProfiles.ClientProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AdditionalInfo")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<Guid>("ClientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("ExperienceLevel")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Goal")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int?>("HeightCm")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Limitations")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("TrainingPreferences")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_client_profiles_client_id");
+
+                    b.ToTable("client_profiles", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_client_profiles_experience_level_valid", "\"ExperienceLevel\" IS NULL OR \"ExperienceLevel\" IN (1, 2, 3)");
+
+                            t.HasCheckConstraint("CK_client_profiles_height_range", "\"HeightCm\" IS NULL OR (\"HeightCm\" BETWEEN 50 AND 300)");
+
+                            t.HasCheckConstraint("CK_client_profiles_updated_at_after_created", "\"UpdatedAtUtc\" IS NULL OR \"UpdatedAtUtc\" >= \"CreatedAtUtc\"");
+                        });
+                });
+
+            modelBuilder.Entity("FitLead.Domain.Clients.ProgressPhotos.ClientProgressPhoto", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ClientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Label")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("MediaAssetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateOnly>("TakenAt")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MediaAssetId")
+                        .HasDatabaseName("IX_client_progress_photos_media_asset_id");
+
+                    b.HasIndex("ClientId", "TakenAt")
+                        .HasDatabaseName("IX_client_progress_photos_client_id_taken_at");
+
+                    b.ToTable("client_progress_photos", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_client_progress_photos_label_valid", "\"Label\" IN (1, 2, 3, 4)");
+                        });
+                });
+
             modelBuilder.Entity("FitLead.Domain.Invitations.Invitation", b =>
                 {
                     b.Property<Guid>("Id")
@@ -287,6 +446,170 @@ namespace FitLead.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("FitLead.Domain.Notifications.Notification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Body")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LinkUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime?>("ReadAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("RecipientUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SourceEventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecipientUserId", "CreatedAtUtc")
+                        .HasDatabaseName("IX_notifications_recipient_created");
+
+                    b.HasIndex("RecipientUserId", "IsRead", "CreatedAtUtc")
+                        .HasDatabaseName("IX_notifications_recipient_read_created");
+
+                    b.HasIndex("SourceEventId", "RecipientUserId", "Type")
+                        .IsUnique()
+                        .HasDatabaseName("UX_notifications_source_event_recipient_type");
+
+                    b.ToTable("notifications", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_notifications_read_at_after_created", "\"ReadAtUtc\" IS NULL OR \"ReadAtUtc\" >= \"CreatedAtUtc\"");
+
+                            t.HasCheckConstraint("CK_notifications_read_state_valid", "(\"IsRead\" = false AND \"ReadAtUtc\" IS NULL) OR (\"IsRead\" = true AND \"ReadAtUtc\" IS NOT NULL)");
+
+                            t.HasCheckConstraint("CK_notifications_type_valid", "\"Type\" IN (1, 2, 3)");
+                        });
+                });
+
+            modelBuilder.Entity("FitLead.Domain.Notifications.PushSubscriptions.PushSubscription", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Auth")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Endpoint")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<DateTime?>("LastUsedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("P256dh")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<DateTime?>("RevokedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Endpoint")
+                        .IsUnique()
+                        .HasDatabaseName("UX_push_subscriptions_endpoint");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("IX_push_subscriptions_user_id");
+
+                    b.HasIndex("UserId", "RevokedAtUtc")
+                        .HasDatabaseName("IX_push_subscriptions_user_revoked");
+
+                    b.ToTable("push_subscriptions", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_push_subscriptions_last_used_at_after_created", "\"LastUsedAtUtc\" IS NULL OR \"LastUsedAtUtc\" >= \"CreatedAtUtc\"");
+
+                            t.HasCheckConstraint("CK_push_subscriptions_revoked_at_after_created", "\"RevokedAtUtc\" IS NULL OR \"RevokedAtUtc\" >= \"CreatedAtUtc\"");
+                        });
+                });
+
+            modelBuilder.Entity("FitLead.Domain.Outbox.OutboxMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Error")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<DateTime?>("NextRetryAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("OccurredAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTime?>("ProcessedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("RetryCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Type")
+                        .HasDatabaseName("IX_outbox_messages_type");
+
+                    b.HasIndex("Status", "NextRetryAtUtc", "OccurredAtUtc")
+                        .HasDatabaseName("IX_outbox_messages_status_next_retry_occurred");
+
+                    b.ToTable("outbox_messages", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_outbox_messages_retry_count_non_negative", "\"RetryCount\" >= 0");
+
+                            t.HasCheckConstraint("CK_outbox_messages_status_valid", "\"Status\" IN (1, 2, 3)");
+                        });
+                });
+
             modelBuilder.Entity("FitLead.Domain.Trainings.Exercises.Exercise", b =>
                 {
                     b.Property<Guid>("Id")
@@ -302,9 +625,8 @@ namespace FitLead.Infrastructure.Migrations
                     b.Property<int?>("Equipment")
                         .HasColumnType("integer");
 
-                    b.Property<string>("MediaUrl")
-                        .HasMaxLength(2048)
-                        .HasColumnType("character varying(2048)");
+                    b.Property<Guid?>("MediaAssetId")
+                        .HasColumnType("uuid");
 
                     b.Property<int?>("MuscleGroup")
                         .HasColumnType("integer");
@@ -325,6 +647,8 @@ namespace FitLead.Infrastructure.Migrations
                     b.HasIndex("CopiedFromExerciseId");
 
                     b.HasIndex("Equipment");
+
+                    b.HasIndex("MediaAssetId");
 
                     b.HasIndex("MuscleGroup");
 
@@ -458,6 +782,73 @@ namespace FitLead.Infrastructure.Migrations
                             t.HasCheckConstraint("CK_training_program_workouts_order_in_day_positive", "\"OrderInDay\" > 0");
 
                             t.HasCheckConstraint("CK_training_program_workouts_week_number_positive", "\"WeekNumber\" > 0");
+                        });
+                });
+
+            modelBuilder.Entity("FitLead.Domain.Trainings.WorkoutLogs.WorkoutLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AssignedTrainingProgramId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ClientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ClientNote")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("DifficultyRating")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("PerformedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TrainerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TrainingProgramWorkoutId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientId")
+                        .HasDatabaseName("IX_workout_logs_client_id");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_workout_logs_status");
+
+                    b.HasIndex("TrainerId")
+                        .HasDatabaseName("IX_workout_logs_trainer_id");
+
+                    b.HasIndex("TrainingProgramWorkoutId");
+
+                    b.HasIndex("AssignedTrainingProgramId", "TrainingProgramWorkoutId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_workout_logs_assignment_program_workout");
+
+                    b.ToTable("workout_logs", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_workout_logs_completed_performed_at_required", "\"Status\" <> 1 OR \"PerformedAtUtc\" IS NOT NULL");
+
+                            t.HasCheckConstraint("CK_workout_logs_difficulty_rating_range", "\"DifficultyRating\" IS NULL OR (\"DifficultyRating\" BETWEEN 1 AND 10)");
+
+                            t.HasCheckConstraint("CK_workout_logs_skipped_fields_null", "\"Status\" <> 2 OR (\"PerformedAtUtc\" IS NULL AND \"DifficultyRating\" IS NULL)");
+
+                            t.HasCheckConstraint("CK_workout_logs_status_valid", "\"Status\" IN (1, 2)");
+
+                            t.HasCheckConstraint("CK_workout_logs_updated_at_after_created", "\"UpdatedAtUtc\" IS NULL OR \"UpdatedAtUtc\" >= \"CreatedAtUtc\"");
                         });
                 });
 
@@ -831,6 +1222,39 @@ namespace FitLead.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("FitLead.Domain.Clients.BodyMetrics.ClientBodyMetricEntry", b =>
+                {
+                    b.HasOne("FitLead.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FitLead.Domain.Clients.ClientProfiles.ClientProfile", b =>
+                {
+                    b.HasOne("FitLead.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FitLead.Domain.Clients.ProgressPhotos.ClientProgressPhoto", b =>
+                {
+                    b.HasOne("FitLead.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FitLead.Domain.Media.MediaAssets.MediaAsset", null)
+                        .WithMany()
+                        .HasForeignKey("MediaAssetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("FitLead.Domain.Invitations.Invitation", b =>
                 {
                     b.HasOne("FitLead.Domain.Users.User", null)
@@ -925,11 +1349,34 @@ namespace FitLead.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("FitLead.Domain.Notifications.Notification", b =>
+                {
+                    b.HasOne("FitLead.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("RecipientUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FitLead.Domain.Notifications.PushSubscriptions.PushSubscription", b =>
+                {
+                    b.HasOne("FitLead.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("FitLead.Domain.Trainings.Exercises.Exercise", b =>
                 {
                     b.HasOne("FitLead.Domain.Trainings.Exercises.Exercise", null)
                         .WithMany()
                         .HasForeignKey("CopiedFromExerciseId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("FitLead.Domain.Media.MediaAssets.MediaAsset", null)
+                        .WithMany()
+                        .HasForeignKey("MediaAssetId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("FitLead.Domain.Users.User", null)
@@ -980,6 +1427,33 @@ namespace FitLead.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("WorkoutId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FitLead.Domain.Trainings.WorkoutLogs.WorkoutLog", b =>
+                {
+                    b.HasOne("FitLead.Domain.Trainings.TrainingProgramAssignments.AssignedTrainingProgram", null)
+                        .WithMany()
+                        .HasForeignKey("AssignedTrainingProgramId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FitLead.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FitLead.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("TrainerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FitLead.Domain.Trainings.TrainingPrograms.TrainingProgramWorkout", null)
+                        .WithMany()
+                        .HasForeignKey("TrainingProgramWorkoutId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 

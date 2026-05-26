@@ -1,7 +1,9 @@
 using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
+using FitLead.Application.Common.Outbox;
 using FitLead.Application.Common.Time;
 using FitLead.Application.Modules.Users;
+using FitLead.Application.Trainings.TrainingProgramAssignments.Outbox;
 using FitLead.Application.Trainings.TrainingPrograms.Access;
 using FitLead.Common.Errors;
 using FitLead.Common.Results;
@@ -16,6 +18,7 @@ namespace FitLead.Application.Trainings.TrainingProgramAssignments.Commands
         private readonly ITrainingProgramLoader _programLoader;
         private readonly IAssignedTrainingProgramRepository _assignmentRepository;
         private readonly IUsersModule _usersModule;
+        private readonly IOutbox _outbox;
         private readonly IClock _clock;
         private readonly IUnitOfWork _unitOfWork;
 
@@ -23,12 +26,14 @@ namespace FitLead.Application.Trainings.TrainingProgramAssignments.Commands
             ITrainingProgramLoader programLoader,
             IAssignedTrainingProgramRepository assignmentRepository,
             IUsersModule usersModule,
+            IOutbox outbox,
             IClock clock,
             IUnitOfWork unitOfWork)
         {
             _programLoader = programLoader;
             _assignmentRepository = assignmentRepository;
             _usersModule = usersModule;
+            _outbox = outbox;
             _clock = clock;
             _unitOfWork = unitOfWork;
         }
@@ -99,6 +104,17 @@ namespace FitLead.Application.Trainings.TrainingProgramAssignments.Commands
             if (existingAssignment is null)
             {
                 await _assignmentRepository.AddAsync(assignment, cancellationToken);
+                await _outbox.EnqueueAsync(
+                    OutboxEventTypes.Training.ProgramAssigned,
+                    new TrainingProgramAssignedOutboxPayload(
+                        assignment.Id,
+                        assignment.TrainingProgramId,
+                        assignment.TrainerId,
+                        assignment.ClientId,
+                        program.Title,
+                        utcNow),
+                    utcNow,
+                    cancellationToken);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
             }
             else
@@ -106,6 +122,17 @@ namespace FitLead.Application.Trainings.TrainingProgramAssignments.Commands
                 await using var transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
                 await _assignmentRepository.AddAsync(assignment, cancellationToken);
+                await _outbox.EnqueueAsync(
+                    OutboxEventTypes.Training.ProgramAssigned,
+                    new TrainingProgramAssignedOutboxPayload(
+                        assignment.Id,
+                        assignment.TrainingProgramId,
+                        assignment.TrainerId,
+                        assignment.ClientId,
+                        program.Title,
+                        utcNow),
+                    utcNow,
+                    cancellationToken);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
             }

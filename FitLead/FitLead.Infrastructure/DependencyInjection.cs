@@ -2,6 +2,7 @@ using EntityFramework.Exceptions.PostgreSQL;
 using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
 using FitLead.Application.Common.Deletion;
+using FitLead.Application.Common.Outbox;
 using FitLead.Application.Common.Results;
 using FitLead.Application.Common.Time;
 using FitLead.Application.Identity;
@@ -14,9 +15,11 @@ using FitLead.Application.Modules.Exercises;
 using FitLead.Application.Modules.TrainingPrograms;
 using FitLead.Application.Modules.Users;
 using FitLead.Application.Modules.Workouts;
+using FitLead.Application.Notifications.Push;
 using FitLead.Infrastructure.Invitations;
 using FitLead.Application.Trainings.Exercises.Access;
 using FitLead.Application.Trainings.TrainingPrograms.Access;
+using FitLead.Application.Trainings.WorkoutLogs.Access;
 using FitLead.Application.Trainings.Workouts.Access;
 using FitLead.Application.Users.Access;
 using FitLead.Infrastructure.Deletion;
@@ -27,6 +30,9 @@ using FitLead.Infrastructure.Modules.Users;
 using FitLead.Infrastructure.Modules.Workouts;
 using FitLead.Infrastructure.Media.Uploadcare;
 using FitLead.Infrastructure.Media.MediaAssets;
+using FitLead.Infrastructure.Notifications.Push;
+using FitLead.Infrastructure.Outbox;
+using FitLead.Infrastructure.Outbox.Handlers;
 using FitLead.Infrastructure.Persistence;
 using FitLead.Infrastructure.Persistence.Repositories;
 using FitLead.Infrastructure.Time;
@@ -62,6 +68,13 @@ namespace FitLead.Infrastructure
             services.AddScoped<IExerciseReadRepository, ExerciseReadRepository>();
             services.AddScoped<IWorkoutRepository, WorkoutRepository>();
             services.AddScoped<IWorkoutReadRepository, WorkoutReadRepository>();
+            services.AddScoped<IWorkoutLogRepository, WorkoutLogRepository>();
+            services.AddScoped<IWorkoutLogAccessRepository, WorkoutLogAccessRepository>();
+            services.AddScoped<IClientProfileRepository, ClientProfileRepository>();
+            services.AddScoped<IClientBodyMetricEntryRepository, ClientBodyMetricEntryRepository>();
+            services.AddScoped<IClientBodyMetricEntryReadRepository, ClientBodyMetricEntryReadRepository>();
+            services.AddScoped<IClientProgressPhotoRepository, ClientProgressPhotoRepository>();
+            services.AddScoped<IClientProgressPhotoReadRepository, ClientProgressPhotoReadRepository>();
             services.AddScoped<IInvitationRepository, InvitationRepository>();
             services.AddScoped<IInvitationReadRepository, InvitationReadRepository>();
             services.AddScoped<IChatRepository, ChatRepository>();
@@ -72,6 +85,18 @@ namespace FitLead.Infrastructure
             services.AddScoped<IChatMessageReadRepository, ChatMessageReadRepository>();
             services.AddScoped<IMediaAssetRepository, MediaAssetRepository>();
             services.AddScoped<IMediaAssetReadRepository, MediaAssetReadRepository>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
+            services.AddScoped<INotificationReadRepository, NotificationReadRepository>();
+            services.AddScoped<IPushSubscriptionRepository, PushSubscriptionRepository>();
+            services.AddScoped<IOutboxMessageRepository, OutboxMessageRepository>();
+            services.AddScoped<IOutbox, Outbox.Outbox>();
+            services.AddScoped<IOutboxMessageDispatcher, OutboxMessageDispatcher>();
+            services.AddSingleton<IOutboxMessageProcessor, OutboxMessageProcessor>();
+            services.AddScoped<IOutboxMessageHandler, ChatMessageCreatedOutboxHandler>();
+            services.AddScoped<IOutboxMessageHandler, VideoReportSubmittedNotificationOutboxHandler>();
+            services.AddScoped<IOutboxMessageHandler, VideoReportReviewedNotificationOutboxHandler>();
+            services.AddScoped<IOutboxMessageHandler, TrainingProgramAssignedNotificationOutboxHandler>();
+            services.AddScoped<IOutboxMessageHandler, NotificationCreatedOutboxHandler>();
             services.AddScoped<IInvitationLinkService, InvitationLinkService>();
             services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
             services.AddScoped(typeof(IPipelineBehavior<,>), typeof(DomainExceptionToResultBehavior<,>));
@@ -95,6 +120,25 @@ namespace FitLead.Infrastructure
                 .ValidateOnStart();
             services.Configure<MediaAssetRegistrationOptions>(
                 configuration.GetSection(MediaAssetRegistrationOptions.SectionName));
+            services
+                .AddOptions<OutboxProcessorOptions>()
+                .Bind(configuration.GetSection(OutboxProcessorOptions.SectionName))
+                .Validate(
+                    options => options.BatchSize is >= 1 and <= 100,
+                    "Outbox processor batch size must be between 1 and 100")
+                .Validate(
+                    options => options.PollingIntervalSeconds > 0,
+                    "Outbox processor polling interval must be positive")
+                .Validate(
+                    options => options.MaxAttempts > 0,
+                    "Outbox processor max attempts must be positive")
+                .ValidateOnStart();
+            services
+                .AddOptions<PushOptions>()
+                .Bind(configuration.GetSection(PushOptions.SectionName));
+            services.AddScoped<IPushVapidConfiguration>(provider =>
+                provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<PushOptions>>().Value);
+            services.AddScoped<IWebPushSender, WebPushSender>();
             services.AddSingleton<IDeletionConfirmationTokenService, DataProtectionDeletionConfirmationTokenService>();
             services.AddScoped<ITokenHasher, TokenHasher>();
             services.AddScoped<IRefreshTokenService, RefreshTokenService>();
@@ -106,6 +150,7 @@ namespace FitLead.Infrastructure
             services.AddScoped<IUsersModule, UsersModule>();
             services.AddScoped<IWorkoutsModule, WorkoutsModule>();
             services.AddScoped<IWorkoutLoader, WorkoutLoader>();
+            services.AddScoped<IWorkoutLogAccessLoader, WorkoutLogAccessLoader>();
             services.AddScoped<IExerciseLoader, ExerciseLoader>();
             services.AddScoped<ITrainingProgramLoader, TrainingProgramLoader>();
             services.AddScoped<IChatLoader, ChatLoader>();
@@ -117,6 +162,7 @@ namespace FitLead.Infrastructure
             {
                 client.BaseAddress = new Uri("https://api.uploadcare.com");
             });
+            services.AddHostedService<OutboxProcessor>();
 
             return services;
         }

@@ -12,7 +12,7 @@ namespace FitLead.Domain.Trainings.Exercises
 
         public string Name { get; private set; } = null!;
         public string Description { get; private set; } = null!;
-        public MediaUrl? MediaUrl { get; private set; }
+        public Guid? MediaAssetId { get; private set; }
         public MuscleGroup? MuscleGroup { get; private set; }
         public Equipment? Equipment { get; private set; }
 
@@ -24,7 +24,7 @@ namespace FitLead.Domain.Trainings.Exercises
             ExerciseSource source,
             string name,
             string description,
-            MediaUrl? mediaUrl,
+            Guid? mediaAssetId,
             MuscleGroup? muscleGroup,
             Equipment? equipment,
             Guid? copiedFromExerciseId)
@@ -34,7 +34,7 @@ namespace FitLead.Domain.Trainings.Exercises
             Source = source;
             Name = name;
             Description = description;
-            MediaUrl = mediaUrl;
+            MediaAssetId = mediaAssetId;
             MuscleGroup = muscleGroup;
             Equipment = equipment;
             CopiedFromExerciseId = copiedFromExerciseId;
@@ -44,7 +44,7 @@ namespace FitLead.Domain.Trainings.Exercises
             Guid ownerTrainerId,
             string name,
             string description,
-            string? mediaUrl = null,
+            Guid? mediaAssetId = null,
             MuscleGroup? muscleGroup = null,
             Equipment? equipment = null)
         {
@@ -53,7 +53,7 @@ namespace FitLead.Domain.Trainings.Exercises
                 ExerciseSource.Trainer,
                 name,
                 description,
-                mediaUrl,
+                mediaAssetId,
                 muscleGroup,
                 equipment,
                 copiedFromExerciseId: null);
@@ -76,7 +76,7 @@ namespace FitLead.Domain.Trainings.Exercises
                 ExerciseSource.Trainer,
                 platformExercise.Name,
                 platformExercise.Description,
-                platformExercise.MediaUrl?.Value,
+                platformExercise.MediaAssetId,
                 platformExercise.MuscleGroup,
                 platformExercise.Equipment,
                 copiedFromExerciseId: platformExercise.Id);
@@ -85,7 +85,7 @@ namespace FitLead.Domain.Trainings.Exercises
         public static Result<Exercise> CreatePlatformExercise(
             string name,
             string description,
-            string? mediaUrl = null,
+            Guid? mediaAssetId = null,
             MuscleGroup? muscleGroup = null,
             Equipment? equipment = null)
         {
@@ -94,7 +94,7 @@ namespace FitLead.Domain.Trainings.Exercises
                 ExerciseSource.Platform,
                 name,
                 description,
-                mediaUrl,
+                mediaAssetId,
                 muscleGroup,
                 equipment,
                 copiedFromExerciseId: null);
@@ -105,7 +105,7 @@ namespace FitLead.Domain.Trainings.Exercises
             ExerciseSource source,
             string name,
             string description,
-            string? mediaUrl,
+            Guid? mediaAssetId,
             MuscleGroup? muscleGroup,
             Equipment? equipment,
             Guid? copiedFromExerciseId)
@@ -126,9 +126,9 @@ namespace FitLead.Domain.Trainings.Exercises
                 return Result<Exercise>.Failure(
                     Error.Validation("exercise.create.name_required", "Exercise name is required"));
 
-            var mediaUrlResult = TryCreateMediaUrl(mediaUrl, out var parsedMediaUrl);
-            if (mediaUrlResult.IsFailure)
-                return Result<Exercise>.Failure(mediaUrlResult.Error);
+            if (mediaAssetId == Guid.Empty)
+                return Result<Exercise>.Failure(
+                    Error.Validation("exercise.create.media_asset_id_invalid", "MediaAssetId must be null or a valid id"));
 
             return Result<Exercise>.Success(
                 new Exercise(
@@ -137,7 +137,7 @@ namespace FitLead.Domain.Trainings.Exercises
                     source,
                     name.Trim(),
                     description?.Trim() ?? string.Empty,
-                    parsedMediaUrl,
+                    mediaAssetId,
                     muscleGroup,
                     equipment,
                     copiedFromExerciseId));
@@ -156,32 +156,6 @@ namespace FitLead.Domain.Trainings.Exercises
         private void UpdateDescription(string description)
         {
             Description = description?.Trim() ?? string.Empty;
-        }
-
-        private Result UpdateMediaUrl(string? mediaUrl)
-        {
-            var mediaUrlResult = TryCreateMediaUrl(mediaUrl, out var parsedMediaUrl);
-            if (mediaUrlResult.IsFailure)
-                return Result.Failure(mediaUrlResult.Error);
-
-            MediaUrl = parsedMediaUrl;
-
-            return Result.Success();
-        }
-
-        private static Result TryCreateMediaUrl(string? mediaUrl, out MediaUrl? parsedMediaUrl)
-        {
-            parsedMediaUrl = null;
-
-            if (string.IsNullOrWhiteSpace(mediaUrl))
-                return Result.Success();
-
-            var result = MediaUrl.Create(mediaUrl);
-            if (result.IsFailure)
-                return Result.Failure(result.Error);
-
-            parsedMediaUrl = result.Value;
-            return Result.Success();
         }
 
         private static Result ValidateOwnership(ExerciseSource source, Guid? ownerTrainerId)
@@ -210,7 +184,7 @@ namespace FitLead.Domain.Trainings.Exercises
             Guid trainerId,
             string name,
             string description,
-            string? mediaUrl,
+            Guid? mediaAssetId,
             MuscleGroup? muscleGroup,
             Equipment? equipment)
         {
@@ -222,13 +196,13 @@ namespace FitLead.Domain.Trainings.Exercises
                         "Only own trainer exercises can be updated"));
             }
 
-            return Update(name, description, mediaUrl, muscleGroup, equipment);
+            return Update(name, description, mediaAssetId, muscleGroup, equipment);
         }
 
         private Result Update(
             string name,
             string description,
-            string? mediaUrl,
+            Guid? mediaAssetId,
             MuscleGroup? muscleGroup,
             Equipment? equipment)
         {
@@ -238,10 +212,11 @@ namespace FitLead.Domain.Trainings.Exercises
 
             UpdateDescription(description);
 
-            var mediaResult = UpdateMediaUrl(mediaUrl);
-            if (mediaResult.IsFailure)
-                return mediaResult;
+            if (mediaAssetId == Guid.Empty)
+                return Result.Failure(
+                    Error.Validation("exercise.update.media_asset_id_invalid", "MediaAssetId must be null or a valid id"));
 
+            MediaAssetId = mediaAssetId;
             MuscleGroup = muscleGroup;
             Equipment = equipment;
 

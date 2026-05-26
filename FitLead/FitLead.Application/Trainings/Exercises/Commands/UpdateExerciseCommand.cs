@@ -8,7 +8,7 @@ namespace FitLead.Application.Trainings.Exercises.Commands
         Guid ExerciseId,
         string Name,
         string Description,
-        string? MediaUrl,
+        Guid? MediaAssetId,
         MuscleGroup? MuscleGroup,
         Equipment? Equipment
     ) : IRequest<Result>;

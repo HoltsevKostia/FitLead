@@ -6,13 +6,8 @@ import { useMemo, useState } from "react";
 import type {
   ClientAssignedTrainingProgramDetails,
   ClientAssignedTrainingProgramWorkout,
+  WorkoutLogPreview,
 } from "@/entities/training-program/model/types";
-import type { WorkoutExerciseDetails } from "@/entities/workout/model/types";
-import {
-  equipmentLabels,
-  muscleGroupLabels,
-} from "@/features/exercises/model/exercise-labels";
-import { ExerciseMediaPreview } from "@/features/exercises/ui/exercise-media-preview";
 
 interface ClientAssignedTrainingProgramDetailViewProps {
   program: ClientAssignedTrainingProgramDetails;
@@ -43,14 +38,6 @@ function formatDate(value: string | null): string {
   }).format(new Date(value));
 }
 
-function formatLoad(loadKg: number | null): string {
-  if (loadKg === null) {
-    return "Без ваги";
-  }
-
-  return `${loadKg} кг`;
-}
-
 function getEntriesForDay(
   workouts: ClientAssignedTrainingProgramWorkout[],
   weekNumber: number,
@@ -67,101 +54,64 @@ function buildProgramWeekHref(assignmentId: string, weekNumber: number): string 
 
 function buildWorkoutHref(
   assignmentId: string,
-  workoutId: string,
+  programWorkoutId: string,
   weekNumber: number,
 ): string {
   const returnTo = buildProgramWeekHref(assignmentId, weekNumber);
-  return `/client/training-programs/${assignmentId}/workouts/${workoutId}?returnTo=${encodeURIComponent(returnTo)}`;
+  return `/client/training-programs/${assignmentId}/workouts/${programWorkoutId}?returnTo=${encodeURIComponent(returnTo)}`;
 }
 
-function buildExerciseHref(
-  assignmentId: string,
-  workoutId: string,
-  workoutExerciseId: string,
-  weekNumber: number,
-): string {
-  const returnTo = buildProgramWeekHref(assignmentId, weekNumber);
-  return `/client/training-programs/${assignmentId}/workouts/${workoutId}/exercises/${workoutExerciseId}?returnTo=${encodeURIComponent(returnTo)}`;
+function formatLogDate(value: string): string {
+  return new Intl.DateTimeFormat("uk-UA", {
+    day: "2-digit",
+    month: "2-digit",
+  }).format(new Date(value));
 }
 
-function ExerciseCard({
-  assignmentId,
-  workoutId,
-  selectedWeek,
-  exercise,
-}: {
-  assignmentId: string;
-  workoutId: string;
-  selectedWeek: number;
-  exercise: WorkoutExerciseDetails;
-}) {
-  return (
-    <article className="rounded-xl border border-border bg-surface px-4 py-4">
-      <div className="space-y-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex rounded-full border border-border bg-white px-3 py-1 text-xs font-semibold text-muted">
-            {exercise.order}
-          </span>
-          {exercise.exerciseMuscleGroup ? (
-            <span className="inline-flex rounded-full border border-border bg-white px-3 py-1 text-xs font-medium text-muted">
-              {muscleGroupLabels[exercise.exerciseMuscleGroup]}
-            </span>
-          ) : null}
-          {exercise.exerciseEquipment ? (
-            <span className="inline-flex rounded-full border border-border bg-white px-3 py-1 text-xs font-medium text-muted">
-              {equipmentLabels[exercise.exerciseEquipment]}
-            </span>
-          ) : null}
-        </div>
+function getLogStatusLabel(log: WorkoutLogPreview | null): string {
+  if (!log) {
+    return "Очікує виконання";
+  }
 
-        <div className="space-y-2">
-          <Link
-            href={buildExerciseHref(
-              assignmentId,
-              workoutId,
-              exercise.workoutExerciseId,
-              selectedWeek,
-            )}
-            className="block text-base font-semibold text-foreground hover:text-accent"
-          >
-            {exercise.exerciseName}
-          </Link>
-          <p className="text-sm leading-6 text-muted">
-            {exercise.exerciseDescription || "Опис поки не додано."}
-          </p>
-          <ExerciseMediaPreview mediaUrl={exercise.exerciseMediaUrl} />
-        </div>
+  if (log.status === "Completed") {
+    return "Виконано";
+  }
 
-        <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
-          <div className="rounded-xl border border-border bg-white px-3 py-3">
-            <p className="text-xs text-muted">Підходи</p>
-            <p className="mt-1 font-semibold text-foreground">{exercise.sets}</p>
-          </div>
-          <div className="rounded-xl border border-border bg-white px-3 py-3">
-            <p className="text-xs text-muted">Повторення</p>
-            <p className="mt-1 font-semibold text-foreground">{exercise.repetitions}</p>
-          </div>
-          <div className="rounded-xl border border-border bg-white px-3 py-3">
-            <p className="text-xs text-muted">Вага</p>
-            <p className="mt-1 font-semibold text-foreground">{formatLoad(exercise.loadKg)}</p>
-          </div>
-          <div className="rounded-xl border border-border bg-white px-3 py-3">
-            <p className="text-xs text-muted">Відпочинок</p>
-            <p className="mt-1 font-semibold text-foreground">{exercise.restSeconds} сек</p>
-          </div>
-        </div>
+  if (log.status === "Skipped") {
+    return "Пропущено";
+  }
 
-        {exercise.trainerNote ? (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-            <p className="text-xs font-semibold uppercase text-amber-900">Нотатка тренера</p>
-            <p className="mt-1 whitespace-pre-line text-sm leading-6 text-amber-950">
-              {exercise.trainerNote}
-            </p>
-          </div>
-        ) : null}
-      </div>
-    </article>
-  );
+  return log.status;
+}
+
+function getLogStatusClassName(log: WorkoutLogPreview | null): string {
+  if (!log) {
+    return "border-sky-200 bg-sky-50 text-sky-700";
+  }
+
+  if (log.status === "Completed") {
+    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  }
+
+  if (log.status === "Skipped") {
+    return "border-amber-200 bg-amber-50 text-amber-800";
+  }
+
+  return "border-border bg-surface text-muted";
+}
+
+function getCompletedLogSummary(log: WorkoutLogPreview | null): string | null {
+  if (!log || log.status !== "Completed" || !log.performedAtUtc) {
+    return null;
+  }
+
+  const parts = [formatLogDate(log.performedAtUtc)];
+
+  if (log.difficultyRating !== null) {
+    parts.push(`Складність ${log.difficultyRating}/10`);
+  }
+
+  return parts.join(" · ");
 }
 
 function WorkoutCard({
@@ -173,43 +123,47 @@ function WorkoutCard({
   selectedWeek: number;
   workout: ClientAssignedTrainingProgramWorkout;
 }) {
-  const exercises = [...workout.exercises].sort((first, second) => first.order - second.order);
+  const exerciseCount = workout.exercises.length;
+  const logSummary = getCompletedLogSummary(workout.log);
 
   return (
-    <article className="rounded-xl border border-border bg-white px-4 py-4">
-      <div className="space-y-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex rounded-full border border-border bg-surface px-3 py-1 text-xs font-semibold text-muted">
-            {workout.orderInDay}
-          </span>
-          <span className="text-xs font-medium text-muted">Тренування</span>
-        </div>
-
-        <div>
-          <Link
-            href={buildWorkoutHref(assignmentId, workout.workoutId, selectedWeek)}
-            className="block text-lg font-semibold text-foreground hover:text-accent"
-          >
-            {workout.workoutName}
-          </Link>
-          <p className="mt-1 text-sm text-muted">
-            {exercises.length > 0 ? `${exercises.length} вправ` : "Вправи поки не додано"}
-          </p>
-        </div>
-
-        {exercises.length > 0 ? (
-          <div className="space-y-3">
-            {exercises.map((exercise) => (
-              <ExerciseCard
-                key={exercise.workoutExerciseId}
-                assignmentId={assignmentId}
-                workoutId={workout.workoutId}
-                selectedWeek={selectedWeek}
-                exercise={exercise}
-              />
-            ))}
+    <article className="rounded-lg border border-border bg-white px-4 py-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0 space-y-2">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
+            <span className="inline-flex rounded-full border border-border bg-surface px-2.5 py-1 font-semibold">
+              #{workout.orderInDay}
+            </span>
+            <span>Тиждень {workout.weekNumber}</span>
+            <span>День {workout.dayNumber}</span>
           </div>
-        ) : null}
+
+          <div>
+            <h3 className="break-words text-base font-semibold text-foreground">
+              {workout.workoutName}
+            </h3>
+            <p className="mt-1 text-sm text-muted">
+              {exerciseCount > 0 ? `${exerciseCount} вправ` : "Вправи поки не додано"}
+            </p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span
+                className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${getLogStatusClassName(
+                  workout.log,
+                )}`}
+              >
+                {getLogStatusLabel(workout.log)}
+              </span>
+              {logSummary ? <span className="text-xs text-muted">{logSummary}</span> : null}
+            </div>
+          </div>
+        </div>
+
+        <Link
+          href={buildWorkoutHref(assignmentId, workout.id, selectedWeek)}
+          className="inline-flex min-h-10 items-center justify-center rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accent-strong sm:shrink-0"
+        >
+          Відкрити
+        </Link>
       </div>
     </article>
   );
@@ -227,20 +181,20 @@ function DayCard({
   entries: ClientAssignedTrainingProgramWorkout[];
 }) {
   return (
-    <article className="rounded-2xl border border-border bg-surface px-5 py-5">
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-foreground">День {dayNumber}</h2>
+    <article className="rounded-lg border border-border bg-surface px-4 py-4 sm:px-5">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h2 className="text-base font-semibold text-foreground">День {dayNumber}</h2>
         <span className="rounded-full border border-border bg-white px-3 py-1 text-xs font-medium text-muted">
           {entries.length > 0 ? `${entries.length} трен.` : "Порожньо"}
         </span>
       </div>
 
       {entries.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border bg-white/70 px-4 py-5 text-sm text-muted">
+        <div className="rounded-lg border border-dashed border-border bg-white/70 px-4 py-3 text-sm text-muted">
           Тренування не додано
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {entries.map((entry) => (
             <WorkoutCard
               key={entry.id}
@@ -282,7 +236,7 @@ export function ClientAssignedTrainingProgramDetailView({
         </p>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         <label className="block text-sm font-medium text-foreground md:hidden" htmlFor="week-select">
           Тиждень
         </label>
@@ -290,7 +244,7 @@ export function ClientAssignedTrainingProgramDetailView({
           id="week-select"
           value={selectedWeek}
           onChange={(event) => setSelectedWeek(Number(event.target.value))}
-          className="w-full rounded-2xl border border-border bg-white px-4 py-3 outline-none transition focus:border-accent md:hidden"
+          className="w-full rounded-lg border border-border bg-white px-4 py-3 outline-none transition focus:border-accent md:hidden"
         >
           {weeks.map((weekNumber) => (
             <option key={weekNumber} value={weekNumber}>
@@ -299,31 +253,34 @@ export function ClientAssignedTrainingProgramDetailView({
           ))}
         </select>
 
-        <div className="hidden flex-wrap gap-2 md:flex" role="tablist" aria-label="Тижні програми">
-          {weeks.map((weekNumber) => {
-            const isSelected = selectedWeek === weekNumber;
+        <div className="hidden items-center gap-2 md:flex">
+          <span className="text-sm font-medium text-foreground">Тиждень:</span>
+          <div className="flex flex-wrap gap-2" role="tablist" aria-label="Тижні програми">
+            {weeks.map((weekNumber) => {
+              const isSelected = selectedWeek === weekNumber;
 
-            return (
-              <button
-                key={weekNumber}
-                type="button"
-                role="tab"
-                aria-selected={isSelected}
-                onClick={() => setSelectedWeek(weekNumber)}
-                className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
-                  isSelected
-                    ? "border-accent bg-accent text-white"
-                    : "border-border bg-white text-foreground hover:bg-surface-strong"
-                }`}
-              >
-                Тиждень {weekNumber}
-              </button>
-            );
-          })}
+              return (
+                <button
+                  key={weekNumber}
+                  type="button"
+                  role="tab"
+                  aria-selected={isSelected}
+                  onClick={() => setSelectedWeek(weekNumber)}
+                  className={`h-9 min-w-9 rounded-lg border px-3 text-sm font-medium transition ${
+                    isSelected
+                      ? "border-accent bg-accent text-white"
+                      : "border-border bg-white text-foreground hover:bg-surface-strong"
+                  }`}
+                >
+                  {weekNumber}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div className="mx-auto grid max-w-4xl gap-3">
         {days.map((dayNumber) => (
           <DayCard
             key={dayNumber}

@@ -1,11 +1,18 @@
 using FitLead.Domain.Invitations;
+using FitLead.Domain.Clients.BodyMetrics;
+using FitLead.Domain.Clients.ClientProfiles;
+using FitLead.Domain.Clients.ProgressPhotos;
 using FitLead.Domain.Media.MediaAssets;
 using FitLead.Domain.Messenger.ChatMessages;
 using FitLead.Domain.Messenger.Chats;
 using FitLead.Domain.Messenger.VideoReports;
+using FitLead.Domain.Notifications;
+using FitLead.Domain.Notifications.PushSubscriptions;
+using FitLead.Domain.Outbox;
 using FitLead.Domain.Trainings.Exercises;
 using FitLead.Domain.Trainings.TrainingProgramAssignments;
 using FitLead.Domain.Trainings.TrainingPrograms;
+using FitLead.Domain.Trainings.WorkoutLogs;
 using FitLead.Domain.Trainings.Workouts;
 using FitLead.Domain.Users;
 using FitLead.Infrastructure.Identity;
@@ -25,6 +32,9 @@ namespace FitLead.Infrastructure.Persistence
 
         public DbSet<TrainingProgram> TrainingPrograms => Set<TrainingProgram>();
         public DbSet<User> DomainUsers => Set<User>();
+        public DbSet<ClientBodyMetricEntry> ClientBodyMetricEntries => Set<ClientBodyMetricEntry>();
+        public DbSet<ClientProfile> ClientProfiles => Set<ClientProfile>();
+        public DbSet<ClientProgressPhoto> ClientProgressPhotos => Set<ClientProgressPhoto>();
         public DbSet<TrainerClient> TrainerClients => Set<TrainerClient>();
         public DbSet<Exercise> Exercises => Set<Exercise>();
         public DbSet<Workout> Workouts => Set<Workout>();
@@ -35,8 +45,12 @@ namespace FitLead.Infrastructure.Persistence
         public DbSet<VideoReport> VideoReports => Set<VideoReport>();
         public DbSet<VideoReportMedia> VideoReportMedia => Set<VideoReportMedia>();
         public DbSet<MediaAsset> MediaAssets => Set<MediaAsset>();
+        public DbSet<Notification> Notifications => Set<Notification>();
+        public DbSet<PushSubscription> PushSubscriptions => Set<PushSubscription>();
+        public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
         public DbSet<AssignedTrainingProgram> AssignedTrainingPrograms => Set<AssignedTrainingProgram>();
         public DbSet<TrainingProgramWorkout> TrainingProgramWorkouts => Set<TrainingProgramWorkout>();
+        public DbSet<WorkoutLog> WorkoutLogs => Set<WorkoutLog>();
         public DbSet<UserIdentityLink> UserIdentityLinks => Set<UserIdentityLink>();
         public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 

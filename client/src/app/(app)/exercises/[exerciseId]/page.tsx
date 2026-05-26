@@ -10,6 +10,9 @@ interface ExerciseDetailsPageProps {
   params: Promise<{
     exerciseId: string;
   }>;
+  searchParams: Promise<{
+    returnTo?: string;
+  }>;
 }
 
 function TrainerOnlyNotice() {
@@ -40,7 +43,18 @@ async function getVisibleExerciseOrNotFound(exerciseId: string): Promise<Exercis
   }
 }
 
-export default async function ExerciseDetailsPage({ params }: ExerciseDetailsPageProps) {
+function getSafeReturnPath(value: string | undefined, fallback: string): string {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+    return fallback;
+  }
+
+  return value;
+}
+
+export default async function ExerciseDetailsPage({
+  params,
+  searchParams,
+}: ExerciseDetailsPageProps) {
   const currentUser = await getCurrentUser();
 
   if (!currentUser || currentUser.role !== "Trainer") {
@@ -48,7 +62,9 @@ export default async function ExerciseDetailsPage({ params }: ExerciseDetailsPag
   }
 
   const { exerciseId } = await params;
+  const { returnTo } = await searchParams;
   const exercise = await getVisibleExerciseOrNotFound(exerciseId);
+  const backHref = getSafeReturnPath(returnTo, "/exercises");
 
-  return <ExerciseDetailView exercise={exercise} />;
+  return <ExerciseDetailView exercise={exercise} backHref={backHref} />;
 }

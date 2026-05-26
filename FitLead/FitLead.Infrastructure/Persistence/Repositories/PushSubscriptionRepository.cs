@@ -1,0 +1,55 @@
+using FitLead.Application.Abstractions.Persistence;
+using FitLead.Domain.Notifications.PushSubscriptions;
+using Microsoft.EntityFrameworkCore;
+
+namespace FitLead.Infrastructure.Persistence.Repositories
+{
+    public sealed class PushSubscriptionRepository : IPushSubscriptionRepository
+    {
+        private readonly FitLeadDbContext _context;
+
+        public PushSubscriptionRepository(FitLeadDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task AddAsync(
+            PushSubscription subscription,
+            CancellationToken cancellationToken)
+        {
+            await _context.PushSubscriptions.AddAsync(subscription, cancellationToken);
+        }
+
+        public async Task<PushSubscription?> GetByEndpointAsync(
+            string endpoint,
+            CancellationToken cancellationToken)
+        {
+            return await _context.PushSubscriptions
+                .FirstOrDefaultAsync(
+                    subscription => subscription.Endpoint == endpoint,
+                    cancellationToken);
+        }
+
+        public async Task<PushSubscription?> GetByEndpointForUserAsync(
+            string endpoint,
+            Guid userId,
+            CancellationToken cancellationToken)
+        {
+            return await _context.PushSubscriptions
+                .FirstOrDefaultAsync(
+                    subscription => subscription.Endpoint == endpoint &&
+                                    subscription.UserId == userId,
+                    cancellationToken);
+        }
+
+        public async Task<IReadOnlyList<PushSubscription>> GetActiveByUserIdAsync(
+            Guid userId,
+            CancellationToken cancellationToken)
+        {
+            return await _context.PushSubscriptions
+                .Where(subscription => subscription.UserId == userId &&
+                                       subscription.RevokedAtUtc == null)
+                .ToListAsync(cancellationToken);
+        }
+    }
+}

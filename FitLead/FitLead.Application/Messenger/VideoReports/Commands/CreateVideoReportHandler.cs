@@ -1,10 +1,12 @@
 using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
+using FitLead.Application.Common.Outbox;
 using FitLead.Application.Common.Time;
 using FitLead.Application.Media.MediaAssets.Access;
+using FitLead.Application.Messenger.ChatMessages.Outbox;
 using FitLead.Application.Messenger.ChatMessages.Queries;
-using FitLead.Application.Messenger.ChatMessages.Realtime;
 using FitLead.Application.Messenger.Chats.Access;
+using FitLead.Application.Messenger.VideoReports.Outbox;
 using FitLead.Application.Users.Access;
 using FitLead.Common.Errors;
 using FitLead.Common.Results;
@@ -12,7 +14,6 @@ using FitLead.Domain.Messenger.ChatMessages;
 using FitLead.Domain.Messenger.VideoReports;
 using FitLead.Domain.Users;
 using MediatR;
-using Microsoft.Extensions.Logging;
 
 namespace FitLead.Application.Messenger.VideoReports.Commands
 {
@@ -24,10 +25,9 @@ namespace FitLead.Application.Messenger.VideoReports.Commands
         private readonly IMediaAssetLoader _mediaAssetLoader;
         private readonly IVideoReportRepository _videoReportRepository;
         private readonly IChatMessageRepository _chatMessageRepository;
-        private readonly IChatRealtimeNotifier _chatRealtimeNotifier;
+        private readonly IOutbox _outbox;
         private readonly IClock _clock;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger<CreateVideoReportHandler> _logger;
 
         public CreateVideoReportHandler(
             IChatLoader chatLoader,
@@ -35,20 +35,18 @@ namespace FitLead.Application.Messenger.VideoReports.Commands
             IMediaAssetLoader mediaAssetLoader,
             IVideoReportRepository videoReportRepository,
             IChatMessageRepository chatMessageRepository,
-            IChatRealtimeNotifier chatRealtimeNotifier,
+            IOutbox outbox,
             IClock clock,
-            IUnitOfWork unitOfWork,
-            ILogger<CreateVideoReportHandler> logger)
+            IUnitOfWork unitOfWork)
         {
             _chatLoader = chatLoader;
             _currentUserLoader = currentUserLoader;
             _mediaAssetLoader = mediaAssetLoader;
             _videoReportRepository = videoReportRepository;
             _chatMessageRepository = chatMessageRepository;
-            _chatRealtimeNotifier = chatRealtimeNotifier;
+            _outbox = outbox;
             _clock = clock;
             _unitOfWork = unitOfWork;
-            _logger = logger;
         }
 
         public async Task<Result<ChatMessageDto>> Handle(
@@ -129,27 +127,31 @@ namespace FitLead.Application.Messenger.VideoReports.Commands
             chat.MarkMessageCreated(createdAtUtc);
             await _videoReportRepository.AddAsync(videoReportResult.Value, cancellationToken);
             await _chatMessageRepository.AddAsync(messageResult.Value, cancellationToken);
+            await _outbox.EnqueueAsync(
+                OutboxEventTypes.Messenger.ChatMessageCreated,
+                new ChatMessageCreatedOutboxPayload(
+                    messageResult.Value.ChatId,
+                    messageResult.Value.Id),
+                createdAtUtc,
+                cancellationToken);
+            await _outbox.EnqueueAsync(
+                OutboxEventTypes.Messenger.VideoReportSubmitted,
+                new VideoReportSubmittedOutboxPayload(
+                    chat.Id,
+                    videoReportResult.Value.Id,
+                    currentUser.Id,
+                    currentUser.FullName,
+                    chat.TrainerId,
+                    videoReportResult.Value.Title,
+                    createdAtUtc),
+                createdAtUtc,
+                cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             var messageDto = ToDto(
                 messageResult.Value,
                 currentUser.FullName,
                 videoReportResult.Value);
-
-            try
-            {
-                await _chatRealtimeNotifier.MessageCreatedAsync(
-                    messageDto, 
-                    CancellationToken.None);
-            }
-            catch (Exception exception)
-            {
-                _logger.LogWarning(
-                    exception,
-                    "Failed to publish realtime video report message event for chat {ChatId} and message {MessageId}.",
-                    messageDto.ChatId,
-                    messageDto.Id);
-            }
 
             return Result<ChatMessageDto>.Success(messageDto);
         }

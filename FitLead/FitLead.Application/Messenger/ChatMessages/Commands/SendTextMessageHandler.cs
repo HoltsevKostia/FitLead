@@ -1,14 +1,14 @@
 using FitLead.Application.Abstractions.Persistence;
 using FitLead.Application.Common;
+using FitLead.Application.Common.Outbox;
 using FitLead.Application.Common.Time;
+using FitLead.Application.Messenger.ChatMessages.Outbox;
 using FitLead.Application.Messenger.ChatMessages.Queries;
-using FitLead.Application.Messenger.ChatMessages.Realtime;
 using FitLead.Application.Messenger.Chats.Access;
 using FitLead.Application.Users.Access;
 using FitLead.Common.Results;
 using FitLead.Domain.Messenger.ChatMessages;
 using MediatR;
-using Microsoft.Extensions.Logging;
 
 namespace FitLead.Application.Messenger.ChatMessages.Commands
 {
@@ -18,27 +18,24 @@ namespace FitLead.Application.Messenger.ChatMessages.Commands
         private readonly IChatLoader _chatLoader;
         private readonly IChatMessageRepository _chatMessageRepository;
         private readonly ICurrentUserLoader _currentUserLoader;
-        private readonly IChatRealtimeNotifier _chatRealtimeNotifier;
+        private readonly IOutbox _outbox;
         private readonly IClock _clock;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger<SendTextMessageHandler> _logger;
 
         public SendTextMessageHandler(
             IChatLoader chatLoader,
             IChatMessageRepository chatMessageRepository,
             ICurrentUserLoader currentUserLoader,
-            IChatRealtimeNotifier chatRealtimeNotifier,
+            IOutbox outbox,
             IClock clock,
-            IUnitOfWork unitOfWork,
-            ILogger<SendTextMessageHandler> logger)
+            IUnitOfWork unitOfWork)
         {
             _chatLoader = chatLoader;
             _chatMessageRepository = chatMessageRepository;
             _currentUserLoader = currentUserLoader;
-            _chatRealtimeNotifier = chatRealtimeNotifier;
+            _outbox = outbox;
             _clock = clock;
             _unitOfWork = unitOfWork;
-            _logger = logger;
         }
 
         public async Task<Result<ChatMessageDto>> Handle(
@@ -72,26 +69,18 @@ namespace FitLead.Application.Messenger.ChatMessages.Commands
 
             chatResult.Value.MarkMessageCreated(createdAtUtc);
             await _chatMessageRepository.AddAsync(messageResult.Value, cancellationToken);
+            await _outbox.EnqueueAsync(
+                OutboxEventTypes.Messenger.ChatMessageCreated,
+                new ChatMessageCreatedOutboxPayload(
+                    messageResult.Value.ChatId,
+                    messageResult.Value.Id),
+                createdAtUtc,
+                cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             var messageDto = ToDto(
                 messageResult.Value,
                 currentUserResult.Value.FullName);
-
-            try
-            {
-                await _chatRealtimeNotifier.MessageCreatedAsync(
-                    messageDto,
-                    CancellationToken.None);
-            }
-            catch (Exception exception)
-            {
-                _logger.LogWarning(
-                    exception,
-                    "Failed to publish realtime message event for chat {ChatId} and message {MessageId}.",
-                    messageDto.ChatId,
-                    messageDto.Id);
-            }
 
             return Result<ChatMessageDto>.Success(messageDto);
         }

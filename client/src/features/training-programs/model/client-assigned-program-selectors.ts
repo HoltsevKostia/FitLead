@@ -6,9 +6,9 @@ import type { WorkoutExerciseDetails } from "@/entities/workout/model/types";
 
 export function findAssignedWorkout(
   program: ClientAssignedTrainingProgramDetails,
-  workoutId: string,
+  programWorkoutId: string,
 ): ClientAssignedTrainingProgramWorkout | null {
-  return program.workouts.find((workout) => workout.workoutId === workoutId) ?? null;
+  return program.workouts.find((workout) => workout.id === programWorkoutId) ?? null;
 }
 
 export function findAssignedWorkoutExercise(

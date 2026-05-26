@@ -8,9 +8,12 @@ import {
 import { ExerciseMediaPreview } from "@/features/exercises/ui/exercise-media-preview";
 import { AddExerciseToWorkoutForm } from "@/features/workouts/ui/add-exercise-to-workout-form";
 import { WorkoutExerciseActions } from "@/features/workouts/ui/workout-exercise-actions";
+import { PlainText } from "@/shared/ui/plain-text";
 
 interface WorkoutDetailViewProps {
   workout: WorkoutDetails;
+  backHref?: string;
+  currentHref?: string;
 }
 
 function formatLoad(loadKg: number | null): string {
@@ -23,9 +26,11 @@ function formatLoad(loadKg: number | null): string {
 
 function WorkoutExerciseCard({
   workoutId,
+  currentHref,
   exercise,
 }: {
   workoutId: string;
+  currentHref: string;
   exercise: WorkoutExerciseDetails;
 }) {
   return (
@@ -54,10 +59,13 @@ function WorkoutExerciseCard({
             <h2 className="text-xl font-semibold text-foreground">
               {exercise.exerciseName}
             </h2>
-            <p className="max-w-3xl text-sm leading-6 text-muted">
-              {exercise.exerciseDescription || "Опис поки не додано."}
-            </p>
-            <ExerciseMediaPreview mediaUrl={exercise.exerciseMediaUrl} />
+            <PlainText
+              className="max-w-3xl text-sm leading-6 text-muted"
+              fallback="Опис поки не додано."
+            >
+              {exercise.exerciseDescription}
+            </PlainText>
+            <ExerciseMediaPreview mediaAsset={exercise.exerciseMediaAsset} />
           </div>
 
           {exercise.trainerNote ? (
@@ -65,9 +73,9 @@ function WorkoutExerciseCard({
               <p className="text-xs font-semibold uppercase text-amber-900">
                 Нотатка тренера
               </p>
-              <p className="mt-1 whitespace-pre-line text-sm leading-6 text-amber-950">
+              <PlainText className="mt-1 text-sm leading-6 text-amber-950">
                 {exercise.trainerNote}
-              </p>
+              </PlainText>
             </div>
           ) : null}
         </div>
@@ -96,7 +104,7 @@ function WorkoutExerciseCard({
 
       <div className="mt-4">
         <Link
-          href={`/exercises/${exercise.exerciseId}`}
+          href={`/exercises/${exercise.exerciseId}?returnTo=${encodeURIComponent(currentHref)}`}
           className="text-sm font-medium text-accent hover:text-accent-strong"
         >
           Переглянути вправу
@@ -108,13 +116,17 @@ function WorkoutExerciseCard({
   );
 }
 
-export function WorkoutDetailView({ workout }: WorkoutDetailViewProps) {
+export function WorkoutDetailView({
+  workout,
+  backHref = "/workouts",
+  currentHref = `/workouts/${workout.id}`,
+}: WorkoutDetailViewProps) {
   const exercises = [...workout.exercises].sort((first, second) => first.order - second.order);
 
   return (
     <section className="space-y-6">
-      <Link href="/workouts" className="text-sm font-medium text-accent hover:text-accent-strong">
-        Назад до тренувань
+      <Link href={backHref} className="text-sm font-medium text-accent hover:text-accent-strong">
+        Назад
       </Link>
 
       <div className="space-y-3">
@@ -137,6 +149,7 @@ export function WorkoutDetailView({ workout }: WorkoutDetailViewProps) {
             <WorkoutExerciseCard
               key={exercise.workoutExerciseId}
               workoutId={workout.id}
+              currentHref={currentHref}
               exercise={exercise}
             />
           ))}
