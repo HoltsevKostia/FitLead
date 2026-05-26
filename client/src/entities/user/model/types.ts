@@ -19,6 +19,12 @@ export interface TrainerClientOverview {
   activePrograms: TrainerClientProgramAccess[];
 }
 
+export interface TrainerClientWorkspace {
+  clientId: string;
+  email: string;
+  fullName: string;
+}
+
 export interface ClientTrainer {
   trainerId: string;
   fullName: string;

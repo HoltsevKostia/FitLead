@@ -27,5 +27,17 @@ namespace FitLead.Api.Trainer
 
             return result.ToActionResult(this);
         }
+
+        [HttpGet("{clientId:guid}/workspace")]
+        public async Task<IActionResult> GetWorkspace(
+            Guid clientId,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new GetTrainerClientWorkspaceQuery(clientId),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
     }
 }

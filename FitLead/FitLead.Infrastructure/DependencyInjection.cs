@@ -157,6 +157,7 @@ namespace FitLead.Infrastructure
             services.AddScoped<IMediaAssetLoader, MediaAssetLoader>();
             services.AddScoped<IMediaAssetRegistrationPolicy, MediaAssetRegistrationPolicy>();
             services.AddScoped<ICurrentUserLoader, CurrentUserLoader>();
+            services.AddScoped<ITrainerClientAccessLoader, TrainerClientAccessLoader>();
             services.AddScoped<IUploadcareUploadSignatureService, UploadcareUploadSignatureService>();
             services.AddHttpClient<IUploadcareClient, UploadcareClient>(client =>
             {
