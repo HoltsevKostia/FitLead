@@ -27,6 +27,22 @@ function TrainerOnlyNotice() {
   );
 }
 
+async function getTrainerClientWorkspaceOrNotFound(clientId: string) {
+  try {
+    return await getTrainerClientWorkspace(clientId);
+  } catch (error) {
+    if (isApiError(error) && error.status === 404) {
+      notFound();
+    }
+
+    if (isUnauthorizedApiError(error)) {
+      throw error;
+    }
+
+    throw error;
+  }
+}
+
 export default async function ClientWorkspacePage({
   params,
   searchParams,
@@ -39,20 +55,7 @@ export default async function ClientWorkspacePage({
 
   const { clientId } = await params;
   const { tab } = await searchParams;
+  const client = await getTrainerClientWorkspaceOrNotFound(clientId);
 
-  try {
-    const client = await getTrainerClientWorkspace(clientId);
-
-    return <TrainerClientWorkspace client={client} activeTab={tab} />;
-  } catch (error) {
-    if (isApiError(error) && error.status === 404) {
-      notFound();
-    }
-
-    if (isUnauthorizedApiError(error)) {
-      throw error;
-    }
-
-    throw error;
-  }
+  return <TrainerClientWorkspace client={client} activeTab={tab} />;
 }
