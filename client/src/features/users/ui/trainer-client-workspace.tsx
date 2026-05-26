@@ -3,16 +3,19 @@
 import Link from "next/link";
 
 import type {
+  TrainerClientProgram,
   TrainerClientOverviewSummary,
   TrainerClientWorkspace as TrainerClientWorkspaceModel,
 } from "@/entities/user/model/types";
 import { OpenChatButton } from "@/features/chats/ui/open-chat-button";
 import { TrainerClientOverviewTab } from "@/features/users/ui/trainer-client-overview-tab";
+import { TrainerClientProgramsTab } from "@/features/users/ui/trainer-client-programs-tab";
 
 interface TrainerClientWorkspaceProps {
   client: TrainerClientWorkspaceModel;
   activeTab?: string;
   overview?: TrainerClientOverviewSummary | null;
+  programs?: TrainerClientProgram[] | null;
 }
 
 const tabs = [
@@ -31,12 +34,18 @@ function getActiveTab(value: string | null): string {
 function TabContent({
   activeTab,
   overview,
+  programs,
 }: {
   activeTab: string;
   overview: TrainerClientOverviewSummary | null;
+  programs: TrainerClientProgram[] | null;
 }) {
   if (activeTab === "overview") {
     return <TrainerClientOverviewTab overview={overview} />;
+  }
+
+  if (activeTab === "programs") {
+    return <TrainerClientProgramsTab programs={programs} />;
   }
 
   return null;
@@ -46,6 +55,7 @@ export function TrainerClientWorkspace({
   client,
   activeTab: selectedTab,
   overview = null,
+  programs = null,
 }: TrainerClientWorkspaceProps) {
   const activeTab = getActiveTab(selectedTab ?? null);
 
@@ -104,7 +114,7 @@ export function TrainerClientWorkspace({
         })}
       </nav>
 
-      <TabContent activeTab={activeTab} overview={overview} />
+      <TabContent activeTab={activeTab} overview={overview} programs={programs} />
     </section>
   );
 }

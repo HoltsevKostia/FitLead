@@ -21,4 +21,11 @@ public sealed class TrainerClientsTestClient(HttpClient httpClient)
     {
         return SendGetAsync($"/api/trainer/clients/{clientId}/overview", cancellationToken);
     }
+
+    public Task<HttpResponseMessage> GetProgramsAsync(
+        Guid clientId,
+        CancellationToken cancellationToken = default)
+    {
+        return SendGetAsync($"/api/trainer/clients/{clientId}/programs", cancellationToken);
+    }
 }

@@ -80,6 +80,18 @@ export interface TrainerClientOverviewSummary {
   lastProgressPhoto: ProgressPhoto | null;
 }
 
+export interface TrainerClientProgram {
+  assignmentId: string;
+  programId: string;
+  programTitle: string;
+  status: "Active" | "Revoked" | "Expired" | string;
+  assignedAtUtc: string;
+  expiresAtUtc: string | null;
+  revokedAtUtc: string | null;
+  totalWorkouts: number;
+  workoutLogCounts: TrainerClientWorkoutLogCounts;
+}
+
 export interface ClientTrainer {
   trainerId: string;
   fullName: string;
