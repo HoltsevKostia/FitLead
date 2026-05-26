@@ -3,6 +3,7 @@ using System;
 using FitLead.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FitLead.Infrastructure.Migrations
 {
     [DbContext(typeof(FitLeadDbContext))]
-    partial class FitLeadDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260525113627_AddClientProfilesModel")]
+    partial class AddClientProfilesModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,75 +24,6 @@ namespace FitLead.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("FitLead.Domain.Clients.BodyMetrics.ClientBodyMetricEntry", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("ArmCm")
-                        .HasPrecision(6, 2)
-                        .HasColumnType("numeric(6,2)");
-
-                    b.Property<decimal?>("BodyFatPercent")
-                        .HasPrecision(5, 2)
-                        .HasColumnType("numeric(5,2)");
-
-                    b.Property<decimal?>("ChestCm")
-                        .HasPrecision(6, 2)
-                        .HasColumnType("numeric(6,2)");
-
-                    b.Property<Guid>("ClientId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<decimal?>("HipsCm")
-                        .HasPrecision(6, 2)
-                        .HasColumnType("numeric(6,2)");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<DateOnly>("RecordedAt")
-                        .HasColumnType("date");
-
-                    b.Property<decimal?>("ThighCm")
-                        .HasPrecision(6, 2)
-                        .HasColumnType("numeric(6,2)");
-
-                    b.Property<DateTime?>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<decimal?>("WaistCm")
-                        .HasPrecision(6, 2)
-                        .HasColumnType("numeric(6,2)");
-
-                    b.Property<decimal?>("WeightKg")
-                        .HasPrecision(6, 2)
-                        .HasColumnType("numeric(6,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClientId", "RecordedAt")
-                        .IsUnique()
-                        .HasDatabaseName("UX_client_body_metric_entries_client_id_recorded_at");
-
-                    b.ToTable("client_body_metric_entries", null, t =>
-                        {
-                            t.HasCheckConstraint("CK_client_body_metric_entries_body_fat_range", "\"BodyFatPercent\" IS NULL OR (\"BodyFatPercent\" BETWEEN 1 AND 80)");
-
-                            t.HasCheckConstraint("CK_client_body_metric_entries_measurements_range", "(\"ChestCm\" IS NULL OR (\"ChestCm\" BETWEEN 1 AND 300)) AND (\"WaistCm\" IS NULL OR (\"WaistCm\" BETWEEN 1 AND 300)) AND (\"HipsCm\" IS NULL OR (\"HipsCm\" BETWEEN 1 AND 300)) AND (\"ArmCm\" IS NULL OR (\"ArmCm\" BETWEEN 1 AND 300)) AND (\"ThighCm\" IS NULL OR (\"ThighCm\" BETWEEN 1 AND 300))");
-
-                            t.HasCheckConstraint("CK_client_body_metric_entries_not_empty", "\"WeightKg\" IS NOT NULL OR \"BodyFatPercent\" IS NOT NULL OR \"ChestCm\" IS NOT NULL OR \"WaistCm\" IS NOT NULL OR \"HipsCm\" IS NOT NULL OR \"ArmCm\" IS NOT NULL OR \"ThighCm\" IS NOT NULL OR \"Note\" IS NOT NULL");
-
-                            t.HasCheckConstraint("CK_client_body_metric_entries_updated_at_after_created", "\"UpdatedAtUtc\" IS NULL OR \"UpdatedAtUtc\" >= \"CreatedAtUtc\"");
-
-                            t.HasCheckConstraint("CK_client_body_metric_entries_weight_range", "\"WeightKg\" IS NULL OR (\"WeightKg\" BETWEEN 1 AND 500)");
-                        });
-                });
 
             modelBuilder.Entity("FitLead.Domain.Clients.ClientProfiles.ClientProfile", b =>
                 {
@@ -140,44 +74,6 @@ namespace FitLead.Infrastructure.Migrations
                             t.HasCheckConstraint("CK_client_profiles_height_range", "\"HeightCm\" IS NULL OR (\"HeightCm\" BETWEEN 50 AND 300)");
 
                             t.HasCheckConstraint("CK_client_profiles_updated_at_after_created", "\"UpdatedAtUtc\" IS NULL OR \"UpdatedAtUtc\" >= \"CreatedAtUtc\"");
-                        });
-                });
-
-            modelBuilder.Entity("FitLead.Domain.Clients.ProgressPhotos.ClientProgressPhoto", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ClientId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Label")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("MediaAssetId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<DateOnly>("TakenAt")
-                        .HasColumnType("date");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MediaAssetId")
-                        .HasDatabaseName("IX_client_progress_photos_media_asset_id");
-
-                    b.HasIndex("ClientId", "TakenAt")
-                        .HasDatabaseName("IX_client_progress_photos_client_id_taken_at");
-
-                    b.ToTable("client_progress_photos", null, t =>
-                        {
-                            t.HasCheckConstraint("CK_client_progress_photos_label_valid", "\"Label\" IN (1, 2, 3, 4)");
                         });
                 });
 
@@ -1222,36 +1118,12 @@ namespace FitLead.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("FitLead.Domain.Clients.BodyMetrics.ClientBodyMetricEntry", b =>
-                {
-                    b.HasOne("FitLead.Domain.Users.User", null)
-                        .WithMany()
-                        .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("FitLead.Domain.Clients.ClientProfiles.ClientProfile", b =>
                 {
                     b.HasOne("FitLead.Domain.Users.User", null)
                         .WithMany()
                         .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("FitLead.Domain.Clients.ProgressPhotos.ClientProgressPhoto", b =>
-                {
-                    b.HasOne("FitLead.Domain.Users.User", null)
-                        .WithMany()
-                        .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("FitLead.Domain.Media.MediaAssets.MediaAsset", null)
-                        .WithMany()
-                        .HasForeignKey("MediaAssetId")
-                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 

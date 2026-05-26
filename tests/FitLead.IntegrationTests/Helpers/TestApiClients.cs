@@ -33,6 +33,27 @@ public sealed class TestApiClients(IntegrationTestFixture fixture)
         return client;
     }
 
+    public async Task<ClientProfilesTestClient> ClientProfilesAsync(AuthTestClient auth)
+    {
+        var client = new ClientProfilesTestClient(fixture.CreateClient(handleCookies: false));
+        await client.CopyAuthStateFromAsync(auth);
+        return client;
+    }
+
+    public async Task<BodyMetricsTestClient> BodyMetricsAsync(AuthTestClient auth)
+    {
+        var client = new BodyMetricsTestClient(fixture.CreateClient(handleCookies: false));
+        await client.CopyAuthStateFromAsync(auth);
+        return client;
+    }
+
+    public async Task<ProgressPhotosTestClient> ProgressPhotosAsync(AuthTestClient auth)
+    {
+        var client = new ProgressPhotosTestClient(fixture.CreateClient(handleCookies: false));
+        await client.CopyAuthStateFromAsync(auth);
+        return client;
+    }
+
     public async Task<TrainerClientsTestClient> TrainerClientsAsync(AuthTestClient auth)
     {
         var client = new TrainerClientsTestClient(fixture.CreateClient(handleCookies: false));

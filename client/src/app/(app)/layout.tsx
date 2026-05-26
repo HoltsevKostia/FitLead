@@ -19,6 +19,7 @@ const clientLinks = [
   { href: "/dashboard", label: "Панель" },
   { href: "/chats", label: "Чати" },
   { href: "/client/training-programs", label: "Мої програми" },
+  { href: "/client/profile", label: "Профіль" },
 ];
 
 export default async function AppLayout({
