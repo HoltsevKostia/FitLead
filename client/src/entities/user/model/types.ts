@@ -1,4 +1,5 @@
 import type { BodyMetricEntry } from "@/entities/body-metric/model/types";
+import type { ClientProfile } from "@/entities/client-profile/model/types";
 import type { ProgressPhoto } from "@/entities/progress-photo/model/types";
 
 export interface TrainerClient {
@@ -126,6 +127,8 @@ export interface TrainerClientProgress {
   bodyMetrics: BodyMetricEntry[];
   progressPhotos: ProgressPhoto[];
 }
+
+export type TrainerClientProfile = ClientProfile;
 
 export interface ClientTrainer {
   trainerId: string;

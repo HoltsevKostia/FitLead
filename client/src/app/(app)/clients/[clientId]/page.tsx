@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { getCurrentUser } from "@/features/auth/server/get-current-user";
 import { getTrainerClientOverviewSummary } from "@/features/users/server/get-trainer-client-overview-summary";
+import { getTrainerClientProfile } from "@/features/users/server/get-trainer-client-profile";
 import { getTrainerClientPrograms } from "@/features/users/server/get-trainer-client-programs";
 import { getTrainerClientProgress } from "@/features/users/server/get-trainer-client-progress";
 import { getTrainerClientVideoReports } from "@/features/users/server/get-trainer-client-video-reports";
@@ -141,6 +142,22 @@ async function getTrainerClientVideoReportsOrNotFound(clientId: string) {
   }
 }
 
+async function getTrainerClientProfileOrNotFound(clientId: string) {
+  try {
+    return await getTrainerClientProfile(clientId);
+  } catch (error) {
+    if (isApiError(error) && error.status === 404) {
+      notFound();
+    }
+
+    if (isUnauthorizedApiError(error)) {
+      throw error;
+    }
+
+    throw error;
+  }
+}
+
 export default async function ClientWorkspacePage({
   params,
   searchParams,
@@ -175,6 +192,10 @@ export default async function ClientWorkspacePage({
     activeTab === "video-reports"
       ? await getTrainerClientVideoReportsOrNotFound(clientId)
       : null;
+  const profile =
+    activeTab === "profile"
+      ? await getTrainerClientProfileOrNotFound(clientId)
+      : null;
 
   return (
     <TrainerClientWorkspace
@@ -185,6 +206,7 @@ export default async function ClientWorkspacePage({
       workoutLogs={workoutLogs}
       progress={progress}
       videoReports={videoReports}
+      profile={profile}
     />
   );
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import type {
   TrainerClientProgram,
+  TrainerClientProfile,
   TrainerClientProgress,
   TrainerClientVideoReport,
   TrainerClientWorkoutLog,
@@ -12,6 +13,7 @@ import type {
 } from "@/entities/user/model/types";
 import { OpenChatButton } from "@/features/chats/ui/open-chat-button";
 import { TrainerClientOverviewTab } from "@/features/users/ui/trainer-client-overview-tab";
+import { TrainerClientProfileTab } from "@/features/users/ui/trainer-client-profile-tab";
 import { TrainerClientProgramsTab } from "@/features/users/ui/trainer-client-programs-tab";
 import { TrainerClientProgressTab } from "@/features/users/ui/trainer-client-progress-tab";
 import { TrainerClientVideoReportsTab } from "@/features/users/ui/trainer-client-video-reports-tab";
@@ -25,6 +27,7 @@ interface TrainerClientWorkspaceProps {
   workoutLogs?: TrainerClientWorkoutLog[] | null;
   progress?: TrainerClientProgress | null;
   videoReports?: TrainerClientVideoReport[] | null;
+  profile?: TrainerClientProfile | null;
 }
 
 const tabs = [
@@ -47,6 +50,7 @@ function TabContent({
   workoutLogs,
   progress,
   videoReports,
+  profile,
 }: {
   activeTab: string;
   overview: TrainerClientOverviewSummary | null;
@@ -54,6 +58,7 @@ function TabContent({
   workoutLogs: TrainerClientWorkoutLog[] | null;
   progress: TrainerClientProgress | null;
   videoReports: TrainerClientVideoReport[] | null;
+  profile: TrainerClientProfile | null;
 }) {
   if (activeTab === "overview") {
     return <TrainerClientOverviewTab overview={overview} />;
@@ -75,6 +80,10 @@ function TabContent({
     return <TrainerClientVideoReportsTab reports={videoReports} />;
   }
 
+  if (activeTab === "profile") {
+    return <TrainerClientProfileTab profile={profile} />;
+  }
+
   return null;
 }
 
@@ -86,6 +95,7 @@ export function TrainerClientWorkspace({
   workoutLogs = null,
   progress = null,
   videoReports = null,
+  profile = null,
 }: TrainerClientWorkspaceProps) {
   const activeTab = getActiveTab(selectedTab ?? null);
 
@@ -151,6 +161,7 @@ export function TrainerClientWorkspace({
         workoutLogs={workoutLogs}
         progress={progress}
         videoReports={videoReports}
+        profile={profile}
       />
     </section>
   );
