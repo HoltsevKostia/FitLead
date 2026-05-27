@@ -76,11 +76,46 @@ export function TrainingProgramAssignmentList({
   programId,
   assignments,
 }: TrainingProgramAssignmentListProps) {
+  const [showInactiveAssignments, setShowInactiveAssignments] = useState(false);
+  const activeAssignments = assignments.filter(
+    (assignment) => assignment.status === "Active",
+  );
+  const inactiveAssignments = assignments.filter(
+    (assignment) => assignment.status !== "Active",
+  );
+  const expiredCount = assignments.filter(
+    (assignment) => assignment.status === "Expired",
+  ).length;
+  const visibleAssignments = showInactiveAssignments
+    ? assignments
+    : activeAssignments;
+
   return (
     <section className="space-y-3 rounded-2xl border border-border bg-surface px-5 py-5">
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-lg font-semibold text-foreground">Призначені клієнти</h2>
-        <span className="text-sm text-muted">{assignments.length} всього</span>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">Призначені клієнти</h2>
+          <p className="mt-1 text-sm text-muted">
+            Активні клієнти показані одразу, неактивні приховані.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2 text-center">
+          <div className="rounded-xl border border-border bg-white px-3 py-2">
+            <p className="text-lg font-semibold text-foreground">{assignments.length}</p>
+            <p className="text-xs text-muted">Всього</p>
+          </div>
+          <div className="rounded-xl border border-border bg-white px-3 py-2">
+            <p className="text-lg font-semibold text-emerald-700">
+              {activeAssignments.length}
+            </p>
+            <p className="text-xs text-muted">Активні</p>
+          </div>
+          <div className="rounded-xl border border-border bg-white px-3 py-2">
+            <p className="text-lg font-semibold text-sky-700">{expiredCount}</p>
+            <p className="text-xs text-muted">Завершили</p>
+          </div>
+        </div>
       </div>
 
       {assignments.length === 0 ? (
@@ -89,7 +124,28 @@ export function TrainingProgramAssignmentList({
         </p>
       ) : (
         <div className="space-y-3">
-          {assignments.map((assignment) => (
+          {inactiveAssignments.length > 0 ? (
+            <div className="flex flex-col gap-3 rounded-xl border border-border bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-muted">
+                Приховано неактивні призначення: {inactiveAssignments.length}
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowInactiveAssignments((current) => !current)}
+                className="w-fit rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground transition hover:bg-surface-strong"
+              >
+                {showInactiveAssignments ? "Сховати" : "Показати"}
+              </button>
+            </div>
+          ) : null}
+
+          {visibleAssignments.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-border bg-white/70 px-4 py-5 text-sm text-muted">
+              Активних призначень немає.
+            </p>
+          ) : null}
+
+          {visibleAssignments.map((assignment) => (
             <article
               key={assignment.assignmentId}
               className="rounded-xl border border-border bg-white px-4 py-4"

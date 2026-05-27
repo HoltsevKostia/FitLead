@@ -81,7 +81,7 @@ export function TrainerClientWorkspace({
               label="Відкрити чат"
             />
             <Link
-              href="/training-programs"
+              href={`/training-programs?assignClientId=${client.clientId}`}
               className="w-fit rounded-full bg-accent px-4 py-2 text-sm font-medium text-white transition hover:bg-accent-strong"
             >
               Призначити програму

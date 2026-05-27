@@ -9,11 +9,13 @@ import { TrainingProgramList } from "@/features/training-programs/ui/training-pr
 interface TrainingProgramLibraryWorkspaceProps {
   programs: TrainingProgram[];
   loadError?: string | null;
+  assignClientId?: string;
 }
 
 export function TrainingProgramLibraryWorkspace({
   programs,
   loadError,
+  assignClientId,
 }: TrainingProgramLibraryWorkspaceProps) {
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
 
@@ -47,7 +49,11 @@ export function TrainingProgramLibraryWorkspace({
         />
       ) : null}
 
-      <TrainingProgramList programs={programs} loadError={loadError} />
+      <TrainingProgramList
+        programs={programs}
+        loadError={loadError}
+        assignClientId={assignClientId}
+      />
     </section>
   );
 }

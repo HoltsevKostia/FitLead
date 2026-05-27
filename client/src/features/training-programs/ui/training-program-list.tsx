@@ -5,9 +5,22 @@ import type { TrainingProgram } from "@/entities/training-program/model/types";
 interface TrainingProgramListProps {
   programs: TrainingProgram[];
   loadError?: string | null;
+  assignClientId?: string;
 }
 
-export function TrainingProgramList({ programs, loadError }: TrainingProgramListProps) {
+function buildProgramHref(programId: string, assignClientId?: string): string {
+  if (!assignClientId) {
+    return `/training-programs/${programId}`;
+  }
+
+  return `/training-programs/${programId}?assignClientId=${encodeURIComponent(assignClientId)}`;
+}
+
+export function TrainingProgramList({
+  programs,
+  loadError,
+  assignClientId,
+}: TrainingProgramListProps) {
   return (
     <div className="space-y-6">
       {loadError ? (
@@ -41,7 +54,7 @@ export function TrainingProgramList({ programs, loadError }: TrainingProgramList
                 </div>
 
                 <Link
-                  href={`/training-programs/${program.id}`}
+                  href={buildProgramHref(program.id, assignClientId)}
                   className="w-fit rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground transition hover:bg-surface-strong"
                 >
                   Переглянути
