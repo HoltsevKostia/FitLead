@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import type {
   TrainerClientProgram,
+  TrainerClientProgress,
   TrainerClientWorkoutLog,
   TrainerClientOverviewSummary,
   TrainerClientWorkspace as TrainerClientWorkspaceModel,
@@ -11,6 +12,7 @@ import type {
 import { OpenChatButton } from "@/features/chats/ui/open-chat-button";
 import { TrainerClientOverviewTab } from "@/features/users/ui/trainer-client-overview-tab";
 import { TrainerClientProgramsTab } from "@/features/users/ui/trainer-client-programs-tab";
+import { TrainerClientProgressTab } from "@/features/users/ui/trainer-client-progress-tab";
 import { TrainerClientWorkoutLogsTab } from "@/features/users/ui/trainer-client-workout-logs-tab";
 
 interface TrainerClientWorkspaceProps {
@@ -19,6 +21,7 @@ interface TrainerClientWorkspaceProps {
   overview?: TrainerClientOverviewSummary | null;
   programs?: TrainerClientProgram[] | null;
   workoutLogs?: TrainerClientWorkoutLog[] | null;
+  progress?: TrainerClientProgress | null;
 }
 
 const tabs = [
@@ -39,11 +42,13 @@ function TabContent({
   overview,
   programs,
   workoutLogs,
+  progress,
 }: {
   activeTab: string;
   overview: TrainerClientOverviewSummary | null;
   programs: TrainerClientProgram[] | null;
   workoutLogs: TrainerClientWorkoutLog[] | null;
+  progress: TrainerClientProgress | null;
 }) {
   if (activeTab === "overview") {
     return <TrainerClientOverviewTab overview={overview} />;
@@ -57,6 +62,10 @@ function TabContent({
     return <TrainerClientWorkoutLogsTab logs={workoutLogs} />;
   }
 
+  if (activeTab === "progress") {
+    return <TrainerClientProgressTab progress={progress} />;
+  }
+
   return null;
 }
 
@@ -66,6 +75,7 @@ export function TrainerClientWorkspace({
   overview = null,
   programs = null,
   workoutLogs = null,
+  progress = null,
 }: TrainerClientWorkspaceProps) {
   const activeTab = getActiveTab(selectedTab ?? null);
 
@@ -129,6 +139,7 @@ export function TrainerClientWorkspace({
         overview={overview}
         programs={programs}
         workoutLogs={workoutLogs}
+        progress={progress}
       />
     </section>
   );

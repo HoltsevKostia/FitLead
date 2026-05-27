@@ -75,5 +75,17 @@ namespace FitLead.Api.Trainer
 
             return result.ToActionResult(this);
         }
+
+        [HttpGet("{clientId:guid}/progress")]
+        public async Task<IActionResult> GetProgress(
+            Guid clientId,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new GetTrainerClientProgressQuery(clientId),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
     }
 }

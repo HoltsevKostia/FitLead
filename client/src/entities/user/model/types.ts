@@ -111,6 +111,11 @@ export interface TrainerClientWorkoutLog {
   updatedAtUtc: string | null;
 }
 
+export interface TrainerClientProgress {
+  bodyMetrics: BodyMetricEntry[];
+  progressPhotos: ProgressPhoto[];
+}
+
 export interface ClientTrainer {
   trainerId: string;
   fullName: string;
