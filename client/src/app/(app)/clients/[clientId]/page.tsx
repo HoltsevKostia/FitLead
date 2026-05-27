@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/features/auth/server/get-current-user";
 import { getTrainerClientOverviewSummary } from "@/features/users/server/get-trainer-client-overview-summary";
 import { getTrainerClientPrograms } from "@/features/users/server/get-trainer-client-programs";
+import { getTrainerClientWorkoutLogs } from "@/features/users/server/get-trainer-client-workout-logs";
 import { getTrainerClientWorkspace } from "@/features/users/server/get-trainer-client-workspace";
 import { TrainerClientWorkspace } from "@/features/users/ui/trainer-client-workspace";
 import { isApiError, isUnauthorizedApiError } from "@/lib/api/api-error";
@@ -90,6 +91,22 @@ async function getTrainerClientProgramsOrNotFound(clientId: string) {
   }
 }
 
+async function getTrainerClientWorkoutLogsOrNotFound(clientId: string) {
+  try {
+    return await getTrainerClientWorkoutLogs(clientId);
+  } catch (error) {
+    if (isApiError(error) && error.status === 404) {
+      notFound();
+    }
+
+    if (isUnauthorizedApiError(error)) {
+      throw error;
+    }
+
+    throw error;
+  }
+}
+
 export default async function ClientWorkspacePage({
   params,
   searchParams,
@@ -112,6 +129,10 @@ export default async function ClientWorkspacePage({
     activeTab === "programs"
       ? await getTrainerClientProgramsOrNotFound(clientId)
       : null;
+  const workoutLogs =
+    activeTab === "workout-logs"
+      ? await getTrainerClientWorkoutLogsOrNotFound(clientId)
+      : null;
 
   return (
     <TrainerClientWorkspace
@@ -119,6 +140,7 @@ export default async function ClientWorkspacePage({
       activeTab={activeTab}
       overview={overview}
       programs={programs}
+      workoutLogs={workoutLogs}
     />
   );
 }

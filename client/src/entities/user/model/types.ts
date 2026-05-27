@@ -92,6 +92,25 @@ export interface TrainerClientProgram {
   workoutLogCounts: TrainerClientWorkoutLogCounts;
 }
 
+export interface TrainerClientWorkoutLog {
+  logId: string;
+  assignmentId: string;
+  programId: string;
+  programTitle: string;
+  programWorkoutId: string;
+  workoutId: string;
+  workoutName: string;
+  weekNumber: number;
+  dayNumber: number;
+  orderInDay: number;
+  status: "Completed" | "Skipped" | string;
+  performedAtUtc: string | null;
+  difficultyRating: number | null;
+  clientNote: string | null;
+  createdAtUtc: string;
+  updatedAtUtc: string | null;
+}
+
 export interface ClientTrainer {
   trainerId: string;
   fullName: string;

@@ -4,18 +4,21 @@ import Link from "next/link";
 
 import type {
   TrainerClientProgram,
+  TrainerClientWorkoutLog,
   TrainerClientOverviewSummary,
   TrainerClientWorkspace as TrainerClientWorkspaceModel,
 } from "@/entities/user/model/types";
 import { OpenChatButton } from "@/features/chats/ui/open-chat-button";
 import { TrainerClientOverviewTab } from "@/features/users/ui/trainer-client-overview-tab";
 import { TrainerClientProgramsTab } from "@/features/users/ui/trainer-client-programs-tab";
+import { TrainerClientWorkoutLogsTab } from "@/features/users/ui/trainer-client-workout-logs-tab";
 
 interface TrainerClientWorkspaceProps {
   client: TrainerClientWorkspaceModel;
   activeTab?: string;
   overview?: TrainerClientOverviewSummary | null;
   programs?: TrainerClientProgram[] | null;
+  workoutLogs?: TrainerClientWorkoutLog[] | null;
 }
 
 const tabs = [
@@ -35,10 +38,12 @@ function TabContent({
   activeTab,
   overview,
   programs,
+  workoutLogs,
 }: {
   activeTab: string;
   overview: TrainerClientOverviewSummary | null;
   programs: TrainerClientProgram[] | null;
+  workoutLogs: TrainerClientWorkoutLog[] | null;
 }) {
   if (activeTab === "overview") {
     return <TrainerClientOverviewTab overview={overview} />;
@@ -46,6 +51,10 @@ function TabContent({
 
   if (activeTab === "programs") {
     return <TrainerClientProgramsTab programs={programs} />;
+  }
+
+  if (activeTab === "workout-logs") {
+    return <TrainerClientWorkoutLogsTab logs={workoutLogs} />;
   }
 
   return null;
@@ -56,6 +65,7 @@ export function TrainerClientWorkspace({
   activeTab: selectedTab,
   overview = null,
   programs = null,
+  workoutLogs = null,
 }: TrainerClientWorkspaceProps) {
   const activeTab = getActiveTab(selectedTab ?? null);
 
@@ -114,7 +124,12 @@ export function TrainerClientWorkspace({
         })}
       </nav>
 
-      <TabContent activeTab={activeTab} overview={overview} programs={programs} />
+      <TabContent
+        activeTab={activeTab}
+        overview={overview}
+        programs={programs}
+        workoutLogs={workoutLogs}
+      />
     </section>
   );
 }
