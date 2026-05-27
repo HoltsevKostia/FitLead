@@ -4,21 +4,13 @@ import Link from "next/link";
 import { useState } from "react";
 
 import type { TrainerClientProgram } from "@/entities/user/model/types";
+import {
+  formatOptionalUkrainianDate,
+  formatUkrainianDate,
+} from "@/features/users/ui/trainer-client-date-formatting";
 
 interface TrainerClientProgramsTabProps {
   programs: TrainerClientProgram[] | null;
-}
-
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat("uk-UA", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(new Date(value));
-}
-
-function formatOptionalEndDate(value: string | null): string {
-  return value ? formatDate(value) : "Безстроково";
 }
 
 function getAssignmentStatusLabel(status: string): string {
@@ -89,10 +81,10 @@ function ProgramCard({ program }: { program: TrainerClientProgram }) {
             {program.programTitle}
           </h2>
           <div className="space-y-1 text-sm text-muted">
-            <p>Призначено: {formatDate(program.assignedAtUtc)}</p>
-            <p>Завершення: {formatOptionalEndDate(program.expiresAtUtc)}</p>
+            <p>Призначено: {formatUkrainianDate(program.assignedAtUtc)}</p>
+            <p>Завершення: {formatOptionalUkrainianDate(program.expiresAtUtc)}</p>
             {program.revokedAtUtc ? (
-              <p>Відкликано: {formatDate(program.revokedAtUtc)}</p>
+              <p>Відкликано: {formatUkrainianDate(program.revokedAtUtc)}</p>
             ) : null}
           </div>
         </div>

@@ -8,6 +8,7 @@ import type { BodyMetricEntry } from "@/entities/body-metric/model/types";
 import type { ProgressPhoto } from "@/entities/progress-photo/model/types";
 import type { TrainerClientProgress } from "@/entities/user/model/types";
 import { MediaLightbox } from "@/features/media-assets/ui/media-lightbox";
+import { formatUkrainianDateOnly } from "@/features/users/ui/trainer-client-date-formatting";
 import { PlainText } from "@/shared/ui/plain-text";
 
 interface TrainerClientProgressTabProps {
@@ -20,19 +21,6 @@ const photoLabelText: Record<ProgressPhoto["label"], string> = {
   Back: "Ззаду",
   Other: "Інше",
 };
-
-function formatDateOnly(value: string): string {
-  const [year, month, day] = value.split("-").map(Number);
-  if (!year || !month || !day) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat("uk-UA", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(new Date(year, month - 1, day));
-}
 
 function getMetricValues(metric: BodyMetricEntry): string[] {
   return [
@@ -57,7 +45,7 @@ function BodyMetricCard({ metric }: { metric: BodyMetricEntry }) {
     <article className="rounded-2xl border border-border bg-white px-5 py-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <h3 className="text-base font-semibold text-foreground">
-          {formatDateOnly(metric.recordedAt)}
+          {formatUkrainianDateOnly(metric.recordedAt)}
         </h3>
         <span className="rounded-full border border-border bg-surface px-3 py-1 text-xs font-semibold text-muted">
           Метрики
@@ -122,7 +110,7 @@ function ProgressPhotoCard({
       >
         <img
           src={photo.mediaAsset.deliveryUrl}
-          alt={`Фото прогресу: ${getPhotoLabel(photo.label)}, ${formatDateOnly(photo.takenAt)}`}
+          alt={`Фото прогресу: ${getPhotoLabel(photo.label)}, ${formatUkrainianDateOnly(photo.takenAt)}`}
           className="aspect-[4/3] w-full object-cover"
           loading="lazy"
         />
@@ -132,7 +120,9 @@ function ProgressPhotoCard({
           <span className="rounded-full border border-border bg-surface px-3 py-1 text-xs font-semibold text-muted">
             {getPhotoLabel(photo.label)}
           </span>
-          <span className="text-sm text-muted">{formatDateOnly(photo.takenAt)}</span>
+          <span className="text-sm text-muted">
+            {formatUkrainianDateOnly(photo.takenAt)}
+          </span>
         </div>
         {photo.note ? (
           <PlainText className="text-sm leading-6 text-muted">{photo.note}</PlainText>
@@ -169,7 +159,7 @@ function ProgressPhotosSection({ photos }: { photos: ProgressPhoto[] }) {
         <MediaLightbox
           asset={selectedPhoto.mediaAsset}
           title={getPhotoLabel(selectedPhoto.label)}
-          subtitle={formatDateOnly(selectedPhoto.takenAt)}
+          subtitle={formatUkrainianDateOnly(selectedPhoto.takenAt)}
           note={selectedPhoto.note ?? undefined}
           onClose={() => setSelectedPhoto(null)}
         />

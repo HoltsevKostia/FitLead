@@ -1,22 +1,11 @@
 "use client";
 
 import type { TrainerClientWorkoutLog } from "@/entities/user/model/types";
+import { formatUkrainianDate } from "@/features/users/ui/trainer-client-date-formatting";
 import { PlainText } from "@/shared/ui/plain-text";
 
 interface TrainerClientWorkoutLogsTabProps {
   logs: TrainerClientWorkoutLog[] | null;
-}
-
-function formatDate(value: string | null): string {
-  if (!value) {
-    return "Дата не вказана";
-  }
-
-  return new Intl.DateTimeFormat("uk-UA", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(new Date(value));
 }
 
 function getStatusLabel(status: string): string {
@@ -44,7 +33,7 @@ function getStatusClassName(status: string): string {
 }
 
 function getLogDate(log: TrainerClientWorkoutLog): string {
-  return formatDate(log.performedAtUtc ?? log.createdAtUtc);
+  return formatUkrainianDate(log.performedAtUtc ?? log.createdAtUtc);
 }
 
 function WorkoutLogCard({ log }: { log: TrainerClientWorkoutLog }) {

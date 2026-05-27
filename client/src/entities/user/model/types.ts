@@ -71,6 +71,17 @@ export interface TrainerClientLastVideoReport {
   reviewedAtUtc: string | null;
 }
 
+export interface TrainerClientVideoReport {
+  reportId: string;
+  chatId: string;
+  title: string;
+  description: string | null;
+  status: "Submitted" | "Reviewed" | string;
+  mediaCount: number;
+  createdAtUtc: string;
+  reviewedAtUtc: string | null;
+}
+
 export interface TrainerClientOverviewSummary {
   activeProgram: TrainerClientActiveProgramSummary | null;
   workoutLogCounts: TrainerClientWorkoutLogCounts;

@@ -10,35 +10,15 @@ import type {
   TrainerClientLastWorkoutLog,
   TrainerClientOverviewSummary,
 } from "@/entities/user/model/types";
+import {
+  formatOptionalUkrainianDate,
+  formatUkrainianDate,
+  formatUkrainianDateOnly,
+} from "@/features/users/ui/trainer-client-date-formatting";
 import { PlainText } from "@/shared/ui/plain-text";
 
 interface TrainerClientOverviewTabProps {
   overview: TrainerClientOverviewSummary | null;
-}
-
-function formatDate(value: string | null): string {
-  if (!value) {
-    return "Безстроково";
-  }
-
-  return new Intl.DateTimeFormat("uk-UA", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(new Date(value));
-}
-
-function formatDateOnly(value: string): string {
-  const [year, month, day] = value.split("-").map(Number);
-  if (!year || !month || !day) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat("uk-UA", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(new Date(year, month - 1, day));
 }
 
 function getWorkoutStatusLabel(status: string): string {
@@ -133,10 +113,10 @@ function ActiveProgramCard({ overview }: { overview: TrainerClientOverviewSummar
             {program.programTitle}
           </p>
           <p className="text-sm text-muted">
-            Призначено {formatDate(program.assignedAtUtc)}
+            Призначено {formatUkrainianDate(program.assignedAtUtc)}
           </p>
           <p className="text-sm text-muted">
-            Завершення: {formatDate(program.expiresAtUtc)}
+            Завершення: {formatOptionalUkrainianDate(program.expiresAtUtc)}
           </p>
           <p className="text-sm text-muted">
             Тренувань у програмі: {program.totalWorkouts}
@@ -171,7 +151,7 @@ function LastWorkoutLogCard({ log }: { log: TrainerClientLastWorkoutLog | null }
             {log.programTitle} · тиждень {log.weekNumber}, день {log.dayNumber}
           </p>
           <p className="text-sm text-muted">
-            {formatDate(log.performedAtUtc ?? log.updatedAtUtc ?? log.createdAtUtc)}
+            {formatUkrainianDate(log.performedAtUtc ?? log.updatedAtUtc ?? log.createdAtUtc)}
           </p>
           {log.clientNote ? (
             <PlainText className="text-sm leading-6 text-muted">{log.clientNote}</PlainText>
@@ -216,7 +196,9 @@ function LastVideoReportCard({
           <p className="break-words text-lg font-semibold text-foreground">
             {report.title}
           </p>
-          <p className="text-sm text-muted">{formatDate(report.createdAtUtc)}</p>
+          <p className="text-sm text-muted">
+            {formatUkrainianDate(report.createdAtUtc)}
+          </p>
           {report.description ? (
             <PlainText className="line-clamp-3 text-sm leading-6 text-muted">
               {report.description}
@@ -251,7 +233,7 @@ function ProgressCard({ overview }: { overview: TrainerClientOverviewSummary }) 
           {metric ? (
             <>
               <p className="text-sm font-medium text-foreground">
-                Метрики від {formatDateOnly(metric.recordedAt)}
+                Метрики від {formatUkrainianDateOnly(metric.recordedAt)}
               </p>
               <div className="flex flex-wrap gap-2 text-sm text-muted">
                 {metric.weightKg ? <span>Вага: {metric.weightKg} кг</span> : null}
@@ -275,7 +257,7 @@ function ProgressCard({ overview }: { overview: TrainerClientOverviewSummary }) 
               className="h-36 w-full object-cover"
             />
             <p className="px-3 py-2 text-xs text-muted">
-              {formatDateOnly(photo.takenAt)}
+              {formatUkrainianDateOnly(photo.takenAt)}
             </p>
           </div>
         ) : null}

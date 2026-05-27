@@ -87,5 +87,17 @@ namespace FitLead.Api.Trainer
 
             return result.ToActionResult(this);
         }
+
+        [HttpGet("{clientId:guid}/video-reports")]
+        public async Task<IActionResult> GetVideoReports(
+            Guid clientId,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new GetTrainerClientVideoReportsQuery(clientId),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
     }
 }

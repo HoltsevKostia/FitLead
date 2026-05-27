@@ -5,6 +5,7 @@ import Link from "next/link";
 import type {
   TrainerClientProgram,
   TrainerClientProgress,
+  TrainerClientVideoReport,
   TrainerClientWorkoutLog,
   TrainerClientOverviewSummary,
   TrainerClientWorkspace as TrainerClientWorkspaceModel,
@@ -13,6 +14,7 @@ import { OpenChatButton } from "@/features/chats/ui/open-chat-button";
 import { TrainerClientOverviewTab } from "@/features/users/ui/trainer-client-overview-tab";
 import { TrainerClientProgramsTab } from "@/features/users/ui/trainer-client-programs-tab";
 import { TrainerClientProgressTab } from "@/features/users/ui/trainer-client-progress-tab";
+import { TrainerClientVideoReportsTab } from "@/features/users/ui/trainer-client-video-reports-tab";
 import { TrainerClientWorkoutLogsTab } from "@/features/users/ui/trainer-client-workout-logs-tab";
 
 interface TrainerClientWorkspaceProps {
@@ -22,6 +24,7 @@ interface TrainerClientWorkspaceProps {
   programs?: TrainerClientProgram[] | null;
   workoutLogs?: TrainerClientWorkoutLog[] | null;
   progress?: TrainerClientProgress | null;
+  videoReports?: TrainerClientVideoReport[] | null;
 }
 
 const tabs = [
@@ -43,12 +46,14 @@ function TabContent({
   programs,
   workoutLogs,
   progress,
+  videoReports,
 }: {
   activeTab: string;
   overview: TrainerClientOverviewSummary | null;
   programs: TrainerClientProgram[] | null;
   workoutLogs: TrainerClientWorkoutLog[] | null;
   progress: TrainerClientProgress | null;
+  videoReports: TrainerClientVideoReport[] | null;
 }) {
   if (activeTab === "overview") {
     return <TrainerClientOverviewTab overview={overview} />;
@@ -66,6 +71,10 @@ function TabContent({
     return <TrainerClientProgressTab progress={progress} />;
   }
 
+  if (activeTab === "video-reports") {
+    return <TrainerClientVideoReportsTab reports={videoReports} />;
+  }
+
   return null;
 }
 
@@ -76,6 +85,7 @@ export function TrainerClientWorkspace({
   programs = null,
   workoutLogs = null,
   progress = null,
+  videoReports = null,
 }: TrainerClientWorkspaceProps) {
   const activeTab = getActiveTab(selectedTab ?? null);
 
@@ -140,6 +150,7 @@ export function TrainerClientWorkspace({
         programs={programs}
         workoutLogs={workoutLogs}
         progress={progress}
+        videoReports={videoReports}
       />
     </section>
   );
