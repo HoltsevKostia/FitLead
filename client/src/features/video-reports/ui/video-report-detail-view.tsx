@@ -8,6 +8,7 @@ import { useState } from "react";
 import type { VideoReportDetails, VideoReportMedia } from "@/entities/video-report/model/types";
 import type { CurrentUser } from "@/features/auth/model/types";
 import { MediaLightbox } from "@/features/media-assets/ui/media-lightbox";
+import { MediaVideo } from "@/features/media-assets/ui/media-video";
 import { SubmitVideoReportFeedbackForm } from "@/features/video-reports/ui/submit-video-report-feedback-form";
 
 interface VideoReportDetailViewProps {
@@ -85,10 +86,9 @@ function VideoReportMediaItem({
         </button>
       ) : (
         <div className="space-y-3 bg-black pb-3">
-          <video
-            controls
-            className="max-h-[34rem] w-full bg-black"
+          <MediaVideo
             src={media.deliveryUrl}
+            objectFit="contain"
           />
           <div className="px-4">
             <button

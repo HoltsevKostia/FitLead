@@ -5,6 +5,7 @@
 import type { ReactNode } from "react";
 
 import type { MediaAssetPreview } from "@/entities/media-asset/model/types";
+import { MediaVideo } from "@/features/media-assets/ui/media-video";
 import { PlainText } from "@/shared/ui/plain-text";
 
 export type MediaLightboxAsset = Pick<
@@ -80,15 +81,15 @@ export function MediaLightbox({
               className="mx-auto h-auto max-h-[75vh] w-auto max-w-full object-contain"
             />
           ) : asset.kind === "Video" ? (
-            <video
+            <MediaVideo
               src={asset.deliveryUrl}
-              controls
-              className="mx-auto max-h-[75vh] w-full max-w-full bg-black"
+              className="mx-auto w-full max-w-full"
+              objectFit="contain"
             >
               <a href={asset.deliveryUrl} target="_blank" rel="noreferrer">
                 Відкрити відео
               </a>
-            </video>
+            </MediaVideo>
           ) : (
             <div className="px-4 py-10 text-center text-sm text-muted">
               Цей тип медіа не підтримується для перегляду.

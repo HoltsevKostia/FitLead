@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import type { MediaAssetPreview } from "@/entities/media-asset/model/types";
 import { MediaLightbox } from "@/features/media-assets/ui/media-lightbox";
+import { MediaVideo } from "@/features/media-assets/ui/media-video";
 
 interface ExerciseDetailMediaProps {
   mediaAsset: MediaAssetPreview | null;
@@ -52,15 +53,15 @@ export function ExerciseDetailMedia({ mediaAsset }: ExerciseDetailMediaProps) {
   if (mediaAsset.kind === "Video") {
     return (
       <div className="space-y-3">
-        <video
-          controls
-          className="max-h-[520px] w-full rounded-2xl border border-border bg-black"
+        <MediaVideo
+          className="rounded-2xl border border-border"
+          objectFit="contain"
           src={mediaAsset.deliveryUrl}
         >
           <a href={mediaAsset.deliveryUrl} target="_blank" rel="noreferrer">
             Відкрити медіа
           </a>
-        </video>
+        </MediaVideo>
 
         <button
           type="button"
