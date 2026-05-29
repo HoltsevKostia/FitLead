@@ -108,7 +108,10 @@ export function ClientAssignedExerciseDetailView({
 
         <div className="space-y-3">
           <h2 className="text-lg font-semibold text-foreground">Медіа</h2>
-          <ExerciseDetailMedia mediaAsset={exercise.exerciseMediaAsset} />
+          <ExerciseDetailMedia
+            mediaAsset={exercise.exerciseMediaAsset}
+            exerciseName={exercise.exerciseName}
+          />
         </div>
       </div>
     </section>

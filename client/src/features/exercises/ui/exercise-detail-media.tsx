@@ -1,5 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
-
 "use client";
 
 import { useState } from "react";
@@ -7,12 +5,14 @@ import { useState } from "react";
 import type { MediaAssetPreview } from "@/entities/media-asset/model/types";
 import { MediaLightbox } from "@/features/media-assets/ui/media-lightbox";
 import { MediaVideo } from "@/features/media-assets/ui/media-video";
+import { MediaImage } from "@/shared/ui/media-image";
 
 interface ExerciseDetailMediaProps {
   mediaAsset: MediaAssetPreview | null;
+  exerciseName?: string;
 }
 
-export function ExerciseDetailMedia({ mediaAsset }: ExerciseDetailMediaProps) {
+export function ExerciseDetailMedia({ mediaAsset, exerciseName }: ExerciseDetailMediaProps) {
   const [isViewerOpen, setIsViewerOpen] = useState(false);
 
   if (!mediaAsset) {
@@ -32,17 +32,20 @@ export function ExerciseDetailMedia({ mediaAsset }: ExerciseDetailMediaProps) {
           className="block w-full overflow-hidden rounded-2xl border border-border bg-surface"
           aria-label="Відкрити медіа вправи"
         >
-          <img
+          <MediaImage
             src={mediaAsset.deliveryUrl}
-            alt=""
-            className="max-h-[520px] w-full object-contain"
+            alt={exerciseName ? `Медіа вправи: ${exerciseName}` : "Медіа вправи"}
+            aspectRatio="video"
+            objectFit="contain"
+            className="w-full"
+            sizes="(max-width: 1024px) 100vw, 768px"
           />
         </button>
 
         {isViewerOpen ? (
           <MediaLightbox
             asset={mediaAsset}
-            title={mediaAsset.fileName ?? "Фото вправи"}
+            title={exerciseName ? `Медіа вправи: ${exerciseName}` : "Медіа вправи"}
             onClose={() => setIsViewerOpen(false)}
           />
         ) : null}

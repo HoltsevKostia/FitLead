@@ -1,5 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
-
 "use client";
 
 import Link from "next/link";
@@ -10,6 +8,7 @@ import type { CurrentUser } from "@/features/auth/model/types";
 import { MediaLightbox } from "@/features/media-assets/ui/media-lightbox";
 import { MediaVideo } from "@/features/media-assets/ui/media-video";
 import { SubmitVideoReportFeedbackForm } from "@/features/video-reports/ui/submit-video-report-feedback-form";
+import { MediaImage } from "@/shared/ui/media-image";
 
 interface VideoReportDetailViewProps {
   currentUser: CurrentUser;
@@ -63,9 +62,11 @@ function getMediaKindLabel(media: VideoReportMedia): string {
 
 function VideoReportMediaItem({
   media,
+  reportTitle,
   onOpen,
 }: {
   media: VideoReportMedia;
+  reportTitle: string;
   onOpen: (media: VideoReportMedia) => void;
 }) {
   return (
@@ -77,11 +78,14 @@ function VideoReportMediaItem({
           className="block w-full"
           aria-label="Відкрити медіа звіту"
         >
-          <img
+          <MediaImage
             src={media.deliveryUrl}
-            alt={media.fileName ?? ""}
-            className="max-h-[34rem] w-full object-contain"
-            referrerPolicy="no-referrer"
+            alt={`Медіа відеозвіту: ${reportTitle}`}
+            aspectRatio="video"
+            objectFit="contain"
+            className="w-full"
+            sizes="(max-width: 1024px) 100vw, 896px"
+            imageClassName="!max-h-none"
           />
         </button>
       ) : (
@@ -169,6 +173,7 @@ export function VideoReportDetailView({
             <VideoReportMediaItem
               key={media.id}
               media={media}
+              reportTitle={report.title}
               onOpen={setOpenedMedia}
             />
           ))}

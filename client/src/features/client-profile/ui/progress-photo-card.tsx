@@ -1,6 +1,5 @@
-/* eslint-disable @next/next/no-img-element */
-
 import type { ProgressPhoto } from "@/entities/progress-photo/model/types";
+import { MediaImage } from "@/shared/ui/media-image";
 import { PlainText } from "@/shared/ui/plain-text";
 
 interface ProgressPhotoCardProps {
@@ -51,11 +50,12 @@ export function ProgressPhotoCard({
         className="block aspect-[4/5] w-full bg-surface-strong text-left"
         aria-label={`Відкрити фото прогресу: ${label}, ${formattedDate}`}
       >
-        <img
+        <MediaImage
           src={photo.mediaAsset.deliveryUrl}
           alt={`Фото прогресу: ${label}, ${formattedDate}`}
-          className="h-full w-full object-cover"
-          loading="lazy"
+          aspectRatio="4/5"
+          className="h-full w-full"
+          sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
         />
       </button>
 

@@ -1,11 +1,10 @@
-/* eslint-disable @next/next/no-img-element */
-
 "use client";
 
 import type { ReactNode } from "react";
 
 import type { MediaAssetPreview } from "@/entities/media-asset/model/types";
 import { MediaVideo } from "@/features/media-assets/ui/media-video";
+import { MediaImage } from "@/shared/ui/media-image";
 import { PlainText } from "@/shared/ui/plain-text";
 
 export type MediaLightboxAsset = Pick<
@@ -75,10 +74,13 @@ export function MediaLightbox({
 
         <div className="max-h-[75vh] overflow-auto bg-surface-strong">
           {asset.kind === "Image" ? (
-            <img
+            <MediaImage
               src={asset.deliveryUrl}
-              alt={asset.fileName ?? accessibleTitle}
-              className="mx-auto h-auto max-h-[75vh] w-auto max-w-full object-contain"
+              alt={accessibleTitle}
+              aspectRatio="video"
+              objectFit="contain"
+              className="mx-auto w-full max-w-full"
+              sizes="(max-width: 1024px) 100vw, 1024px"
             />
           ) : asset.kind === "Video" ? (
             <MediaVideo

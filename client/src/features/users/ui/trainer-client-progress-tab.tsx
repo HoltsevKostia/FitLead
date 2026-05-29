@@ -1,5 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
-
 "use client";
 
 import { useState } from "react";
@@ -9,6 +7,7 @@ import type { ProgressPhoto } from "@/entities/progress-photo/model/types";
 import type { TrainerClientProgress } from "@/entities/user/model/types";
 import { MediaLightbox } from "@/features/media-assets/ui/media-lightbox";
 import { formatUkrainianDateOnly } from "@/features/users/ui/trainer-client-date-formatting";
+import { MediaImage } from "@/shared/ui/media-image";
 import { PlainText } from "@/shared/ui/plain-text";
 
 interface TrainerClientProgressTabProps {
@@ -108,11 +107,12 @@ function ProgressPhotoCard({
         onClick={() => onOpen(photo)}
         className="block w-full bg-surface text-left"
       >
-        <img
+        <MediaImage
           src={photo.mediaAsset.deliveryUrl}
           alt={`Фото прогресу: ${getPhotoLabel(photo.label)}, ${formatUkrainianDateOnly(photo.takenAt)}`}
-          className="aspect-[4/3] w-full object-cover"
-          loading="lazy"
+          aspectRatio="4/3"
+          className="w-full"
+          sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
         />
       </button>
       <div className="space-y-2 px-4 py-4">

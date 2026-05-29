@@ -70,7 +70,7 @@ export function ExerciseDetailView({ exercise, backHref = "/exercises" }: Exerci
 
         <div className="space-y-3">
           <h2 className="text-lg font-semibold text-foreground">Медіа</h2>
-          <ExerciseDetailMedia mediaAsset={exercise.mediaAsset} />
+          <ExerciseDetailMedia mediaAsset={exercise.mediaAsset} exerciseName={exercise.name} />
         </div>
       </div>
     </section>

@@ -248,7 +248,10 @@ export function ExerciseActions({ exercise }: ExerciseActionsProps) {
             <p className={fieldLabelClassName}>Медіа</p>
             {selectedMediaAsset ? (
               <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-white px-4 py-3">
-                <ExerciseMediaPreview mediaAsset={selectedMediaAsset} />
+                <ExerciseMediaPreview
+                  mediaAsset={selectedMediaAsset}
+                  exerciseName={name.trim() || exercise.name}
+                />
                 <button
                   type="button"
                   onClick={() => {

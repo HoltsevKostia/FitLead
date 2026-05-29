@@ -1,5 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
-
 "use client";
 
 import Link from "next/link";
@@ -15,6 +13,7 @@ import {
   formatUkrainianDate,
   formatUkrainianDateOnly,
 } from "@/features/users/ui/trainer-client-date-formatting";
+import { MediaImage } from "@/shared/ui/media-image";
 import { PlainText } from "@/shared/ui/plain-text";
 
 interface TrainerClientOverviewTabProps {
@@ -43,6 +42,17 @@ function getReportStatusLabel(status: string): string {
   }
 
   return status;
+}
+
+function getProgressPhotoLabel(label: string): string {
+  const labels: Record<string, string> = {
+    Front: "Спереду",
+    Side: "Збоку",
+    Back: "Ззаду",
+    Other: "Інше",
+  };
+
+  return labels[label] ?? "Фото";
 }
 
 function OverviewCard({
@@ -251,10 +261,12 @@ function ProgressCard({ overview }: { overview: TrainerClientOverviewSummary }) 
 
         {photo ? (
           <div className="overflow-hidden rounded-xl border border-border bg-surface">
-            <img
+            <MediaImage
               src={photo.mediaAsset.deliveryUrl}
-              alt={photo.mediaAsset.fileName ?? "Фото прогресу"}
-              className="h-36 w-full object-cover"
+              alt={`Фото прогресу: ${getProgressPhotoLabel(photo.label)}, ${formatUkrainianDateOnly(photo.takenAt)}`}
+              aspectRatio="4/5"
+              className="h-36 w-full"
+              sizes="160px"
             />
             <p className="px-3 py-2 text-xs text-muted">
               {formatUkrainianDateOnly(photo.takenAt)}
