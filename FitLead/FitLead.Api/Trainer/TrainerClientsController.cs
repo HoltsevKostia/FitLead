@@ -27,5 +27,89 @@ namespace FitLead.Api.Trainer
 
             return result.ToActionResult(this);
         }
+
+        [HttpGet("{clientId:guid}/workspace")]
+        public async Task<IActionResult> GetWorkspace(
+            Guid clientId,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new GetTrainerClientWorkspaceQuery(clientId),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
+
+        [HttpGet("{clientId:guid}/overview")]
+        public async Task<IActionResult> GetOverviewSummary(
+            Guid clientId,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new GetTrainerClientOverviewSummaryQuery(clientId),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
+
+        [HttpGet("{clientId:guid}/programs")]
+        public async Task<IActionResult> GetPrograms(
+            Guid clientId,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new GetTrainerClientProgramsQuery(clientId),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
+
+        [HttpGet("{clientId:guid}/workout-logs")]
+        public async Task<IActionResult> GetWorkoutLogs(
+            Guid clientId,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new GetTrainerClientWorkoutLogsQuery(clientId),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
+
+        [HttpGet("{clientId:guid}/progress")]
+        public async Task<IActionResult> GetProgress(
+            Guid clientId,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new GetTrainerClientProgressQuery(clientId),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
+
+        [HttpGet("{clientId:guid}/video-reports")]
+        public async Task<IActionResult> GetVideoReports(
+            Guid clientId,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new GetTrainerClientVideoReportsQuery(clientId),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
+
+        [HttpGet("{clientId:guid}/profile")]
+        public async Task<IActionResult> GetProfile(
+            Guid clientId,
+            CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(
+                new GetTrainerClientProfileQuery(clientId),
+                cancellationToken);
+
+            return result.ToActionResult(this);
+        }
     }
 }

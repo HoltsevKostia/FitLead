@@ -1,12 +1,19 @@
 /* eslint-disable @next/next/no-img-element */
 
+"use client";
+
+import { useState } from "react";
+
 import type { MediaAssetPreview } from "@/entities/media-asset/model/types";
+import { MediaLightbox } from "@/features/media-assets/ui/media-lightbox";
 
 interface ExerciseDetailMediaProps {
   mediaAsset: MediaAssetPreview | null;
 }
 
 export function ExerciseDetailMedia({ mediaAsset }: ExerciseDetailMediaProps) {
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
+
   if (!mediaAsset) {
     return (
       <div className="rounded-2xl border border-dashed border-border px-5 py-6 text-sm text-muted">
@@ -17,32 +24,60 @@ export function ExerciseDetailMedia({ mediaAsset }: ExerciseDetailMediaProps) {
 
   if (mediaAsset.kind === "Image") {
     return (
-      <a
-        href={mediaAsset.deliveryUrl}
-        target="_blank"
-        rel="noreferrer"
-        className="block overflow-hidden rounded-2xl border border-border bg-surface"
-      >
-        <img
-          src={mediaAsset.deliveryUrl}
-          alt=""
-          className="max-h-[520px] w-full object-contain"
-        />
-      </a>
+      <>
+        <button
+          type="button"
+          onClick={() => setIsViewerOpen(true)}
+          className="block w-full overflow-hidden rounded-2xl border border-border bg-surface"
+          aria-label="Відкрити медіа вправи"
+        >
+          <img
+            src={mediaAsset.deliveryUrl}
+            alt=""
+            className="max-h-[520px] w-full object-contain"
+          />
+        </button>
+
+        {isViewerOpen ? (
+          <MediaLightbox
+            asset={mediaAsset}
+            title={mediaAsset.fileName ?? "Фото вправи"}
+            onClose={() => setIsViewerOpen(false)}
+          />
+        ) : null}
+      </>
     );
   }
 
   if (mediaAsset.kind === "Video") {
     return (
-      <video
-        controls
-        className="max-h-[520px] w-full rounded-2xl border border-border bg-black"
-        src={mediaAsset.deliveryUrl}
-      >
-        <a href={mediaAsset.deliveryUrl} target="_blank" rel="noreferrer">
-          Відкрити медіа
-        </a>
-      </video>
+      <div className="space-y-3">
+        <video
+          controls
+          className="max-h-[520px] w-full rounded-2xl border border-border bg-black"
+          src={mediaAsset.deliveryUrl}
+        >
+          <a href={mediaAsset.deliveryUrl} target="_blank" rel="noreferrer">
+            Відкрити медіа
+          </a>
+        </video>
+
+        <button
+          type="button"
+          onClick={() => setIsViewerOpen(true)}
+          className="rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground transition hover:bg-surface-strong"
+        >
+          Відкрити у перегляді
+        </button>
+
+        {isViewerOpen ? (
+          <MediaLightbox
+            asset={mediaAsset}
+            title={mediaAsset.fileName ?? "Відео вправи"}
+            onClose={() => setIsViewerOpen(false)}
+          />
+        ) : null}
+      </div>
     );
   }
 

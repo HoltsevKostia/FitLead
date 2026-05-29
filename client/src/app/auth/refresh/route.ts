@@ -31,6 +31,11 @@ function appendSetCookieHeaders(response: NextResponse, setCookieHeaders: string
   }
 }
 
+function withNoStore(response: NextResponse): NextResponse {
+  response.headers.set("Cache-Control", "no-store");
+  return response;
+}
+
 function getCookieValueFromSetCookie(setCookie: string, cookieName: string): string | null {
   const [cookiePair] = setCookie.split(";");
   const separatorIndex = cookiePair.indexOf("=");
@@ -134,7 +139,7 @@ export async function GET(request: NextRequest) {
     if (!csrf.csrfToken) {
       const response = NextResponse.redirect(buildLoginRedirectUrl(request, nextHref));
       appendSetCookieHeaders(response, csrf.setCookieHeaders);
-      return response;
+      return withNoStore(response);
     }
 
     const refreshCookieHeader = mergeCookieHeader(cookieHeader, csrf.setCookieHeaders);
@@ -153,15 +158,15 @@ export async function GET(request: NextRequest) {
       const response = NextResponse.redirect(buildLoginRedirectUrl(request, nextHref));
       appendSetCookieHeaders(response, csrf.setCookieHeaders);
       appendSetCookieHeaders(response, refreshSetCookieHeaders);
-      return response;
+      return withNoStore(response);
     }
 
     const response = NextResponse.redirect(buildSafeRedirectUrl(request, nextHref));
     appendSetCookieHeaders(response, csrf.setCookieHeaders);
     appendSetCookieHeaders(response, refreshSetCookieHeaders);
-    return response;
+    return withNoStore(response);
   } catch {
     const response = NextResponse.redirect(buildLoginRedirectUrl(request, nextHref));
-    return response;
+    return withNoStore(response);
   }
 }

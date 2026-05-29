@@ -20,9 +20,10 @@ namespace FitLead.Infrastructure.Persistence.Repositories
             CancellationToken cancellationToken)
         {
             return await (
-                from tc in _context.TrainerClients
-                join u in _context.DomainUsers on tc.ClientId equals u.Id
+                from tc in _context.TrainerClients.AsNoTracking()
+                join u in _context.DomainUsers.AsNoTracking() on tc.ClientId equals u.Id
                 where tc.TrainerId == trainerId
+                orderby u.FullName
                 select new TrainerClientDto
                 {
                     ClientId = u.Id,
@@ -87,6 +88,26 @@ namespace FitLead.Infrastructure.Persistence.Repositories
                         ? programs
                         : Array.Empty<TrainerClientProgramAccessDto>()))
                 .ToList();
+        }
+
+        public async Task<TrainerClientDto?> GetClientByTrainerIdAndClientIdAsync(
+            Guid trainerId,
+            Guid clientId,
+            CancellationToken cancellationToken)
+        {
+            return await (
+                from trainerClient in _context.TrainerClients.AsNoTracking()
+                join client in _context.DomainUsers.AsNoTracking()
+                    on trainerClient.ClientId equals client.Id
+                where trainerClient.TrainerId == trainerId &&
+                      trainerClient.ClientId == clientId
+                select new TrainerClientDto
+                {
+                    ClientId = client.Id,
+                    Email = client.Email,
+                    FullName = client.FullName
+                })
+                .SingleOrDefaultAsync(cancellationToken);
         }
     }
 }

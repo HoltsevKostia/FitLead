@@ -1,3 +1,5 @@
+/* eslint-disable @next/next/no-img-element */
+
 import type { ProgressPhoto } from "@/entities/progress-photo/model/types";
 import { PlainText } from "@/shared/ui/plain-text";
 

@@ -12,6 +12,7 @@ import { FormAlert } from "@/shared/forms/form-alert";
 interface AssignTrainingProgramToClientFormProps {
   programId: string;
   clients: TrainerClient[];
+  initialClientId?: string;
 }
 
 function getFilteredClients(clients: TrainerClient[], search: string): TrainerClient[] {
@@ -40,10 +41,16 @@ function toExpiresAtUtc(expiresAtDate: string): string | null {
 export function AssignTrainingProgramToClientForm({
   programId,
   clients,
+  initialClientId,
 }: AssignTrainingProgramToClientFormProps) {
   const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
-  const [selectedClientId, setSelectedClientId] = useState("");
+  const hasInitialClient = Boolean(
+    initialClientId && clients.some((client) => client.clientId === initialClientId),
+  );
+  const [isOpen, setIsOpen] = useState(hasInitialClient);
+  const [selectedClientId, setSelectedClientId] = useState(
+    hasInitialClient ? initialClientId! : "",
+  );
   const [search, setSearch] = useState("");
   const [expiresAtDate, setExpiresAtDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
