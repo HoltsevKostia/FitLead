@@ -16,8 +16,8 @@ namespace FitLead.Api.Identity
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             var dbContext = scope.ServiceProvider.GetRequiredService<FitLeadDbContext>();
 
-            await EnsureRoleAsync(roleManager, "Trainer");
-            await EnsureRoleAsync(roleManager, "Client");
+            await IdentityRoleSeeder.EnsureRoleAsync(roleManager, IdentityRoleSeeder.TrainerRole, ct);
+            await IdentityRoleSeeder.EnsureRoleAsync(roleManager, IdentityRoleSeeder.ClientRole, ct);
 
             const string email = "dev@fitlead.local";
             const string password = "DevPass123!";
@@ -40,28 +40,8 @@ namespace FitLead.Api.Identity
                 }
             }
 
-            await EnsureUserInRoleAsync(userManager, identityUser, "Trainer");
+            await EnsureUserInRoleAsync(userManager, identityUser, IdentityRoleSeeder.TrainerRole);
             await EnsureDomainUserLinkAsync(dbContext, identityUser, email, ct);
-        }
-
-        private static async Task EnsureRoleAsync(RoleManager<IdentityRole> roleManager, string roleName)
-        {
-            var existing = await roleManager.FindByNameAsync(roleName);
-            if (existing is not null)
-                return;
-
-            var role = new IdentityRole
-            {
-                Name = roleName,
-                NormalizedName = roleName.ToUpperInvariant()
-            };
-
-            var result = await roleManager.CreateAsync(role);
-            if (!result.Succeeded)
-            {
-                var errors = string.Join("; ", result.Errors.Select(e => $"{e.Code}:{e.Description}"));
-                throw new InvalidOperationException($"Failed to seed role '{roleName}'. {errors}");
-            }
         }
 
         private static async Task EnsureUserInRoleAsync(

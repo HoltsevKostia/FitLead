@@ -232,17 +232,26 @@ var app = builder.Build();
 
 app.UseForwardedHeaders();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (!app.Environment.IsEnvironment("Testing"))
 {
-    await DevIdentitySeeder.SeedAsync(app.Services);
-    await DemoMessengerSeeder.SeedAsync(app.Services);
+    await IdentityRoleSeeder.SeedAsync(app.Services);
     using (var scope = app.Services.CreateScope())
     {
         var dbContext = scope.ServiceProvider.GetRequiredService<FitLeadDbContext>();
         await PlatformExerciseSeeder.SeedAsync(dbContext);
     }
 
+    if (app.Configuration.GetValue<bool>("DemoSeed:Enabled"))
+    {
+        app.Logger.LogInformation("Demo seed is enabled.");
+        await DevIdentitySeeder.SeedAsync(app.Services);
+        await DemoMessengerSeeder.SeedAsync(app.Services);
+    }
+}
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
     app.UseSwagger();
     app.UseSwaggerUI();
 }
