@@ -127,10 +127,25 @@ export function TrainerClientsWorkspace({
               <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(260px,1.2fr)] lg:items-start">
                 <div className="min-w-0 space-y-3">
                   <div>
-                    <h2 className="text-xl font-semibold text-foreground">{client.fullName}</h2>
+                    <h2 className="text-xl font-semibold text-foreground">
+                      <Link
+                        href={`/clients/${client.clientId}`}
+                        className="hover:text-accent"
+                      >
+                        {client.fullName}
+                      </Link>
+                    </h2>
                     <p className="mt-2 break-words text-sm text-muted">{client.email}</p>
                   </div>
-                  <OpenChatButton targetId={client.clientId} targetType="client" />
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+                    <Link
+                      href={`/clients/${client.clientId}`}
+                      className="w-fit rounded-full bg-accent px-4 py-2 text-sm font-medium text-white transition hover:bg-accent-strong"
+                    >
+                      Сторінка клієнта
+                    </Link>
+                    <OpenChatButton targetId={client.clientId} targetType="client" />
+                  </div>
                 </div>
 
                 <div className="space-y-3">

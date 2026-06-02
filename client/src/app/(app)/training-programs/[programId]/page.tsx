@@ -20,6 +20,9 @@ interface TrainingProgramDetailsPageProps {
   params: Promise<{
     programId: string;
   }>;
+  searchParams: Promise<{
+    assignClientId?: string;
+  }>;
 }
 
 function TrainerOnlyNotice() {
@@ -66,6 +69,7 @@ async function getProgramDetailsOrNotFound(programId: string): Promise<{
 
 export default async function TrainingProgramDetailsPage({
   params,
+  searchParams,
 }: TrainingProgramDetailsPageProps) {
   const currentUser = await getCurrentUser();
 
@@ -74,6 +78,7 @@ export default async function TrainingProgramDetailsPage({
   }
 
   const { programId } = await params;
+  const { assignClientId } = await searchParams;
   const { program, workouts, availableWorkouts, clients, assignments } =
     await getProgramDetailsOrNotFound(programId);
 
@@ -84,6 +89,7 @@ export default async function TrainingProgramDetailsPage({
       availableWorkouts={availableWorkouts}
       clients={clients}
       assignments={assignments}
+      initialAssignClientId={assignClientId}
     />
   );
 }

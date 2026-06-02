@@ -1,9 +1,14 @@
-/* eslint-disable @next/next/no-img-element */
+"use client";
+
+import { useState } from "react";
 
 import type { MediaAssetPreview } from "@/entities/media-asset/model/types";
+import { MediaLightbox } from "@/features/media-assets/ui/media-lightbox";
+import { MediaImage } from "@/shared/ui/media-image";
 
 interface ExerciseMediaPreviewProps {
   mediaAsset: MediaAssetPreview | null;
+  exerciseName?: string;
 }
 
 function MediaBadge({ label }: { label: string }) {
@@ -14,35 +19,52 @@ function MediaBadge({ label }: { label: string }) {
   );
 }
 
-export function ExerciseMediaPreview({ mediaAsset }: ExerciseMediaPreviewProps) {
+export function ExerciseMediaPreview({ mediaAsset, exerciseName }: ExerciseMediaPreviewProps) {
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
+
   if (!mediaAsset) {
     return null;
   }
 
-  if (mediaAsset.kind === "Image") {
-    return (
-      <a
-        href={mediaAsset.deliveryUrl}
-        target="_blank"
-        rel="noreferrer"
-        className="block w-fit overflow-hidden rounded-lg border border-border bg-surface transition hover:border-accent"
-        aria-label="Відкрити медіа вправи"
-      >
-        <img
-          src={mediaAsset.deliveryUrl}
-          alt=""
-          className="h-16 w-24 object-cover"
-          loading="lazy"
-        />
-      </a>
-    );
-  }
-
   const label = mediaAsset.kind === "Video" ? "Відео" : "Медіа";
+  const imageAlt = exerciseName ? `Медіа вправи: ${exerciseName}` : "Медіа вправи";
+  const title = mediaAsset.kind === "Image" ? imageAlt : mediaAsset.fileName ?? label;
 
   return (
-    <a href={mediaAsset.deliveryUrl} target="_blank" rel="noreferrer" className="w-fit">
-      <MediaBadge label={label} />
-    </a>
+    <>
+      {mediaAsset.kind === "Image" ? (
+        <button
+          type="button"
+          onClick={() => setIsViewerOpen(true)}
+          className="block w-fit overflow-hidden rounded-lg border border-border bg-surface transition hover:border-accent"
+          aria-label="Відкрити медіа вправи"
+        >
+          <MediaImage
+            src={mediaAsset.deliveryUrl}
+            alt={imageAlt}
+            aspectRatio="3/2"
+            className="h-16 w-24"
+            sizes="96px"
+          />
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setIsViewerOpen(true)}
+          className="w-fit"
+          aria-label="Відкрити медіа вправи"
+        >
+          <MediaBadge label={label} />
+        </button>
+      )}
+
+      {isViewerOpen ? (
+        <MediaLightbox
+          asset={mediaAsset}
+          title={title}
+          onClose={() => setIsViewerOpen(false)}
+        />
+      ) : null}
+    </>
   );
 }

@@ -1,13 +1,14 @@
-/* eslint-disable @next/next/no-img-element */
+"use client";
 
 import Link from "next/link";
+import { useState } from "react";
 
+import type { VideoReportDetails, VideoReportMedia } from "@/entities/video-report/model/types";
 import type { CurrentUser } from "@/features/auth/model/types";
+import { MediaLightbox } from "@/features/media-assets/ui/media-lightbox";
+import { MediaVideo } from "@/features/media-assets/ui/media-video";
 import { SubmitVideoReportFeedbackForm } from "@/features/video-reports/ui/submit-video-report-feedback-form";
-import type {
-  VideoReportDetails,
-  VideoReportMedia,
-} from "@/entities/video-report/model/types";
+import { MediaImage } from "@/shared/ui/media-image";
 
 interface VideoReportDetailViewProps {
   currentUser: CurrentUser;
@@ -55,28 +56,54 @@ function formatFileSize(sizeBytes: number): string {
   return `${(sizeBytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
-function VideoReportMediaItem({ media }: { media: VideoReportMedia }) {
+function getMediaKindLabel(media: VideoReportMedia): string {
+  return media.kind === "Image" ? "Фото" : "Відео";
+}
+
+function VideoReportMediaItem({
+  media,
+  reportTitle,
+  onOpen,
+}: {
+  media: VideoReportMedia;
+  reportTitle: string;
+  onOpen: (media: VideoReportMedia) => void;
+}) {
   return (
     <article className="overflow-hidden rounded-2xl border border-border bg-white">
       {media.kind === "Image" ? (
-        <a href={media.deliveryUrl} target="_blank" rel="noreferrer">
-          <img
-            src={media.deliveryUrl}
-            alt={media.fileName ?? ""}
-            className="max-h-[34rem] w-full object-contain"
-            referrerPolicy="no-referrer"
-          />
-        </a>
-      ) : (
-        <video
-          controls
-          className="max-h-[34rem] w-full bg-black"
-          src={media.deliveryUrl}
+        <button
+          type="button"
+          onClick={() => onOpen(media)}
+          className="block w-full"
+          aria-label="Відкрити медіа звіту"
         >
-          <a href={media.deliveryUrl} target="_blank" rel="noreferrer">
-            Відкрити відео
-          </a>
-        </video>
+          <MediaImage
+            src={media.deliveryUrl}
+            alt={`Медіа відеозвіту: ${reportTitle}`}
+            aspectRatio="video"
+            objectFit="contain"
+            className="w-full"
+            sizes="(max-width: 1024px) 100vw, 896px"
+            imageClassName="!max-h-none"
+          />
+        </button>
+      ) : (
+        <div className="space-y-3 bg-black pb-3">
+          <MediaVideo
+            src={media.deliveryUrl}
+            objectFit="contain"
+          />
+          <div className="px-4">
+            <button
+              type="button"
+              onClick={() => onOpen(media)}
+              className="rounded-full border border-white/20 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10"
+            >
+              Відкрити у перегляді
+            </button>
+          </div>
+        </div>
       )}
 
       <div className="space-y-1 border-t border-border px-4 py-3">
@@ -84,7 +111,7 @@ function VideoReportMediaItem({ media }: { media: VideoReportMedia }) {
           {media.fileName ?? "Медіафайл"}
         </p>
         <p className="text-xs text-muted">
-          {media.kind === "Image" ? "Фото" : "Відео"} · {formatFileSize(media.sizeBytes)}
+          {getMediaKindLabel(media)} · {formatFileSize(media.sizeBytes)}
           {media.durationSeconds ? ` · ${media.durationSeconds} с` : ""}
         </p>
       </div>
@@ -96,6 +123,7 @@ export function VideoReportDetailView({
   currentUser,
   report,
 }: VideoReportDetailViewProps) {
+  const [openedMedia, setOpenedMedia] = useState<VideoReportMedia | null>(null);
   const canSubmitFeedback =
     currentUser.role === "Trainer" && report.status === "Submitted";
 
@@ -142,7 +170,12 @@ export function VideoReportDetailView({
         <h2 className="text-base font-semibold text-foreground">Медіа</h2>
         <div className="grid gap-4">
           {report.media.map((media) => (
-            <VideoReportMediaItem key={media.id} media={media} />
+            <VideoReportMediaItem
+              key={media.id}
+              media={media}
+              reportTitle={report.title}
+              onOpen={setOpenedMedia}
+            />
           ))}
         </div>
       </section>
@@ -169,6 +202,15 @@ export function VideoReportDetailView({
         <SubmitVideoReportFeedbackForm
           chatId={report.chatId}
           reportId={report.id}
+        />
+      ) : null}
+
+      {openedMedia ? (
+        <MediaLightbox
+          asset={openedMedia}
+          title={openedMedia.fileName ?? getMediaKindLabel(openedMedia)}
+          subtitle={getMediaKindLabel(openedMedia)}
+          onClose={() => setOpenedMedia(null)}
         />
       ) : null}
     </section>

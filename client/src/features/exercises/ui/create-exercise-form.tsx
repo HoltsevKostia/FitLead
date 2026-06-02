@@ -143,7 +143,10 @@ export function CreateExerciseForm({ onCreated, onCancel }: CreateExerciseFormPr
           <p className={fieldLabelClassName}>Медіа</p>
           {selectedMediaAsset ? (
             <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3">
-              <ExerciseMediaPreview mediaAsset={selectedMediaAsset} />
+              <ExerciseMediaPreview
+                mediaAsset={selectedMediaAsset}
+                exerciseName={name.trim() || undefined}
+              />
               <button
                 type="button"
                 onClick={() => {

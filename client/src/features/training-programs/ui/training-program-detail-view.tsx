@@ -21,6 +21,7 @@ interface TrainingProgramDetailViewProps {
   availableWorkouts: Workout[];
   clients: TrainerClient[];
   assignments: TrainingProgramAssignment[];
+  initialAssignClientId?: string;
 }
 
 function buildRange(count: number): number[] {
@@ -139,6 +140,7 @@ export function TrainingProgramDetailView({
   availableWorkouts,
   clients,
   assignments,
+  initialAssignClientId,
 }: TrainingProgramDetailViewProps) {
   const [selectedWeek, setSelectedWeek] = useState(1);
   const weeks = useMemo(() => buildRange(program.weeksCount), [program.weeksCount]);
@@ -160,7 +162,11 @@ export function TrainingProgramDetailView({
         </p>
       </div>
 
-      <AssignTrainingProgramToClientForm programId={program.id} clients={clients} />
+      <AssignTrainingProgramToClientForm
+        programId={program.id}
+        clients={clients}
+        initialClientId={initialAssignClientId}
+      />
       <TrainingProgramAssignmentList programId={program.id} assignments={assignments} />
 
       <div className="space-y-3">

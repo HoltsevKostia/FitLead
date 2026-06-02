@@ -66,6 +66,12 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddMediatR(cfg =>
 {
+    var licenseKey = builder.Configuration["MediatR:LicenseKey"];
+    if (!string.IsNullOrWhiteSpace(licenseKey))
+    {
+        cfg.LicenseKey = licenseKey;
+    }
+
     cfg.RegisterServicesFromAssembly(typeof(CreateTrainingProgramCommand).Assembly);
 });
 

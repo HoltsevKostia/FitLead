@@ -65,7 +65,10 @@ function WorkoutExerciseCard({
             >
               {exercise.exerciseDescription}
             </PlainText>
-            <ExerciseMediaPreview mediaAsset={exercise.exerciseMediaAsset} />
+            <ExerciseMediaPreview
+              mediaAsset={exercise.exerciseMediaAsset}
+              exerciseName={exercise.exerciseName}
+            />
           </div>
 
           {exercise.trainerNote ? (

@@ -19,13 +19,22 @@ function TrainerOnlyNotice() {
   );
 }
 
-export default async function TrainingProgramsPage() {
+interface TrainingProgramsPageProps {
+  searchParams: Promise<{
+    assignClientId?: string;
+  }>;
+}
+
+export default async function TrainingProgramsPage({
+  searchParams,
+}: TrainingProgramsPageProps) {
   const currentUser = await getCurrentUser();
 
   if (!currentUser || currentUser.role !== "Trainer") {
     return <TrainerOnlyNotice />;
   }
 
+  const { assignClientId } = await searchParams;
   let programs: TrainingProgram[] = [];
   let loadError: string | null = null;
 
@@ -35,5 +44,11 @@ export default async function TrainingProgramsPage() {
     loadError = "Не вдалося завантажити список програм. Спробуйте оновити сторінку.";
   }
 
-  return <TrainingProgramLibraryWorkspace programs={programs} loadError={loadError} />;
+  return (
+    <TrainingProgramLibraryWorkspace
+      programs={programs}
+      loadError={loadError}
+      assignClientId={assignClientId}
+    />
+  );
 }
