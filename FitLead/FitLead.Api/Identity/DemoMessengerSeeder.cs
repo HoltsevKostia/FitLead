@@ -22,18 +22,14 @@ namespace FitLead.Api.Identity
         {
             using var scope = services.CreateScope();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppIdentityUser>>();
-            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             var dbContext = scope.ServiceProvider.GetRequiredService<FitLeadDbContext>();
-
-            await EnsureRoleAsync(roleManager, "Trainer");
-            await EnsureRoleAsync(roleManager, "Client");
 
             var trainer = await EnsureDemoUserAsync(
                 userManager,
                 dbContext,
                 TrainerEmail,
                 "Demo Trainer",
-                "Trainer",
+                IdentityRoleSeeder.TrainerRole,
                 UserRole.Trainer,
                 cancellationToken);
 
@@ -42,36 +38,13 @@ namespace FitLead.Api.Identity
                 dbContext,
                 ClientEmail,
                 "Demo Client",
-                "Client",
+                IdentityRoleSeeder.ClientRole,
                 UserRole.Client,
                 cancellationToken);
 
             await EnsureRelationshipAsync(dbContext, trainer.Id, client.Id, cancellationToken);
             var chat = await EnsureChatAsync(dbContext, trainer.Id, client.Id, cancellationToken);
             await EnsureMessagesAsync(dbContext, chat, trainer.Id, client.Id, cancellationToken);
-        }
-
-        private static async Task EnsureRoleAsync(
-            RoleManager<IdentityRole> roleManager,
-            string roleName)
-        {
-            var existing = await roleManager.FindByNameAsync(roleName);
-            if (existing is not null)
-            {
-                return;
-            }
-
-            var result = await roleManager.CreateAsync(
-                new IdentityRole
-                {
-                    Name = roleName,
-                    NormalizedName = roleName.ToUpperInvariant()
-                });
-
-            if (!result.Succeeded)
-            {
-                ThrowIdentityError($"Failed to seed role '{roleName}'.", result);
-            }
         }
 
         private static async Task<User> EnsureDemoUserAsync(
