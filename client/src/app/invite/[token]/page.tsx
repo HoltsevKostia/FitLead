@@ -3,9 +3,9 @@ import Link from "next/link";
 
 import type { InvitationPreview } from "@/entities/invitation/model/types";
 import { getCurrentUser } from "@/features/auth/server/get-current-user";
+import { getInvitationPreview } from "@/features/invitations/server/get-invitation-preview";
 import { AcceptInvitationButton } from "@/features/invitations/ui/accept-invitation-button";
 import { InvitationPreviewCard } from "@/features/invitations/ui/invitation-preview-card";
-import { invitationsApi } from "@/lib/api/clients/invitations-api";
 import { isApiError } from "@/lib/api/api-error";
 import { buildAuthHref } from "@/shared/utils/build-auth-href";
 
@@ -51,12 +51,12 @@ function InvalidInvitationState() {
 
 export default async function InvitePage({ params }: InvitePageProps) {
   const { token } = await params;
-  const nextHref = `/invite/${token}`;
+  const nextHref = `/invite/${encodeURIComponent(token)}`;
 
   let preview: InvitationPreview | null = null;
 
   try {
-    preview = await invitationsApi.getPreview(token);
+    preview = await getInvitationPreview(token);
   } catch (error) {
     if (isApiError(error) && error.status === 404) {
       return (
