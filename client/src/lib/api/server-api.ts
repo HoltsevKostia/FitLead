@@ -1,6 +1,7 @@
-import { cookies } from "next/headers";
+import { cookies, headers as getRequestHeaders } from "next/headers";
 
 import { ApiError } from "@/lib/api/api-error";
+import { appendForwardedHeaders } from "@/lib/api/forwarded-headers";
 import { serverApiEnv } from "@/lib/api/server-env";
 
 type ServerResponseType = "json" | "text" | "void";
@@ -58,6 +59,7 @@ export async function serverApiRequest<TResponse>(
   } = options;
 
   const cookieStore = await cookies();
+  const requestHeaders = await getRequestHeaders();
   const cookieHeader = buildCookieHeader(cookieStore.getAll());
   const headers = new Headers(initialHeaders);
 
@@ -68,6 +70,8 @@ export async function serverApiRequest<TResponse>(
   if (cookieHeader && !headers.has("Cookie")) {
     headers.set("Cookie", cookieHeader);
   }
+
+  appendForwardedHeaders(headers, requestHeaders);
 
   const response = await fetch(buildApiUrl(path), {
     ...requestInit,
