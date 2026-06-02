@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { appendForwardedHeadersFromRequest } from "@/lib/api/forwarded-headers";
 import { serverApiEnv } from "@/lib/api/server-env";
 
 export const runtime = "nodejs";
@@ -90,6 +91,7 @@ function buildRequestHeaders(request: NextRequest): Headers {
     headers.set(key, value);
   });
 
+  appendForwardedHeadersFromRequest(headers, request);
   return headers;
 }
 
