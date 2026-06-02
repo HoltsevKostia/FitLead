@@ -6,10 +6,10 @@ import {
   LogLevel,
 } from "@microsoft/signalr";
 
-import { apiEnv } from "@/lib/api/env";
+import { buildHubUrl } from "@/lib/realtime/hub-url";
 
 function getNotificationHubUrl(): string {
-  return new URL("/hubs/notifications", apiEnv.baseUrl).toString();
+  return buildHubUrl("/hubs/notifications");
 }
 
 export function createNotificationConnection(): HubConnection {

@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { appendAuthSetCookieHeaders, getSetCookieHeaders } from "@/app/api/auth/cookie-utils";
 import { serverApiEnv } from "@/lib/api/server-env";
 
 export const runtime = "nodejs";
@@ -10,9 +11,16 @@ type RouteContext = {
   }>;
 };
 
-const backendApiPrefix = "/api";
 const noBodyMethods = new Set(["GET", "HEAD"]);
 const noResponseBodyStatuses = new Set([204, 304]);
+const allowedAuthPaths = new Set([
+  "login",
+  "register",
+  "logout",
+  "refresh",
+  "csrf-token",
+  "current-user",
+]);
 const blockedRequestHeaders = new Set([
   "connection",
   "content-length",
@@ -40,38 +48,17 @@ const forwardedRequestHeaders = new Set([
   "x-requested-with",
 ]);
 
-function getSetCookieHeaders(response: Response): string[] {
-  const headersWithGetSetCookie = response.headers as Headers & {
-    getSetCookie?: () => string[];
-  };
-
-  if (!headersWithGetSetCookie.getSetCookie) {
-    throw new Error("getSetCookie is not available in this runtime.");
-  }
-
-  return headersWithGetSetCookie.getSetCookie();
-}
-
-function appendSetCookieHeaders(response: NextResponse, setCookieHeaders: string[]) {
-  for (const setCookie of setCookieHeaders) {
-    response.headers.append("Set-Cookie", setCookie);
-  }
-}
-
-function isValidPathSegment(segment: string): boolean {
-  return Boolean(segment) && segment !== "." && segment !== "..";
-}
-
-function buildBackendUrl(pathSegments: string[], search: string): string | null {
-  if (pathSegments.length === 0 || pathSegments.some((segment) => !isValidPathSegment(segment))) {
+function buildBackendUrl(pathSegments: string[]): string | null {
+  if (pathSegments.length !== 1) {
     return null;
   }
 
-  const backendPath = pathSegments
-    .map((segment) => encodeURIComponent(segment))
-    .join("/");
+  const [path] = pathSegments;
+  if (!allowedAuthPaths.has(path)) {
+    return null;
+  }
 
-  return new URL(`${backendApiPrefix}/${backendPath}${search}`, serverApiEnv.baseUrl).toString();
+  return new URL(`/auth/${path}`, serverApiEnv.baseUrl).toString();
 }
 
 function buildRequestHeaders(request: NextRequest): Headers {
@@ -123,15 +110,15 @@ function createProblemResponse(status: number, title: string): NextResponse {
   );
 }
 
-async function proxyBackendRequest(
+async function proxyAuthRequest(
   request: NextRequest,
   context: RouteContext,
 ): Promise<NextResponse> {
   const { path } = await context.params;
-  const backendUrl = buildBackendUrl(path, request.nextUrl.search);
+  const backendUrl = buildBackendUrl(path);
 
   if (!backendUrl) {
-    return createProblemResponse(400, "Invalid backend API path.");
+    return createProblemResponse(404, "Auth route not found.");
   }
 
   const method = request.method.toUpperCase();
@@ -160,30 +147,14 @@ async function proxyBackendRequest(
     headers: buildResponseHeaders(backendResponse),
   });
 
-  appendSetCookieHeaders(response, getSetCookieHeaders(backendResponse));
+  appendAuthSetCookieHeaders(response, getSetCookieHeaders(backendResponse));
   return response;
 }
 
 export function GET(request: NextRequest, context: RouteContext) {
-  return proxyBackendRequest(request, context);
-}
-
-export function HEAD(request: NextRequest, context: RouteContext) {
-  return proxyBackendRequest(request, context);
+  return proxyAuthRequest(request, context);
 }
 
 export function POST(request: NextRequest, context: RouteContext) {
-  return proxyBackendRequest(request, context);
-}
-
-export function PUT(request: NextRequest, context: RouteContext) {
-  return proxyBackendRequest(request, context);
-}
-
-export function PATCH(request: NextRequest, context: RouteContext) {
-  return proxyBackendRequest(request, context);
-}
-
-export function DELETE(request: NextRequest, context: RouteContext) {
-  return proxyBackendRequest(request, context);
+  return proxyAuthRequest(request, context);
 }

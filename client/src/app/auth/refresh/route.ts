@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-import { apiEnv } from "@/lib/api/env";
+import { appendAuthSetCookieHeaders, getSetCookieHeaders } from "@/app/api/auth/cookie-utils";
+import { serverApiEnv } from "@/lib/api/server-env";
 import { resolveSafeNextHref } from "@/shared/utils/resolve-safe-next-href";
 
 export const runtime = "nodejs";
@@ -10,25 +11,7 @@ const csrfHeaderName = "X-CSRF-TOKEN";
 const defaultNextHref = "/dashboard";
 
 function buildBackendUrl(path: string): string {
-  return new URL(path, apiEnv.baseUrl).toString();
-}
-
-function getSetCookieHeaders(response: Response): string[] {
-  const headersWithGetSetCookie = response.headers as Headers & {
-    getSetCookie?: () => string[];
-  };
-
-  if (!headersWithGetSetCookie.getSetCookie) {
-    throw new Error("getSetCookie is not available in this runtime.");
-  }
-
-  return headersWithGetSetCookie.getSetCookie();
-}
-
-function appendSetCookieHeaders(response: NextResponse, setCookieHeaders: string[]) {
-  for (const setCookie of setCookieHeaders) {
-    response.headers.append("Set-Cookie", setCookie);
-  }
+  return new URL(path, serverApiEnv.baseUrl).toString();
 }
 
 function withNoStore(response: NextResponse): NextResponse {
@@ -138,7 +121,7 @@ export async function GET(request: NextRequest) {
 
     if (!csrf.csrfToken) {
       const response = NextResponse.redirect(buildLoginRedirectUrl(request, nextHref));
-      appendSetCookieHeaders(response, csrf.setCookieHeaders);
+      appendAuthSetCookieHeaders(response, csrf.setCookieHeaders);
       return withNoStore(response);
     }
 
@@ -156,14 +139,14 @@ export async function GET(request: NextRequest) {
 
     if (!refreshResponse.ok) {
       const response = NextResponse.redirect(buildLoginRedirectUrl(request, nextHref));
-      appendSetCookieHeaders(response, csrf.setCookieHeaders);
-      appendSetCookieHeaders(response, refreshSetCookieHeaders);
+      appendAuthSetCookieHeaders(response, csrf.setCookieHeaders);
+      appendAuthSetCookieHeaders(response, refreshSetCookieHeaders);
       return withNoStore(response);
     }
 
     const response = NextResponse.redirect(buildSafeRedirectUrl(request, nextHref));
-    appendSetCookieHeaders(response, csrf.setCookieHeaders);
-    appendSetCookieHeaders(response, refreshSetCookieHeaders);
+    appendAuthSetCookieHeaders(response, csrf.setCookieHeaders);
+    appendAuthSetCookieHeaders(response, refreshSetCookieHeaders);
     return withNoStore(response);
   } catch {
     const response = NextResponse.redirect(buildLoginRedirectUrl(request, nextHref));

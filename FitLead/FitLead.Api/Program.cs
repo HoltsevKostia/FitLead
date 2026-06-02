@@ -11,6 +11,7 @@ using FitLead.Infrastructure.Identity;
 using FitLead.Infrastructure.Persistence;
 using FitLead.Infrastructure.Persistence.Seeding;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -77,6 +78,32 @@ builder.Services.AddMediatR(cfg =>
 
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor |
+        ForwardedHeaders.XForwardedProto |
+        ForwardedHeaders.XForwardedHost;
+    options.ForwardLimit = 1;
+
+    var allowedForwardedHosts =
+        builder.Configuration.GetSection("ForwardedHeaders:AllowedHosts").Get<string[]>() ?? [];
+    foreach (var allowedHost in allowedForwardedHosts.Where(x => !string.IsNullOrWhiteSpace(x)))
+    {
+        options.AllowedHosts.Add(allowedHost);
+    }
+
+    var trustUnknownProxies =
+        builder.Configuration.GetValue<bool?>("ForwardedHeaders:TrustUnknownProxies")
+        ?? builder.Environment.IsProduction();
+
+    if (trustUnknownProxies)
+    {
+        options.KnownNetworks.Clear();
+        options.KnownProxies.Clear();
+    }
+});
 
 var allowedOrigins =
     builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
@@ -203,6 +230,8 @@ builder.Services.AddScoped<INotificationRealtimeNotifier, SignalRNotificationRea
 
 var app = builder.Build();
 
+app.UseForwardedHeaders();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -233,6 +262,8 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapHub<ChatHub>("/hubs/chat");
 app.MapHub<NotificationHub>("/hubs/notifications");
+app.MapGet("/health", () => Results.Ok(new { status = "ok" }))
+    .AllowAnonymous();
 
 app.Run();
 

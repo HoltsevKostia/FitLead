@@ -1,6 +1,5 @@
 import { ApiError } from "@/lib/api/api-error";
 import { CSRF_HEADER_NAME, ensureCsrfToken, isUnsafeMethod } from "@/lib/api/csrf";
-import { apiEnv } from "@/lib/api/env";
 
 type ResponseType = "json" | "text" | "void";
 
@@ -14,7 +13,7 @@ function buildApiUrl(path: string): string {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
 
   if (normalizedPath.startsWith("/auth/")) {
-    return new URL(normalizedPath, apiEnv.baseUrl).toString();
+    return `/api${normalizedPath}`;
   }
 
   if (normalizedPath === "/api" || normalizedPath.startsWith("/api/")) {

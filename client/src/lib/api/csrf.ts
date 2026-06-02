@@ -1,13 +1,7 @@
-import { apiEnv } from "@/lib/api/env";
-
 export const CSRF_COOKIE_NAME = "FitLead.XSRF-TOKEN";
 export const CSRF_HEADER_NAME = "X-CSRF-TOKEN";
 
 const safeMethods = new Set(["GET", "HEAD", "OPTIONS", "TRACE"]);
-
-function buildApiUrl(path: string): string {
-  return new URL(path, apiEnv.baseUrl).toString();
-}
 
 export function readCookie(name: string): string | null {
   if (typeof document === "undefined") {
@@ -32,7 +26,7 @@ export function isUnsafeMethod(method: string): boolean {
 }
 
 async function issueCsrfToken(): Promise<string> {
-  const response = await fetch(buildApiUrl("/auth/csrf-token"), {
+  const response = await fetch("/api/auth/csrf-token", {
     method: "GET",
     credentials: "include",
     cache: "no-store",

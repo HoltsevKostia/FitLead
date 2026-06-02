@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 
 import { ApiError } from "@/lib/api/api-error";
-import { apiEnv } from "@/lib/api/env";
+import { serverApiEnv } from "@/lib/api/server-env";
 
 type ServerResponseType = "json" | "text" | "void";
 
@@ -23,7 +23,7 @@ function buildCookieHeader(cookieEntries: ReadonlyArray<CookieEntry>): string | 
 }
 
 function buildApiUrl(path: string): string {
-  return new URL(path, apiEnv.baseUrl).toString();
+  return new URL(path, serverApiEnv.baseUrl).toString();
 }
 
 async function readResponse<TResponse>(

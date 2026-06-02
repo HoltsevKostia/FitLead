@@ -6,10 +6,10 @@ import {
   LogLevel,
 } from "@microsoft/signalr";
 
-import { apiEnv } from "@/lib/api/env";
+import { buildHubUrl } from "@/lib/realtime/hub-url";
 
 function getChatHubUrl(): string {
-  return new URL("/hubs/chat", apiEnv.baseUrl).toString();
+  return buildHubUrl("/hubs/chat");
 }
 
 export function createChatConnection(): HubConnection {
