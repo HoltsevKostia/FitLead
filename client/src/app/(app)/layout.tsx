@@ -1,26 +1,9 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/features/auth/server/get-current-user";
 import { LogoutButton } from "@/features/auth/ui/logout-button";
+import { AppNavigation } from "@/features/navigation/ui/app-navigation";
 import { NotificationBell } from "@/features/notifications/ui/notification-bell";
-
-const trainerLinks = [
-  { href: "/dashboard", label: "Панель" },
-  { href: "/chats", label: "Чати" },
-  { href: "/clients", label: "Клієнти" },
-  { href: "/exercises", label: "Вправи" },
-  { href: "/workouts", label: "Тренування" },
-  { href: "/training-programs", label: "Програми" },
-  { href: "/invitations", label: "Запрошення" },
-];
-
-const clientLinks = [
-  { href: "/dashboard", label: "Панель" },
-  { href: "/chats", label: "Чати" },
-  { href: "/client/training-programs", label: "Мої програми" },
-  { href: "/client/profile", label: "Профіль" },
-];
 
 export default async function AppLayout({
   children,
@@ -33,14 +16,12 @@ export default async function AppLayout({
     redirect("/login");
   }
 
-  const links = currentUser.role === "Trainer" ? trainerLinks : clientLinks;
-
   return (
     <div className="app-shell">
       <div className="container py-6">
         <div className="grid min-w-0 gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
-          <aside className="card min-w-0 p-5">
-            <div className="mb-6">
+          <aside className="card flex min-w-0 flex-col p-4 sm:p-5">
+            <div className="mb-4 lg:mb-6">
               <div className="flex items-start justify-between gap-3">
                 <p className="text-sm uppercase tracking-[0.2em] text-muted">FitLead</p>
                 <NotificationBell />
@@ -51,18 +32,10 @@ export default async function AppLayout({
                 {currentUser.role === "Trainer" ? "Тренер" : "Клієнт"}
               </p>
             </div>
-            <nav className="space-y-2">
-              {links.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="block rounded-2xl px-4 py-3 text-sm font-medium transition hover:bg-surface-strong"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-            <LogoutButton />
+            <AppNavigation role={currentUser.role} />
+            <div className="mt-4 lg:mt-auto lg:pt-2">
+              <LogoutButton />
+            </div>
           </aside>
           <main className="card min-w-0 overflow-hidden p-4 sm:p-6 md:min-h-[70vh] md:p-8">
             {children}

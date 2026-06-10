@@ -20,13 +20,22 @@ function TrainerOnlyNotice() {
   );
 }
 
-export default async function ExercisesPage() {
+interface ExercisesPageProps {
+  searchParams: Promise<{
+    create?: string;
+  }>;
+}
+
+export default async function ExercisesPage({
+  searchParams,
+}: ExercisesPageProps) {
   const currentUser = await getCurrentUser();
 
   if (!currentUser || currentUser.role !== "Trainer") {
     return <TrainerOnlyNotice />;
   }
 
+  const { create } = await searchParams;
   let exercises: Exercise[] = [];
   let loadError: string | null = null;
 
@@ -36,5 +45,11 @@ export default async function ExercisesPage() {
     loadError = "Не вдалося завантажити список вправ. Спробуй оновити сторінку.";
   }
 
-  return <ExerciseLibraryWorkspace exercises={exercises} loadError={loadError} />;
+  return (
+    <ExerciseLibraryWorkspace
+      exercises={exercises}
+      loadError={loadError}
+      initialCreateFormOpen={create === "1"}
+    />
+  );
 }

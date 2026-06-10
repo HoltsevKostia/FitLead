@@ -19,13 +19,22 @@ function TrainerOnlyNotice() {
   );
 }
 
-export default async function WorkoutsPage() {
+interface WorkoutsPageProps {
+  searchParams: Promise<{
+    create?: string;
+  }>;
+}
+
+export default async function WorkoutsPage({
+  searchParams,
+}: WorkoutsPageProps) {
   const currentUser = await getCurrentUser();
 
   if (!currentUser || currentUser.role !== "Trainer") {
     return <TrainerOnlyNotice />;
   }
 
+  const { create } = await searchParams;
   let workouts: Workout[] = [];
   let loadError: string | null = null;
 
@@ -35,5 +44,11 @@ export default async function WorkoutsPage() {
     loadError = "Не вдалося завантажити список тренувань. Спробуй оновити сторінку.";
   }
 
-  return <WorkoutLibraryWorkspace workouts={workouts} loadError={loadError} />;
+  return (
+    <WorkoutLibraryWorkspace
+      workouts={workouts}
+      loadError={loadError}
+      initialCreateFormOpen={create === "1"}
+    />
+  );
 }
