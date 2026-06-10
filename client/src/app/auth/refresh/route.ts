@@ -1,4 +1,4 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 
 import {
   appendAuthSetCookieHeaders,
@@ -20,7 +20,7 @@ function buildBackendUrl(path: string): string {
   return new URL(path, serverApiEnv.baseUrl).toString();
 }
 
-function withNoStore(response: NextResponse): NextResponse {
+function withNoStore(response: Response): Response {
   response.headers.set("Cache-Control", "no-store");
   return response;
 }
