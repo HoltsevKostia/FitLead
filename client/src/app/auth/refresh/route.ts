@@ -1,8 +1,13 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-import { appendAuthSetCookieHeaders, getSetCookieHeaders } from "@/app/api/auth/cookie-utils";
+import {
+  appendAuthSetCookieHeaders,
+  appendClearAuthCookieHeaders,
+  getSetCookieHeaders,
+} from "@/app/api/auth/cookie-utils";
 import { appendForwardedHeadersFromRequest } from "@/lib/api/forwarded-headers";
 import { serverApiEnv } from "@/lib/api/server-env";
+import { createRelativeRedirect } from "@/shared/utils/create-relative-redirect";
 import { resolveSafeNextHref } from "@/shared/utils/resolve-safe-next-href";
 
 export const runtime = "nodejs";
@@ -75,16 +80,8 @@ function mergeCookieHeader(
     .join("; ");
 }
 
-function buildLoginRedirectUrl(request: NextRequest, nextHref: string): URL {
-  const url = request.nextUrl.clone();
-  url.pathname = "/login";
-  url.search = "";
-  url.searchParams.set("next", nextHref);
-  return url;
-}
-
-function buildSafeRedirectUrl(request: NextRequest, href: string): URL {
-  return new URL(href, request.nextUrl.origin);
+function buildLoginRedirectHref(nextHref: string): string {
+  return `/login?next=${encodeURIComponent(nextHref)}`;
 }
 
 export async function GET(request: NextRequest) {
@@ -121,7 +118,7 @@ export async function GET(request: NextRequest) {
     };
 
     if (!csrf.csrfToken) {
-      const response = NextResponse.redirect(buildLoginRedirectUrl(request, nextHref));
+      const response = createRelativeRedirect(buildLoginRedirectHref(nextHref));
       appendAuthSetCookieHeaders(response, csrf.setCookieHeaders);
       return withNoStore(response);
     }
@@ -142,18 +139,21 @@ export async function GET(request: NextRequest) {
     const refreshSetCookieHeaders = getSetCookieHeaders(refreshResponse);
 
     if (!refreshResponse.ok) {
-      const response = NextResponse.redirect(buildLoginRedirectUrl(request, nextHref));
+      const response = createRelativeRedirect(buildLoginRedirectHref(nextHref));
       appendAuthSetCookieHeaders(response, csrf.setCookieHeaders);
       appendAuthSetCookieHeaders(response, refreshSetCookieHeaders);
+      if (refreshResponse.status === 401 || refreshResponse.status === 403) {
+        appendClearAuthCookieHeaders(response);
+      }
       return withNoStore(response);
     }
 
-    const response = NextResponse.redirect(buildSafeRedirectUrl(request, nextHref));
+    const response = createRelativeRedirect(nextHref);
     appendAuthSetCookieHeaders(response, csrf.setCookieHeaders);
     appendAuthSetCookieHeaders(response, refreshSetCookieHeaders);
     return withNoStore(response);
   } catch {
-    const response = NextResponse.redirect(buildLoginRedirectUrl(request, nextHref));
+    const response = createRelativeRedirect(buildLoginRedirectHref(nextHref));
     return withNoStore(response);
   }
 }

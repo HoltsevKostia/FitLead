@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+const accessTokenCookieName = "fitlead.access_token";
 const refreshTokenCookieName = "fitlead.refresh_token";
 const legacyRefreshTokenPath = "/auth";
 
@@ -59,14 +60,36 @@ function isRefreshTokenSetCookie(setCookie: string): boolean {
 }
 
 function buildLegacyRefreshTokenDeleteCookie(): string {
-  return [
-    `${refreshTokenCookieName}=`,
+  return buildDeleteCookie(refreshTokenCookieName, legacyRefreshTokenPath);
+}
+
+function buildDeleteCookie(cookieName: string, path: string): string {
+  const attributes = [
+    `${cookieName}=`,
     " Expires=Thu, 01 Jan 1970 00:00:00 GMT",
     " Max-Age=0",
-    ` Path=${legacyRefreshTokenPath}`,
+    ` Path=${path}`,
     " HttpOnly",
     " SameSite=Lax",
-  ].join(";");
+  ];
+
+  if (process.env.NODE_ENV === "production") {
+    attributes.push(" Secure");
+  }
+
+  return attributes.join(";");
+}
+
+export function appendClearAuthCookieHeaders(response: NextResponse) {
+  response.headers.append(
+    "Set-Cookie",
+    buildDeleteCookie(accessTokenCookieName, "/"),
+  );
+  response.headers.append(
+    "Set-Cookie",
+    buildDeleteCookie(refreshTokenCookieName, "/"),
+  );
+  response.headers.append("Set-Cookie", buildLegacyRefreshTokenDeleteCookie());
 }
 
 export function appendAuthSetCookieHeaders(
