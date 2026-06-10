@@ -22,3 +22,14 @@ export interface VideoReportDetails {
   trainerFeedbackText: string | null;
   media: VideoReportMedia[];
 }
+
+export interface PendingTrainerVideoReport {
+  reportId: string;
+  chatId: string;
+  clientId: string;
+  clientName: string;
+  title: string;
+  description: string | null;
+  mediaCount: number;
+  createdAtUtc: string;
+}

@@ -63,6 +63,7 @@ export function TrainerDashboardSummary({
       label: "Відеозвіти",
       value: summary.pendingVideoReportCount,
       description: "Очікують відгуку тренера",
+      href: "/video-reports",
     },
   ];
 
