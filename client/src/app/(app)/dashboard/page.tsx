@@ -1,8 +1,8 @@
-import Link from "next/link";
-
 import type { ClientTrainer } from "@/entities/user/model/types";
 import { getCurrentUser } from "@/features/auth/server/get-current-user";
 import { OpenChatButton } from "@/features/chats/ui/open-chat-button";
+import { getTrainerDashboardSummary } from "@/features/trainer-dashboard/server/get-trainer-dashboard-summary";
+import { TrainerDashboardSummary } from "@/features/trainer-dashboard/ui/trainer-dashboard-summary";
 import { getMyTrainer } from "@/features/users/server/get-my-trainer";
 import { isApiError } from "@/lib/api/api-error";
 
@@ -22,6 +22,8 @@ export default async function DashboardPage() {
   const currentUser = await getCurrentUser();
   const trainer =
     currentUser?.role === "Client" ? await getTrainerOrNull() : null;
+  const trainerSummary =
+    currentUser?.role === "Trainer" ? await getTrainerDashboardSummary() : null;
 
   return (
     <section className="space-y-6">
@@ -30,28 +32,7 @@ export default async function DashboardPage() {
         <h1 className="text-4xl font-semibold tracking-tight">Панель</h1>
       </div>
 
-      {currentUser?.role === "Trainer" ? (
-        <div className="grid gap-4 md:grid-cols-2">
-          <Link
-            href="/clients"
-            className="rounded-2xl border border-border bg-white px-5 py-5 transition hover:bg-surface"
-          >
-            <p className="text-lg font-semibold text-foreground">Клієнти</p>
-            <p className="mt-2 text-sm text-muted">
-              Переглянути клієнтів, активні програми та відкрити чат.
-            </p>
-          </Link>
-          <Link
-            href="/chats"
-            className="rounded-2xl border border-border bg-white px-5 py-5 transition hover:bg-surface"
-          >
-            <p className="text-lg font-semibold text-foreground">Чати</p>
-            <p className="mt-2 text-sm text-muted">
-              Відкрити список діалогів з клієнтами.
-            </p>
-          </Link>
-        </div>
-      ) : null}
+      {trainerSummary ? <TrainerDashboardSummary summary={trainerSummary} /> : null}
 
       {currentUser?.role === "Client" ? (
         <div className="rounded-2xl border border-border bg-white px-5 py-5">

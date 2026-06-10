@@ -69,6 +69,7 @@ namespace FitLead.Infrastructure
             services.AddScoped<ITrainerClientWorkoutLogsReadRepository, TrainerClientWorkoutLogsReadRepository>();
             services.AddScoped<ITrainerClientProgressReadRepository, TrainerClientProgressReadRepository>();
             services.AddScoped<ITrainerClientVideoReportsReadRepository, TrainerClientVideoReportsReadRepository>();
+            services.AddScoped<ITrainerDashboardReadRepository, TrainerDashboardReadRepository>();
             services.AddScoped<IExerciseRepository, ExerciseRepository>();
             services.AddScoped<IExerciseReadRepository, ExerciseReadRepository>();
             services.AddScoped<IWorkoutRepository, WorkoutRepository>();
