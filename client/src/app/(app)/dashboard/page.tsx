@@ -2,6 +2,7 @@ import type { ClientTrainer } from "@/entities/user/model/types";
 import { getCurrentUser } from "@/features/auth/server/get-current-user";
 import { OpenChatButton } from "@/features/chats/ui/open-chat-button";
 import { getTrainerDashboardSummary } from "@/features/trainer-dashboard/server/get-trainer-dashboard-summary";
+import { TrainerQuickActions } from "@/features/trainer-dashboard/ui/trainer-quick-actions";
 import { TrainerDashboardSummary } from "@/features/trainer-dashboard/ui/trainer-dashboard-summary";
 import { getMyTrainer } from "@/features/users/server/get-my-trainer";
 import { isApiError } from "@/lib/api/api-error";
@@ -33,6 +34,7 @@ export default async function DashboardPage() {
       </div>
 
       {trainerSummary ? <TrainerDashboardSummary summary={trainerSummary} /> : null}
+      {trainerSummary ? <TrainerQuickActions /> : null}
 
       {currentUser?.role === "Client" ? (
         <div className="rounded-2xl border border-border bg-white px-5 py-5">

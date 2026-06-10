@@ -9,13 +9,15 @@ import { WorkoutList } from "@/features/workouts/ui/workout-list";
 interface WorkoutLibraryWorkspaceProps {
   workouts: Workout[];
   loadError?: string | null;
+  initialCreateFormOpen?: boolean;
 }
 
 export function WorkoutLibraryWorkspace({
   workouts,
   loadError,
+  initialCreateFormOpen = false,
 }: WorkoutLibraryWorkspaceProps) {
-  const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
+  const [isCreateFormOpen, setIsCreateFormOpen] = useState(initialCreateFormOpen);
 
   function handleCreated() {
     setIsCreateFormOpen(false);

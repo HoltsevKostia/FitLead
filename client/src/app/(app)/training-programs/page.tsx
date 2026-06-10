@@ -22,6 +22,7 @@ function TrainerOnlyNotice() {
 interface TrainingProgramsPageProps {
   searchParams: Promise<{
     assignClientId?: string;
+    create?: string;
   }>;
 }
 
@@ -34,7 +35,7 @@ export default async function TrainingProgramsPage({
     return <TrainerOnlyNotice />;
   }
 
-  const { assignClientId } = await searchParams;
+  const { assignClientId, create } = await searchParams;
   let programs: TrainingProgram[] = [];
   let loadError: string | null = null;
 
@@ -49,6 +50,7 @@ export default async function TrainingProgramsPage({
       programs={programs}
       loadError={loadError}
       assignClientId={assignClientId}
+      initialCreateFormOpen={create === "1"}
     />
   );
 }

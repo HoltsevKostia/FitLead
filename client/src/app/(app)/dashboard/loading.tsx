@@ -26,6 +26,18 @@ export default function DashboardLoading() {
           <SummaryCardSkeleton key={index} />
         ))}
       </div>
+
+      <div className="space-y-3">
+        <SkeletonText className="h-6 w-32" />
+        <div className="grid gap-3 sm:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <SkeletonCard key={index} className="min-h-24">
+              <SkeletonText className="w-40 max-w-full" />
+              <SkeletonText className="mt-3 w-56 max-w-full" />
+            </SkeletonCard>
+          ))}
+        </div>
+      </div>
     </section>
   );
 }
