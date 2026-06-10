@@ -61,6 +61,20 @@ public sealed class TestApiClients(IntegrationTestFixture fixture)
         return client;
     }
 
+    public async Task<TrainerDashboardTestClient> TrainerDashboardAsync(AuthTestClient auth)
+    {
+        var client = new TrainerDashboardTestClient(fixture.CreateClient(handleCookies: false));
+        await client.CopyAuthStateFromAsync(auth);
+        return client;
+    }
+
+    public async Task<TrainerVideoReportsTestClient> TrainerVideoReportsAsync(AuthTestClient auth)
+    {
+        var client = new TrainerVideoReportsTestClient(fixture.CreateClient(handleCookies: false));
+        await client.CopyAuthStateFromAsync(auth);
+        return client;
+    }
+
     public async Task<ChatsTestClient> ChatsAsync(AuthTestClient auth)
     {
         var client = new ChatsTestClient(fixture.CreateClient(handleCookies: false));

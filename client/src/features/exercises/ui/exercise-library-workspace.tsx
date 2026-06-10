@@ -11,6 +11,7 @@ type ExerciseLibraryTab = "my" | "platform";
 interface ExerciseLibraryWorkspaceProps {
   exercises: Exercise[];
   loadError?: string | null;
+  initialCreateFormOpen?: boolean;
 }
 
 const tabs: Array<{ id: ExerciseLibraryTab; label: string }> = [
@@ -42,9 +43,10 @@ function getCopiedPlatformExerciseIds(exercises: Exercise[]): ReadonlySet<string
 export function ExerciseLibraryWorkspace({
   exercises,
   loadError,
+  initialCreateFormOpen = false,
 }: ExerciseLibraryWorkspaceProps) {
   const [activeTab, setActiveTab] = useState<ExerciseLibraryTab>("my");
-  const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
+  const [isCreateFormOpen, setIsCreateFormOpen] = useState(initialCreateFormOpen);
   const visibleExercises = useMemo(
     () => filterExercises(exercises, activeTab),
     [exercises, activeTab],

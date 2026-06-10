@@ -10,14 +10,16 @@ interface TrainingProgramLibraryWorkspaceProps {
   programs: TrainingProgram[];
   loadError?: string | null;
   assignClientId?: string;
+  initialCreateFormOpen?: boolean;
 }
 
 export function TrainingProgramLibraryWorkspace({
   programs,
   loadError,
   assignClientId,
+  initialCreateFormOpen = false,
 }: TrainingProgramLibraryWorkspaceProps) {
-  const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
+  const [isCreateFormOpen, setIsCreateFormOpen] = useState(initialCreateFormOpen);
 
   function handleCreated() {
     setIsCreateFormOpen(false);

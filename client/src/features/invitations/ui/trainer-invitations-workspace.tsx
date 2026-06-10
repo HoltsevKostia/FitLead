@@ -116,7 +116,7 @@ export function TrainerInvitationsWorkspace({
         </p>
       </div>
 
-      <section className="card space-y-4 p-6">
+      <section id="create-invitation" className="card scroll-mt-6 space-y-4 p-6">
         <div className="space-y-1">
           <h2 className="text-xl font-semibold">Створити нове запрошення</h2>
           <p className="text-sm text-muted">
