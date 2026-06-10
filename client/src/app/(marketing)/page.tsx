@@ -6,7 +6,7 @@ import { getCurrentUser } from "@/features/auth/server/get-current-user";
 const highlights = [
   "Бібліотека вправ, яку веде тренер",
   "Конструктор тренувань із повторним використанням блоків",
-  "Програми тренувань і сценарій запрошення клієнтів",
+  "Супровід клієнта через чат і відеозвіти",
 ];
 
 export default async function LandingPage() {
