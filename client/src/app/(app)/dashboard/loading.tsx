@@ -29,11 +29,12 @@ export default function DashboardLoading() {
 
       <div className="space-y-3">
         <SkeletonText className="h-6 w-32" />
-        <div className="grid gap-3 sm:grid-cols-2">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <SkeletonCard key={index} className="min-h-24">
+        <div className="grid gap-3 lg:grid-cols-2">
+          {Array.from({ length: 2 }).map((_, index) => (
+            <SkeletonCard key={index} className="min-h-48">
               <SkeletonText className="w-40 max-w-full" />
               <SkeletonText className="mt-3 w-56 max-w-full" />
+              <SkeletonText className="mt-8 h-10 w-40 max-w-full" />
             </SkeletonCard>
           ))}
         </div>
