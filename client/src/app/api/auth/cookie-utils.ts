@@ -1,5 +1,3 @@
-import { NextResponse } from "next/server";
-
 const accessTokenCookieName = "fitlead.access_token";
 const refreshTokenCookieName = "fitlead.refresh_token";
 const legacyRefreshTokenPath = "/auth";
@@ -80,7 +78,7 @@ function buildDeleteCookie(cookieName: string, path: string): string {
   return attributes.join(";");
 }
 
-export function appendClearAuthCookieHeaders(response: NextResponse) {
+export function appendClearAuthCookieHeaders(response: Response) {
   response.headers.append(
     "Set-Cookie",
     buildDeleteCookie(accessTokenCookieName, "/"),
@@ -93,7 +91,7 @@ export function appendClearAuthCookieHeaders(response: NextResponse) {
 }
 
 export function appendAuthSetCookieHeaders(
-  response: NextResponse,
+  response: Response,
   setCookieHeaders: string[],
 ) {
   for (const setCookie of setCookieHeaders) {
