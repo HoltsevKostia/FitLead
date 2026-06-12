@@ -7,7 +7,7 @@ import {
 } from "@/app/api/auth/cookie-utils";
 import { appendForwardedHeadersFromRequest } from "@/lib/api/forwarded-headers";
 import { serverApiEnv } from "@/lib/api/server-env";
-import { createRelativeRedirect } from "@/shared/utils/create-relative-redirect";
+import { createInternalRedirect } from "@/shared/utils/create-internal-redirect";
 import { resolveSafeNextHref } from "@/shared/utils/resolve-safe-next-href";
 
 export const runtime = "nodejs";
@@ -118,7 +118,10 @@ export async function GET(request: NextRequest) {
     };
 
     if (!csrf.csrfToken) {
-      const response = createRelativeRedirect(buildLoginRedirectHref(nextHref));
+      const response = createInternalRedirect(
+        request,
+        buildLoginRedirectHref(nextHref),
+      );
       appendAuthSetCookieHeaders(response, csrf.setCookieHeaders);
       return withNoStore(response);
     }
@@ -139,7 +142,10 @@ export async function GET(request: NextRequest) {
     const refreshSetCookieHeaders = getSetCookieHeaders(refreshResponse);
 
     if (!refreshResponse.ok) {
-      const response = createRelativeRedirect(buildLoginRedirectHref(nextHref));
+      const response = createInternalRedirect(
+        request,
+        buildLoginRedirectHref(nextHref),
+      );
       appendAuthSetCookieHeaders(response, csrf.setCookieHeaders);
       appendAuthSetCookieHeaders(response, refreshSetCookieHeaders);
       if (refreshResponse.status === 401 || refreshResponse.status === 403) {
@@ -148,12 +154,15 @@ export async function GET(request: NextRequest) {
       return withNoStore(response);
     }
 
-    const response = createRelativeRedirect(nextHref);
+    const response = createInternalRedirect(request, nextHref);
     appendAuthSetCookieHeaders(response, csrf.setCookieHeaders);
     appendAuthSetCookieHeaders(response, refreshSetCookieHeaders);
     return withNoStore(response);
   } catch {
-    const response = createRelativeRedirect(buildLoginRedirectHref(nextHref));
+    const response = createInternalRedirect(
+      request,
+      buildLoginRedirectHref(nextHref),
+    );
     return withNoStore(response);
   }
 }

@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { createRelativeRedirect } from "@/shared/utils/create-relative-redirect";
+import { createInternalRedirect } from "@/shared/utils/create-internal-redirect";
 import { resolveSafeNextHref } from "@/shared/utils/resolve-safe-next-href";
 
 const accessTokenCookieName = "fitlead.access_token";
@@ -65,7 +65,10 @@ export function proxy(request: NextRequest) {
   const nextHref = getCurrentHref(request);
   const authPath = refreshToken ? "/auth/refresh" : "/login";
 
-  return createRelativeRedirect(buildAuthRedirectHref(authPath, nextHref));
+  return createInternalRedirect(
+    request,
+    buildAuthRedirectHref(authPath, nextHref),
+  );
 }
 
 export const config = {
