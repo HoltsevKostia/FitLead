@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 import type {
   FormFieldErrors,
@@ -57,7 +56,6 @@ interface RegisterFormProps {
 }
 
 export function RegisterForm({ nextHref = "/dashboard" }: RegisterFormProps) {
-  const router = useRouter();
   const [values, setValues] = useState<RegisterFormValues>(initialValues);
   const [fieldErrors, setFieldErrors] = useState<FormFieldErrors<RegisterFormValues>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -105,8 +103,7 @@ export function RegisterForm({ nextHref = "/dashboard" }: RegisterFormProps) {
 
     try {
       await authApi.register(validation.data);
-      router.replace(nextHref);
-      router.refresh();
+      window.location.replace(nextHref);
     } catch (error) {
       const mappedError = mapRegisterError(error);
       setFieldErrors(mappedError.fieldErrors);

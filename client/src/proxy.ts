@@ -8,8 +8,12 @@ const refreshTokenCookieName = "fitlead.refresh_token";
 const accessTokenRefreshThresholdSeconds = 60;
 
 function getCurrentHref(request: NextRequest): string {
+  const searchParams = new URLSearchParams(request.nextUrl.searchParams);
+  searchParams.delete("_rsc");
+  const search = searchParams.toString();
+
   return resolveSafeNextHref(
-    `${request.nextUrl.pathname}${request.nextUrl.search}`,
+    `${request.nextUrl.pathname}${search ? `?${search}` : ""}`,
     "/dashboard",
   );
 }
