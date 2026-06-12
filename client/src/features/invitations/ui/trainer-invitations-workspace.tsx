@@ -62,9 +62,9 @@ function CreatedInvitationNotice({
             className="w-full rounded-2xl border border-border bg-white px-4 py-3 text-sm text-foreground"
           />
           <p className="text-sm text-muted">
-            Скопіюйте це посилання зараз. Після переходу на іншу сторінку або
-            перезавантаження цей блок зникне, бо система не зберігає raw invite token для
-            повторного показу.
+            Скопіюйте й надішліть це посилання клієнту зараз. Після переходу на
+            іншу сторінку або перезавантаження воно більше не
+            відображатиметься.
           </p>
         </div>
 

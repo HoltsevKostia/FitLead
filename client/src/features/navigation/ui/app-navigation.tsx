@@ -64,6 +64,7 @@ function NavigationItem({
   return (
     <Link
       href={link.href}
+      prefetch={false}
       aria-current={isActive ? "page" : undefined}
       className={`inline-flex min-h-10 items-center rounded-lg px-3 py-2 text-sm font-medium transition max-[529px]:flex max-[529px]:w-full lg:flex lg:w-full ${
         isActive

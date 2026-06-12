@@ -1,12 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { authApi } from "@/lib/api/clients/auth-api";
 
 export function LogoutButton() {
-  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleLogout() {
@@ -14,8 +12,7 @@ export function LogoutButton() {
 
     try {
       await authApi.logout();
-      router.replace("/login");
-      router.refresh();
+      window.location.replace("/login");
     } finally {
       setIsSubmitting(false);
     }

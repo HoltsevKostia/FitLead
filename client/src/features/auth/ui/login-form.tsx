@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 import type { FormFieldErrors, LoginFormValues } from "@/features/auth/model/types";
 import { mapLoginError } from "@/features/auth/model/error-mapping";
@@ -37,7 +36,6 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ nextHref = "/dashboard" }: LoginFormProps) {
-  const router = useRouter();
   const [values, setValues] = useState<LoginFormValues>(initialValues);
   const [fieldErrors, setFieldErrors] = useState<FormFieldErrors<LoginFormValues>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -82,8 +80,7 @@ export function LoginForm({ nextHref = "/dashboard" }: LoginFormProps) {
 
     try {
       await authApi.login(validation.data);
-      router.replace(nextHref);
-      router.refresh();
+      window.location.replace(nextHref);
     } catch (error) {
       const mappedError = mapLoginError(error);
       setFieldErrors(mappedError.fieldErrors);
