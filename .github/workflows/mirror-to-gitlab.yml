@@ -16,10 +16,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Fetch all refs (branches + tags)
-        run: |
-          git fetch --prune --tags origin "+refs/heads/*:refs/remotes/origin/*"
-
       - name: Add GitLab remote
         env:
           GITLAB_URL: ${{ secrets.GITLAB_URL }}
@@ -29,11 +25,12 @@ jobs:
           git remote remove gitlab || true
           git remote add gitlab "https://${GITLAB_USERNAME}:${GITLAB_TOKEN}@${GITLAB_URL#https://}"
 
-      - name: Fetch all refs (branches + tags)
+      - name: Fetch GitHub and GitLab refs
         run: |
           git fetch --prune --tags origin "+refs/heads/*:refs/remotes/origin/*"
+          git fetch --prune gitlab "+refs/heads/*:refs/remotes/gitlab/*"
 
       - name: Push all branches + tags to GitLab (no hidden refs)
         run: |
-          git push --prune gitlab "refs/remotes/origin/*:refs/heads/*"
+          git push --force-with-lease --prune gitlab "refs/remotes/origin/*:refs/heads/*"
           git push --prune gitlab "refs/tags/*:refs/tags/*"
