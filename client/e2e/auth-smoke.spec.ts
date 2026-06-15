@@ -1,23 +1,11 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
-const trainerEmail = "demo.trainer@fitlead.local";
-const trainerPassword = "Demo123!";
-
-async function expectLoginForm(page: Page) {
-  await expect(page.getByLabel("Електронна пошта")).toBeVisible();
-  await expect(page.getByLabel("Пароль", { exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Увійти" })).toBeVisible();
-}
-
-async function loginAsTrainer(page: Page) {
-  await page.goto("/login");
-  await page.getByLabel("Електронна пошта").fill(trainerEmail);
-  await page.getByLabel("Пароль", { exact: true }).fill(trainerPassword);
-  await page.getByRole("button", { name: "Увійти" }).click();
-
-  await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByRole("button", { name: "Вийти" })).toBeVisible();
-}
+import {
+  accessTokenCookieName,
+  expectLoginForm,
+  loginAsTrainer,
+  refreshTokenCookieName,
+} from "./helpers/auth";
 
 test.describe("authentication smoke", () => {
   test("redirects an unauthenticated dashboard request to login", async ({ page }) => {
@@ -60,7 +48,11 @@ test.describe("authentication smoke", () => {
 
     const authCookieNames = (await context.cookies())
       .map((cookie) => cookie.name)
-      .filter((name) => name === "fitlead.access_token" || name === "fitlead.refresh_token");
+      .filter(
+        (name) =>
+          name === accessTokenCookieName ||
+          name === refreshTokenCookieName,
+      );
 
     expect(authCookieNames).toEqual([]);
   });
