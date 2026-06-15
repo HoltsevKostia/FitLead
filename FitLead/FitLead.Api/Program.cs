@@ -2,6 +2,7 @@ using FitLead.Api.Errors;
 using FitLead.Api.Auth;
 using FitLead.Api.Hubs;
 using FitLead.Api.Identity;
+using FitLead.Api.Seeding;
 using FitLead.Application.Identity;
 using FitLead.Application.Messenger.ChatMessages.Realtime;
 using FitLead.Application.Notifications.Realtime;
@@ -241,11 +242,28 @@ if (!app.Environment.IsEnvironment("Testing"))
         await PlatformExerciseSeeder.SeedAsync(dbContext);
     }
 
-    if (app.Configuration.GetValue<bool>("DemoSeed:Enabled"))
+    var demoSeedEnabled = app.Configuration.GetValue<bool>("DemoSeed:Enabled");
+    var smokeSeedEnabled = app.Configuration.GetValue<bool>("SmokeSeed:Enabled");
+
+    if (demoSeedEnabled)
     {
         app.Logger.LogInformation("Demo seed is enabled.");
         await DevIdentitySeeder.SeedAsync(app.Services);
+    }
+
+    if (demoSeedEnabled)
+    {
         await DemoMessengerSeeder.SeedAsync(app.Services);
+    }
+    else if (smokeSeedEnabled)
+    {
+        await DemoMessengerSeeder.SeedPrerequisitesAsync(app.Services);
+    }
+
+    if (smokeSeedEnabled)
+    {
+        app.Logger.LogInformation("Smoke seed is enabled.");
+        await SmokeDataSeeder.SeedAsync(app.Services);
     }
 }
 

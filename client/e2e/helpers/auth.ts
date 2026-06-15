@@ -9,6 +9,7 @@ export const accessTokenCookieName = "fitlead.access_token";
 export const refreshTokenCookieName = "fitlead.refresh_token";
 
 const trainerEmail = "demo.trainer@fitlead.local";
+const clientEmail = "demo.client@fitlead.local";
 const trainerPassword = "Demo123!";
 
 export async function expectLoginForm(page: Page) {
@@ -26,6 +27,16 @@ export async function submitTrainerLogin(page: Page) {
 export async function loginAsTrainer(page: Page) {
   await page.goto("/login");
   await submitTrainerLogin(page);
+
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page.getByRole("button", { name: "Вийти" })).toBeVisible();
+}
+
+export async function loginAsClient(page: Page) {
+  await page.goto("/login");
+  await page.getByLabel("Електронна пошта").fill(clientEmail);
+  await page.getByLabel("Пароль", { exact: true }).fill(trainerPassword);
+  await page.getByRole("button", { name: "Увійти" }).click();
 
   await expect(page).toHaveURL(/\/dashboard$/);
   await expect(page.getByRole("button", { name: "Вийти" })).toBeVisible();

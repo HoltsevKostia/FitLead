@@ -1,8 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  output: process.env.FITLEAD_SMOKE_TEST === "true"
+    ? undefined
+    : "standalone",
   images: {
+    unoptimized: process.env.FITLEAD_SMOKE_TEST === "true",
     remotePatterns: [
       {
         protocol: "https",
@@ -13,6 +16,12 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "*.ucarecd.net",
         pathname: "/**",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "3000",
+        pathname: "/smoke/**",
       },
     ],
   },

@@ -20,6 +20,27 @@ namespace FitLead.Api.Identity
             IServiceProvider services,
             CancellationToken cancellationToken = default)
         {
+            await SeedAsync(
+                services,
+                includeMessages: true,
+                cancellationToken);
+        }
+
+        public static async Task SeedPrerequisitesAsync(
+            IServiceProvider services,
+            CancellationToken cancellationToken = default)
+        {
+            await SeedAsync(
+                services,
+                includeMessages: false,
+                cancellationToken);
+        }
+
+        private static async Task SeedAsync(
+            IServiceProvider services,
+            bool includeMessages,
+            CancellationToken cancellationToken)
+        {
             using var scope = services.CreateScope();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppIdentityUser>>();
             var dbContext = scope.ServiceProvider.GetRequiredService<FitLeadDbContext>();
@@ -44,7 +65,10 @@ namespace FitLead.Api.Identity
 
             await EnsureRelationshipAsync(dbContext, trainer.Id, client.Id, cancellationToken);
             var chat = await EnsureChatAsync(dbContext, trainer.Id, client.Id, cancellationToken);
-            await EnsureMessagesAsync(dbContext, chat, trainer.Id, client.Id, cancellationToken);
+            if (includeMessages)
+            {
+                await EnsureMessagesAsync(dbContext, chat, trainer.Id, client.Id, cancellationToken);
+            }
         }
 
         private static async Task<User> EnsureDemoUserAsync(

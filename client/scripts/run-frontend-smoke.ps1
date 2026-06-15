@@ -26,9 +26,12 @@ $environmentNames = @(
     "ASPNETCORE_URLS",
     "ConnectionStrings__DefaultConnection",
     "DemoSeed__Enabled",
+    "SmokeSeed__Enabled",
     "ClientApp__BaseUrl",
     "Cors__AllowedOrigins__0",
     "API_BASE_URL",
+    "FITLEAD_SMOKE_TEST",
+    "NEXT_PUBLIC_SIGNALR_BASE_URL",
     "NEXT_PUBLIC_UPLOADCARE_PUBLIC_KEY",
     "PLAYWRIGHT_BASE_URL"
 )
@@ -158,10 +161,13 @@ try {
     $env:ASPNETCORE_ENVIRONMENT = "Development"
     $env:ASPNETCORE_URLS = "http://127.0.0.1:$ApiPort"
     $env:ConnectionStrings__DefaultConnection = $connectionString
-    $env:DemoSeed__Enabled = "true"
+    $env:DemoSeed__Enabled = "false"
+    $env:SmokeSeed__Enabled = "true"
     $env:ClientApp__BaseUrl = "http://localhost:$WebPort"
     $env:Cors__AllowedOrigins__0 = "http://localhost:$WebPort"
     $env:API_BASE_URL = "http://127.0.0.1:$ApiPort"
+    $env:FITLEAD_SMOKE_TEST = "true"
+    $env:NEXT_PUBLIC_SIGNALR_BASE_URL = "http://localhost:$ApiPort"
     $env:NEXT_PUBLIC_UPLOADCARE_PUBLIC_KEY = "test-public-key"
     $env:PLAYWRIGHT_BASE_URL = "http://localhost:$WebPort"
 
