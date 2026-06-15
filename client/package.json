@@ -6,7 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:smoke": "playwright test",
+    "test:smoke:web": "npm run build && playwright test",
+    "test:smoke:local": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/run-frontend-smoke.ps1",
+    "test:smoke:install": "playwright install chromium",
+    "test:smoke:report": "playwright show-report"
   },
   "dependencies": {
     "@microsoft/signalr": "^10.0.0",
@@ -17,6 +22,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
