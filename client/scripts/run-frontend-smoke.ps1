@@ -127,9 +127,20 @@ try {
         throw "Docker Engine is not available. Start Docker Desktop and try again."
     }
 
-    & dotnet ef --version *> $null
+    & dotnet tool restore *> $null
     if ($LASTEXITCODE -ne 0) {
-        throw "EF Core CLI is unavailable. Install it with 'dotnet tool install --global dotnet-ef --version 8.*'."
+        throw "Failed to restore repository-local .NET tools."
+    }
+
+    Write-Host "Restoring and building the API with locked dependencies..."
+    & dotnet restore $apiProject --locked-mode
+    if ($LASTEXITCODE -ne 0) {
+        throw "Locked API dependency restore failed."
+    }
+
+    & dotnet build $apiProject --no-restore
+    if ($LASTEXITCODE -ne 0) {
+        throw "API build failed."
     }
 
     Write-Host "Starting isolated PostgreSQL container..."
@@ -172,10 +183,11 @@ try {
     $env:PLAYWRIGHT_BASE_URL = "http://localhost:$WebPort"
 
     Write-Host "Applying EF Core migrations to the isolated database..."
-    & dotnet ef database update `
+    & dotnet tool run dotnet-ef database update `
         --project $infrastructureProject `
         --startup-project $apiProject `
-        --connection $connectionString
+        --connection $connectionString `
+        --no-build
 
     if ($LASTEXITCODE -ne 0) {
         throw "EF Core migration failed."

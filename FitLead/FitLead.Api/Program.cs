@@ -21,6 +21,7 @@ using Microsoft.OpenApi.Models;
 using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
+var isSmokeEnvironment = builder.Environment.IsEnvironment("Smoke");
 
 // Add services to the container.
 
@@ -276,7 +277,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseExceptionHandler();
 
-if (!app.Environment.IsDevelopment())
+if (!app.Environment.IsDevelopment() && !isSmokeEnvironment)
 {
     app.UseHttpsRedirection();
 }
