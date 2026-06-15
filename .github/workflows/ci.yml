@@ -12,7 +12,6 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 env:
   DOTNET_VERSION: 8.0.x
@@ -44,14 +43,14 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
-          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/packages.lock.json', '**/*.csproj') }}
           restore-keys: |
             nuget-${{ runner.os }}-
 
       - name: Restore dependencies
         run: |
-          dotnet restore "$API_PROJECT"
-          dotnet restore "$TEST_PROJECT"
+          dotnet restore "$API_PROJECT" --locked-mode
+          dotnet restore "$TEST_PROJECT" --locked-mode
 
       - name: Build API
         run: dotnet build "$API_PROJECT" --configuration "$CONFIGURATION" --no-restore
@@ -107,12 +106,165 @@ jobs:
       - name: Build frontend
         run: npm run build
 
+  frontend-smoke:
+    name: Frontend Smoke
+    runs-on: ubuntu-latest
+    env:
+      ASPNETCORE_ENVIRONMENT: Smoke
+      ASPNETCORE_URLS: http://127.0.0.1:5178
+      ConnectionStrings__DefaultConnection: Host=127.0.0.1;Port=5432;Database=fitlead_smoke;Username=postgres;Password=postgres
+      DemoSeed__Enabled: "false"
+      SmokeSeed__Enabled: "true"
+      ClientApp__BaseUrl: http://localhost:3000
+      Cors__AllowedOrigins__0: http://localhost:3000
+      Uploadcare__PublicKey: test-public-key
+      Uploadcare__SecretKey: test-secret-key
+      OutboxProcessor__Enabled: "false"
+      Push__Enabled: "false"
+      API_BASE_URL: http://127.0.0.1:5178
+      FITLEAD_SMOKE_TEST: "true"
+      NEXT_PUBLIC_SIGNALR_BASE_URL: http://localhost:5178
+      NEXT_PUBLIC_UPLOADCARE_PUBLIC_KEY: test-public-key
+      PLAYWRIGHT_BASE_URL: http://localhost:3000
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: fitlead_smoke
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d fitlead_smoke"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/packages.lock.json', '**/*.csproj') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Restore and build API
+        run: |
+          dotnet restore "$API_PROJECT" --locked-mode
+          dotnet build "$API_PROJECT" \
+            --configuration "$CONFIGURATION" \
+            --no-restore
+
+      - name: Restore local .NET tools
+        run: dotnet tool restore
+
+      - name: Generate smoke JWT signing keys
+        shell: bash
+        run: |
+          openssl genpkey \
+            -algorithm RSA \
+            -pkeyopt rsa_keygen_bits:2048 \
+            -out "$RUNNER_TEMP/smoke-private.pem"
+          openssl rsa \
+            -pubout \
+            -in "$RUNNER_TEMP/smoke-private.pem" \
+            -out "$RUNNER_TEMP/smoke-public.pem"
+
+          {
+            echo "Jwt__RsaPrivateKeyPem<<EOF"
+            cat "$RUNNER_TEMP/smoke-private.pem"
+            echo "EOF"
+            echo "Jwt__RsaPublicKeyPem<<EOF"
+            cat "$RUNNER_TEMP/smoke-public.pem"
+            echo "EOF"
+          } >> "$GITHUB_ENV"
+
+      - name: Apply EF Core migrations
+        run: |
+          dotnet tool run dotnet-ef database update \
+            --project FitLead/FitLead.Infrastructure/FitLead.Infrastructure.csproj \
+            --startup-project "$API_PROJECT" \
+            --connection "$ConnectionStrings__DefaultConnection" \
+            --configuration "$CONFIGURATION" \
+            --no-build
+
+      - name: Start API
+        shell: bash
+        run: |
+          nohup dotnet run \
+            --project "$API_PROJECT" \
+            --configuration "$CONFIGURATION" \
+            --no-build \
+            --no-restore \
+            > "$RUNNER_TEMP/fitlead-api.log" 2>&1 &
+
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:5178/health > /dev/null; then
+              exit 0
+            fi
+
+            sleep 1
+          done
+
+          cat "$RUNNER_TEMP/fitlead-api.log"
+          exit 1
+
+      - name: Install frontend dependencies
+        working-directory: client
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        working-directory: client
+        run: npx playwright install --with-deps chromium
+
+      - name: Build frontend for smoke tests
+        working-directory: client
+        run: npm run build
+
+      - name: Run frontend smoke tests
+        working-directory: client
+        run: npx playwright test --workers=1
+
+      - name: Upload smoke diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-smoke-diagnostics
+          path: |
+            client/playwright-report
+            client/test-results
+            ${{ runner.temp }}/fitlead-api.log
+          if-no-files-found: warn
+          retention-days: 7
+
   publish-images:
     name: Publish Docker images
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     needs:
       - backend-ci
       - frontend-ci
+      - frontend-smoke
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     env:
       NEXT_PUBLIC_UPLOADCARE_PUBLIC_KEY: ${{ vars.NEXT_PUBLIC_UPLOADCARE_PUBLIC_KEY }}
